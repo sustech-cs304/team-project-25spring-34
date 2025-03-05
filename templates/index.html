@@ -1,0 +1,72 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Revise Button</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            function updateReviseButton(Locked) {
+                if (Locked) {
+                    $('#reviseButton').prop('disabled', true);
+                } else {
+                    $('#reviseButton').prop('disabled', false);
+                }
+            }
+
+            function updateSaveButton(Locked) {
+                if (Locked) {
+                    $('#saveButton').prop('disabled', false);
+                } else {
+                    $('#saveButton').prop('disabled', true);
+                }
+            }
+
+            $('#reviseButton').click(function() {
+                $.get("{% url 'revise_button' %}", function(data) {
+                    updateReviseButton(true);
+                    updateSaveButton(true);
+                });
+            });
+
+            $('#saveButton').click(function() {
+                $.get("{% url 'save_button' %}", function(data) {
+                    updateReviseButton(false);
+                    updateSaveButton(false);
+                });
+            });
+
+            function fetchButtonState() {
+                $.get("{% url 'get_button_state' %}", function(data) {
+                    if(data.is_locked){
+                        if(data.username==data.last_user){
+                            updateReviseButton(true);
+                            updateSaveButton(true);
+                        }
+                        else{
+                            updateReviseButton(true);
+                            updateSaveButton(false);
+                        }
+                    }
+                    else{
+                        updateReviseButton(false);
+                        updateSaveButton(false);
+                    }
+                });
+            }
+
+            // Fetch the initial state
+            fetchButtonState();
+
+            // Set interval to fetch the button state every 1 second
+            setInterval(fetchButtonState, 500);
+        });
+    </script>
+</head>
+<body>
+    <h1>Revise Button Test</h1>
+    <p>Welcome, {{ user.username }}!</p>
+    <button id="reviseButton">Revise</button>
+    <button id="saveButton" disabled>Save</button>
+</body>
+</html>
