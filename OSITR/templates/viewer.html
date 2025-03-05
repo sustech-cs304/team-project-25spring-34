@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF 预览 - 书签导航</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #bookmarks { list-style: none; padding: 0; }
+        #bookmarks li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ddd; }
+        #bookmarks li:hover { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+    <h1>PDF 预览 - 书签导航</h1>
+
+    <!-- 上传 PDF -->
+    <form action="/pdf/upload/" method="post" enctype="multipart/form-data">
+        <input type="file" name="pdf" required>
+        <button type="submit">上传 PDF</button>
+    </form>
+
+    <h2>创建书签</h2>
+    <input type="number" id="page-number" placeholder="页码" min="1">
+    <input type="text" id="bookmark-desc" placeholder="描述">
+    <button onclick="createBookmark()">添加书签</button>
+
+    <h2>书签导航</h2>
+    <ul id="bookmarks"></ul>
+
+    <h2>PDF 预览</h2>
+    <img id="pdf-viewer" width="100%" height="600px">
+
+    <h3>截屏功能</h3>
+    <button onclick="selectArea()">Select Area</button>
+    <button onclick="PPImage()">Read Area</button>
+{#    <div id="content-to-screenshot">#}
+{#        <!-- 这里是需要截屏的内容 -->#}
+{#        <p>This is some content that will be captured in the screenshot.</p>#}
+{#    </div>#}
+
+    <script>
+        let bookmarks = {};  // 存储书签信息 { 页码: {desc: "描述", url: "对应图片路径"} }
+
+        function createBookmark() {
+            let pageNum = document.getElementById("page-number").value;
+            let desc = document.getElementById("bookmark-desc").value.trim();
+
+            if (!pageNum || !desc) {
+                alert("请填写页码和描述");
+                return;
+            }
+
+            let imgUrl = `/media/pdf_images/page_${pageNum}.jpg`;
+
+            if (!bookmarks[pageNum]) {
+                bookmarks[pageNum] = { desc: desc, url: imgUrl };
+
+                let li = document.createElement("li");
+                li.textContent = `📌 ${desc} (第 ${pageNum} 页)`;
+                li.setAttribute("data-url", imgUrl);
+
+                // ✅ 添加 `console.log()` 方便调试
+                li.ondblclick = function () {
+                    let viewer = document.getElementById("pdf-viewer");
+                    let url = this.getAttribute("data-url");
+                    console.log("双击书签，更新到: ", url);
+                    viewer.src = url;
+                };
+                document.getElementById("bookmarks").appendChild(li);
+            }
+        }
+
+        let isSelect = false;
+        function selectArea(){
+            if (isSelect){
+                console.log("禁止连续点击")
+                return;
+            }
+            isSelect = true
+            console.log("鼠标松开，开始执行selectArea()")
+            fetch('/pdf/select_area/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    console.log("Selected area: \nstart_x: ",data.start_x,"start_y: ",data.start_y,"end_y: ", data.end_x,"end_y: ",data.end_y)
+                    console.log("",)
+                    alert(`Selected area: (${data.start_x}, ${data.start_y}) to (${data.end_x}, ${data.end_y})`);
+                }
+            }).catch(error => {
+                alert('Failed to select area: ' + error.message);
+            });
+        }
+
+        function PPImage(){
+            // 调用 capture_area 视图
+            fetch('/pdf/preprocess_image/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                if (data.success) {
+                    alert('Image to text conversion!');
+                } else {
+                    alert('Failed to Image to text conversion: ' + (data.error || 'Unknown error'));
+                }
+            }).catch(error => {
+                alert('Failed to Image to text conversion: ' + error.message);
+            });
+        }
+    </script>
+
+</body>
+</html>

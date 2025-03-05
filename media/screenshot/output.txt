@@ -1,0 +1,12 @@
+def repl(match):
+    operator = match.group(1)
+    quotel = match.group(2)
+    content = match.group(3).strip() # 去 除 两 侧室 白
+    quote2 = match.group(4)
+    if quote1 != quote2:
+        fixed_quote = "'" ， # 默认 使 用 单 引号
+    else:
+        fixed_quote = quote1
+        print("123")
+        return f"{operator}{fixed_quote}{content}{fixed_quote}"
+    return re.sub( pattern: r'(==\s*)(["\'])) (1""\'1+2)(i"\'])', rept, code)
