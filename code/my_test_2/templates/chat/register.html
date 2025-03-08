@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .form span{
+            width: 12ch; display: inline-block;
+        }
+    </style>
+
+</head>
+<body>
+    <div style="border: 1px solid #ccc; border-radius: 16px; margin: 16px auto; padding: 16px">
+        <form class="form" method="POST" action="{% url 'chat:register' %}">
+            {% csrf_token %}
+            <h3>注册</h3>
+            <span>用户名：</span><input type="text" name="username"> <br>
+            <span>密码：</span><input type="text" name="password"> <br>
+            <input type="submit" value="注册">
+            <a href="{% url 'chat:login' %}">去登录</a>
+        </form>
+    </div>
+</body>
+</html>
