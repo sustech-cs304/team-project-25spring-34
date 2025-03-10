@@ -1,4 +1,5 @@
 from django.shortcuts import render
 
 def index(request):
-    return render(request, 'self-learn.html')
+    return render(request, 'lesson.html')
+
