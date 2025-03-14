@@ -3,14 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <title>Group-{{ group_id }}</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            height: 100vh;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px;
+        }
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        nav ul li {
+            display: inline;
+            margin: 0 15px;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            display: flex;
+            flex: 1;
+        }
+        .sidebar {
+            flex : 0.2;
+            width: 300px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-top {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+        .sidebar-bottom {
+            flex: 2;
+            background-color: #45a049;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar h2 {
+            margin-top: 0;
+        }
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .teammates {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .documents {
+            flex: 6;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .teammates h2, .documents h2 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
-    <h1>Group {{ group_id }} Page</h1>
+    <header>
+        <h1>Group-{{group_id}} Page</h1>
+    </header>
     <nav>
         <ul>
             <li><a href="/login/IDE/lesson">Go Back</a></li>
             <li><a href="/login/IDE/lesson/group-{{ group_id }}/group-learn">Group-Learn</a></li>
         </ul>
     </nav>
+    <div class="container">
+        <div class="sidebar">
+            <div class="sidebar-top">
+                <h2>学习主题</h2>
+            </div>
+            <div class="sidebar-bottom">
+                <h2>待定</h2>
+            </div>
+        </div>
+        <div class="main-content">
+            <div class="teammates">
+                <h2>Team members</h2>
+            </div>
+            <div class="documents">
+                <h2>Documents</h2>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
