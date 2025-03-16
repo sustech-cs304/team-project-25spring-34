@@ -28,4 +28,5 @@ urlpatterns = [
     # path("", views.hello, name="hello"),
     path('', views.index, name='index'),  # 主页面
     path('run/', views.run_code, name='run_code'),  # 执行代码的接口
+    path('lesson/', views.lesson, name='lesson')
 ]

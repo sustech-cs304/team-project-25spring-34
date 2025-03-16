@@ -7,6 +7,10 @@ from django.shortcuts import render
 from django.http import JsonResponse
 
 
+def lesson(request):
+    return render(request, 'lesson.html')
+
+
 def hello(request):
     return HttpResponse("Hello world ! ")
 
@@ -15,7 +19,7 @@ def index(request):
     # 从本地文件读取代码
     print(os.getcwd())
     try:
-        with open('djangoProject/code_test/3.txt', 'r',) as file:
+        with open('djangoProject/code_test/7.txt', 'r', ) as file:
             code = file.read()
             print("code read:", code)
     except FileNotFoundError:
