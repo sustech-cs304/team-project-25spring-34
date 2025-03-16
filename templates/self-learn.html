@@ -126,5 +126,62 @@
             </div>
         </div>
     </div>
+    <script>
+        let isSelect = false;
+        function selectArea(){
+            if (isSelect){
+                console.log("禁止连续点击")
+                return;
+            }
+            isSelect = true
+            console.log("鼠标松开，开始执行selectArea()")
+            fetch('/login/IDE/lesson/self-learn/select_area/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                } else {
+                    console.log("Selected area: \nstart_x: ",data.start_x,"start_y: ",data.start_y,"end_y: ", data.end_x,"end_y: ",data.end_y)
+                    console.log("",)
+                    alert(`Selected area: (${data.start_x}, ${data.start_y}) to (${data.end_x}, ${data.end_y})`);
+                }
+            }).catch(error => {
+                alert('Failed to select area: ' + error.message);
+            });
+        }
+
+        function PPImage(){
+            // 调用 capture_area 视图
+            fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                if (data.success) {
+                    alert('Image to text conversion!');
+                } else {
+                    alert('Failed to Image to text conversion: ' + (data.error || 'Unknown error'));
+                }
+            }).catch(error => {
+                alert('Failed to Image to text conversion: ' + error.message);
+            });
+        }
+    </script>
 </body>
 </html>

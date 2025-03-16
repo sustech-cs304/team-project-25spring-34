@@ -1,0 +1,25 @@
+# Python 缓存文件
+IDE/__pycache__/
+IDEframework/__pycache__/
+group_id/__pycache__/
+group_learn/__pycache__/
+lesson/__pycache__/
+lock_button/__pycache__/
+login/__pycache__/
+register/__pycache__/
+self_learn/__pycache__/
+utils/__pycache__/
+*.pyc
+*.pyo
+
+# 虚拟环境
+
+
+# 日志和临时文件
+
+
+# 数据库文件
+db.sqlite3
+
+# IDE 相关文件
+
