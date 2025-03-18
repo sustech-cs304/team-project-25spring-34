@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>📄 PDF 预览 & Markdown 笔记</title>
+
+    <!-- ✅ PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+
+    <!-- ✅ Markdown 解析 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- ✅ 代码高亮 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+
+    <!-- ✅ 数学公式（KaTeX） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/katex.min.css">
+
+    <!-- ✅ HTML2PDF（导出 Markdown 为 PDF） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.4/contrib/auto-render.min.js"></script>
+
+    <style>
+        /* 🌟 全局样式 */
+        body {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(to right, #141e30, #243b55);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+        }
+
+        /* 📄 PDF 预览 */
+        #pdf-container {
+            width: 65%;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
+        }
+        canvas {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 📝 Markdown 笔记 */
+        #note-container {
+            width: 35%;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            border-radius: 15px;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        textarea {
+            width: 100%;
+            height: 40%;
+            padding: 15px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 10px;
+            border: 1px solid #4a69bd;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease-in-out;
+        }
+
+        textarea:focus {
+            border: 1px solid #78e08f;
+            box-shadow: 0 0 10px #78e08f;
+        }
+
+        #preview {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-top: 15px;
+            color: #000;
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* 📌 Markdown 样式 */
+        #preview h1, #preview h2, #preview h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 5px;
+        }
+        #preview blockquote {
+            background: #f9f9f9;
+            border-left: 5px solid #ccc;
+            margin: 10px 0;
+            padding: 10px;
+            font-style: italic;
+        }
+        #preview table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        #preview th, #preview td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        #preview th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        /* 🎨 按钮 */
+        .btn {
+            margin-top: 10px;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            font-weight: bold;
+        }
+        .btn-save {
+            background: #78e08f;
+            color: #2c3e50;
+            border: none;
+        }
+        .btn-save:hover {
+            background: #38ada9;
+            color: #fff;
+        }
+
+        .btn-nav {
+            background: #4a69bd;
+            color: white;
+            border: none;
+        }
+        .btn-nav:hover {
+            background: #3c6382;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 📄 PDF 预览 -->
+    <div id="pdf-container">
+        <h2 class="mt-3">📄 PDF 预览</h2>
+        <div class="pdf-controls mb-3">
+            <button class="btn btn-nav" onclick="prevPage()">⬅️ 上一页</button>
+            <span id="page-num">1</span> / <span id="page-count">1</span>
+            <button class="btn btn-nav" onclick="nextPage()">➡️ 下一页</button>
+        </div>
+        <canvas id="pdf-render"></canvas>
+    </div>
+
+    <!-- 📝 Markdown 笔记 -->
+    <div id="note-container">
+        <h4>📝 Markdown 笔记</h4>
+        <textarea id="note-editor" placeholder="在此输入 Markdown 笔记..."></textarea>
+        <button class="btn btn-save mt-2" onclick="saveAsPDF()">📥 保存为 PDF</button>
+        <h5 class="mt-3">预览</h5>
+        <div id="preview"></div>
+    </div>
+
+    <script>
+        /** ✅ 绑定 PDF URL */
+        var pdfUrl = "{{ pdf_url|escapejs }}";  
+        let noteEditor = document.getElementById("note-editor");
+        let preview = document.getElementById("preview");
+
+        function updateMarkdownPreview() {
+            //let content = marked.parse(noteEditor.value);
+            let content = marked.parse(noteEditor.value, { 
+            breaks: true,         // 允许换行
+            gfm: true,            // GitHub Flavored Markdown
+        });
+            preview.innerHTML = content;
+            
+
+            // ✅ 渲染 KaTeX 数学公式
+            renderMathInElement(preview, {
+                delimiters: [
+                    { left: "$$", right: "$$", display: true },   // 块级公式
+                    { left: "\\(", right: "\\)", display: false } // 行内公式
+                ]
+            });
+        }
+
+        noteEditor.addEventListener("input", updateMarkdownPreview);
+
+        /** ✅ PDF 预览功能 */
+        let pdfDoc = null,
+            pageNum = 1,
+            scale = 1.5,
+            canvas = document.getElementById("pdf-render"),
+            ctx = canvas.getContext("2d");
+            
+
+        function renderPage(num) {
+            pdfDoc.getPage(num).then(function (page) {
+                let viewport = page.getViewport({ scale: scale });
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                page.render({ canvasContext: ctx, viewport: viewport });
+            });
+            document.getElementById("page-num").textContent = num;
+        }
+
+        function prevPage() { if (pageNum > 1) { pageNum--; renderPage(pageNum); } }
+        function nextPage() { if (pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); } }
+        /** ✅ 修复 "保存 PDF" 按钮无反应的问题 */
+        function saveAsPDF() {
+            html2pdf().from(document.getElementById("preview")).save("笔记.pdf");
+        }
+        pdfjsLib.getDocument(pdfUrl).promise.then(function (pdfDoc_) {
+            pdfDoc = pdfDoc_;
+            document.getElementById("page-count").textContent = pdfDoc.numPages;
+            renderPage(pageNum);
+        });
+    </script>
+
+</body>
+</html>
