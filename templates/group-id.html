@@ -97,6 +97,40 @@
             margin-top: 0;
             color: #333;
         }
+        .file-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .file-list li {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .file-list a {
+            color: #2c3e50;
+            text-decoration: none;
+        }
+        .file-list a:hover {
+            text-decoration: underline;
+        }
+        .file-list button {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-list button:hover {
+            background-color: #c0392b;
+        }
+        .upload-form {
+            margin-bottom: 20px;
+        }
+        .upload-form input[type="file"] {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -124,8 +158,58 @@
             </div>
             <div class="documents">
                 <h2>Documents</h2>
+                <!-- 文件上传表单 -->
+                <form class="upload-form" id="uploadForm">
+                    <input type="file" name="file" id="fileInput" required>
+                    <button type="submit">上传文件</button>
+                </form>
+                <!-- 文件列表 -->
+                <ul class="file-list" id="fileList">
+                    <!-- 文件列表将动态插入到这里 -->
+                </ul>
             </div>
         </div>
     </div>
+
+    <script>
+        let files = [];
+
+        // 上传文件
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            if (file) {
+                // 模拟上传到服务器
+                const fileUrl = URL.createObjectURL(file); // 生成临时下载链接
+                files.push({ name: file.name, url: fileUrl });
+                updateFileList();
+                fileInput.value = ''; // 清空文件输入
+            }
+        });
+
+        // 删除文件
+        function deleteFile(index) {
+            files.splice(index, 1);
+            updateFileList();
+        }
+
+        // 更新文件列表
+        function updateFileList() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
+            files.forEach((file, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <a href="${file.url}" download="${file.name}">${file.name}</a>
+                    <button onclick="deleteFile(${index})">删除</button>
+                `;
+                fileList.appendChild(li);
+            });
+        }
+
+        // 初始化文件列表
+        updateFileList();
+    </script>
 </body>
 </html>
