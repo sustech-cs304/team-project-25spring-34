@@ -16,23 +16,31 @@ Including another URLconf
 """
 from django.shortcuts import redirect
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 from login import views as login_views
 from register import views as register_views
 from lock_button import views as lock_button_views
 from IDE import views as IDE_views
 from lesson import views as lesson_views
 from group_id import views as group_id_views
-from self_learn import views as self_learn_views
 from group_learn import views as group_learn_views
 
 urlpatterns = [
     path('', lambda request: redirect('login/')),
-    path('login/IDE/', IDE_views.index),
-    path('login/IDE/lesson/', lesson_views.index),
-    path('login/IDE/lesson/self-learn/', self_learn_views.index),
-    path('login/IDE/lesson/group-<str:group_id>/', group_id_views.index),
-    path('login/IDE/lesson/group-<str:group_id>/group-learn', group_learn_views.index),
+    path('login/IDE/', include([
+        path('', IDE_views.index),
+        path('lesson/', include([
+            path('', lesson_views.index),
+            path('self-learn/', include('self_learn.urls')),  # ✅ 关键修改点
+            path('deepseek-chat/', include('ai_assistant.urls')),  # 新增聊天应用路由
+            path('group-<str:group_id>/', include([
+                path('', group_id_views.index),
+                path('group-learn', group_learn_views.index),
+            ]))
+        ]))
+    ])),
     # path('revise_button/', lock_button_views.revise_button, name='revise_button'),
     # path('save_button/', lock_button_views.save_button, name='save_button'),
     # path('get_button_state/', lock_button_views.get_button_state, name='get_button_state'),
@@ -40,3 +48,6 @@ urlpatterns = [
     path('register/', register_views.user_register, name='register'),
     path('group_id/', group_id_views.group_id, name='group_id'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

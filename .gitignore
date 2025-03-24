@@ -8,6 +8,7 @@ lock_button/__pycache__/
 login/__pycache__/
 register/__pycache__/
 self_learn/__pycache__/
+ai_assistant/__pycache__/
 utils/__pycache__/
 *.pyc
 *.pyo

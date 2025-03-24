@@ -1,5 +1,24 @@
 import re
 
+def detect_language(code_str):
+    """
+    检测代码是Python还是Java。
+    基于关键字判断。
+    """
+    java_keywords = ['public class', 'import java.', 'void main', 'System.out.println']
+    for keyword in java_keywords:
+        if keyword in code_str:
+            return 'java'
+
+    python_keywords = ['def ', 'import sys', 'print(', 'elif ', 'except ']
+    for keyword in python_keywords:
+        if keyword in code_str:
+            return 'python'
+
+    # 检查大括号数量作为备用判断
+    if code_str.count('{') + code_str.count('}') > 0:
+        return 'java'
+    return 'python'  # 默认Python
 
 def detect_indent_unit(lines):
     """
@@ -83,15 +102,10 @@ def fix_mismatched_quotes_in_comparisons(code):
     def repl(match):
         operator = match.group(1)
         quote1 = match.group(2)
-        content = match.group(3).strip()  # 去除两侧空白
+        content = match.group(3).strip()
         quote2 = match.group(4)
-        if quote1 != quote2:
-            fixed_quote = "'"  # 默认使用单引号
-        else:
-            fixed_quote = quote1
-        print("123")
+        fixed_quote = "'" if quote1 == "'" or quote2 == "'" else '"'
         return f"{operator}{fixed_quote}{content}{fixed_quote}"
-
     return re.sub(r'(==\s*)(["\'])([^"\']+?)(["\'])', repl, code)
 
 
@@ -101,6 +115,57 @@ def fix_extra_spaces(code):
     例如将 "request .POST" 修正为 "request.POST"
     """
     return re.sub(r'(\w+)\s+\.(\w+)', r'\1.\2', code)
+
+
+def format_java_indent(lines):
+    """
+    Java代码缩进格式化
+    """
+    indent_level = 0
+    formatted = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            formatted.append('')
+            continue
+        current_indent = ' ' * (indent_level * 4)
+        formatted_line = current_indent + stripped
+
+        open_braces = line.count('{')
+        close_braces = line.count('}')
+        indent_level += (open_braces - close_braces)
+        indent_level = max(indent_level, 0)
+
+        formatted.append(formatted_line)
+    return formatted
+
+
+def balance_java_code(code):
+    """
+    Java代码括号补全
+    """
+    counts = {'{': 0, '}': 0, '(': 0, ')': 0, '[': 0, ']': 0}
+    for char in code:
+        if char in counts:
+            counts[char] += 1
+    missing = counts['{'] - counts['}']
+    if missing > 0:
+        code += '}' * missing
+    missing = counts['('] - counts[')']
+    if missing > 0:
+        code += ')' * missing
+    missing = counts['['] - counts[']']
+    if missing > 0:
+        code += ']' * missing
+    return code
+
+
+def fix_java_quotes(code):
+    """
+    Java引号修正
+    """
+    code = re.sub(r"'(.*?)'", lambda m: '"%s"' % m.group(1) if len(m.group(1)) != 1 else "'%s'" % m.group(1), code)
+    return code
 
 
 def auto_format_code_improved(code_str):
@@ -114,59 +179,81 @@ def auto_format_code_improved(code_str):
       4. 后处理：修正字典中识别错误导致的缺失冒号问题
       5. 简单补全未闭合的括号
     """
-    # 1. 替换中文引号为英文引号
-    code_str = re.sub(r'[‘’]', "'", code_str)
-    code_str = re.sub(r'[“”]', '"', code_str)
+    lang = detect_language(code_str)
 
-    # 2. 分割代码行，并检测缩进单位
-    lines = code_str.splitlines()
-    indent_unit = detect_indent_unit(lines)
+    if lang == 'python':
+        # Python处理流程
+        code_str = re.sub(r'[‘’]', "'", code_str)
+        code_str = re.sub(r'[“”]', '"', code_str)
+        lines = code_str.splitlines()
+        indent_unit = detect_indent_unit(lines)
+        formatted_lines = []
+        indent_level = 0
+        block_keywords = ('def', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 'except', 'finally', 'with')
+        dedent_trigger_keywords = ('elif', 'else', 'except', 'finally')
+        dedent_line_keywords = ('return', 'break', 'continue', 'pass', 'raise')
 
-    formatted_lines = []
-    indent_level = 0  # 维护的全局缩进级别
+        for line in lines:
+            orig_indent = len(line) - len(line.lstrip(' '))
+            base_level = orig_indent // indent_unit if indent_unit else 0
+            if base_level > indent_level:
+                indent_level = base_level
 
-    # 定义关键字
-    block_keywords = ('def', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 'except', 'finally', 'with')
-    dedent_trigger_keywords = ('elif', 'else', 'except', 'finally')
-    dedent_line_keywords = ('return', 'break', 'continue', 'pass', 'raise')
+            stripped = line.strip()
+            if not stripped:
+                formatted_lines.append('')
+                continue
 
-    for line in lines:
-        # 计算原始缩进层级
-        orig_indent = len(line) - len(line.lstrip(' '))
-        base_level = orig_indent // indent_unit if indent_unit else 0
-        # 如果原有缩进层级高于当前维护的缩进，则采用原有的
-        if base_level > indent_level:
-            indent_level = base_level
+            if any(stripped.startswith(kw) for kw in dedent_trigger_keywords):
+                indent_level = max(indent_level - 1, 0)
 
-        stripped = line.strip()
-        if not stripped:
-            formatted_lines.append('')
-            continue
+            words = stripped.split()
+            if words and words[0] in block_keywords and not stripped.endswith(':'):
+                stripped += ':'
 
-        # 如果行以 dedent_trigger_keywords 开头，则先降低缩进
-        if any(stripped.startswith(kw) for kw in dedent_trigger_keywords):
-            indent_level = max(indent_level - 1, 0)
+            formatted_lines.append(' ' * (indent_level * 4) + stripped)
 
-        # 自动补全冒号：如果行以 block_keywords 开头但没有以冒号结尾，则加上
-        words = stripped.split()
-        if words and words[0] in block_keywords and not stripped.endswith(':'):
-            stripped += ':'
+            if stripped.endswith(':'):
+                indent_level += 1
+            elif any(stripped.startswith(kw) for kw in dedent_line_keywords):
+                indent_level = max(indent_level - 1, 0)
 
-        # 使用当前缩进级别（统一为4空格）输出行
-        formatted_lines.append(' ' * (indent_level * 4) + stripped)
+        formatted_code = "\n".join(formatted_lines)
+        formatted_code = fix_extra_spaces(formatted_code)
+        formatted_code = fix_mismatched_quotes_in_comparisons(formatted_code)
+        formatted_code = fix_dictionary_key_quotes(formatted_code)
+        return balance_code(formatted_code)
 
-        # 根据行结尾调整缩进
-        if stripped.endswith(':'):
-            indent_level += 1
-        elif any(stripped.startswith(kw) for kw in dedent_line_keywords):
-            if indent_level > 0:
-                indent_level -= 1
+    else:  # Java处理流程
+        # 预处理
+        code_str = re.sub(r'[‘’]', "'", code_str)
+        code_str = re.sub(r'[“”]', '"', code_str)
 
-    formatted_code = "\n".join(formatted_lines)
+        # 修正引号
+        code_str = fix_java_quotes(code_str)
 
-    formatted_code = fix_extra_spaces(formatted_code)
-    formatted_code = fix_mismatched_quotes_in_comparisons(formatted_code)
-    formatted_code = fix_dictionary_key_quotes(formatted_code)
-    formatted_code = balance_code(formatted_code)
+        # 修正比较语句
+        code_str = re.sub(r'==\s*\'', '== "', code_str)
 
-    return formatted_code
+        # 修正多余空格
+        code_str = fix_extra_spaces(code_str)
+
+        # 括号补全
+        code_str = balance_java_code(code_str)
+
+        # 处理缩进
+        lines = code_str.splitlines()
+        formatted_lines = format_java_indent(lines)
+
+        # 补充分号
+        formatted_code = []
+        control_keywords = {'if', 'for', 'while', 'do', 'switch', 'try', 'catch', 'else'}
+        for line in formatted_lines:
+            stripped = line.strip()
+            if not stripped or stripped.endswith(('{', '}', ';')) \
+                    or stripped.startswith(tuple(control_keywords)):
+                formatted_code.append(line)
+            else:
+                formatted_code.append(line.rstrip() + ';')
+
+        return '\n'.join(formatted_code)

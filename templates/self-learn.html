@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>Self-Learn</title>
+    <title>Self-Learn - PDF集成版</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,12 +12,14 @@
             flex-direction: column;
             height: 100vh;
         }
+
         header {
             background-color: #4c70af;
             color: white;
             padding: 3px;
             text-align: center;
         }
+
         nav {
             background-color: #f58e07;
             color: white;
@@ -26,6 +28,7 @@
             justify-content: space-between;
             align-items: center;
         }
+
         nav ul {
             list-style-type: none;
             margin: 0;
@@ -33,155 +36,325 @@
             display: flex;
             align-items: center;
         }
+
         nav ul li {
             margin-right: 10px;
         }
+
         nav ul li a {
             color: white;
             text-decoration: none;
         }
-        .bookmark-bar {
-            display: flex;
-            align-items: center;
-        }
-        .bookmark-bar a {
-            color: white;
-            text-decoration: none;
-            margin-left: 10px;
-        }
+
         .container {
             display: flex;
             flex: 1;
+            overflow: hidden;
         }
-        .ppt-section {
+
+        .pdf-section {
             flex: 4;
             background-color: #f4f4f4;
             padding: 10px;
+            display: flex;
+            flex-direction: column;
         }
+
+        .controls {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff;
+            border-radius: 4px;
+        }
+
+        #pdf-viewer {
+            flex: 1;
+            border: 1px solid #ccc;
+            background: white;
+        }
+
         .notes-section {
             flex: 2;
             background-color: #e2e2e2;
             padding: 10px;
+            border-left: 2px solid #ccc;
         }
+
         .code-section {
             flex: 3;
             background-color: #d4d4d4;
             padding: 10px;
             display: flex;
             flex-direction: column;
+            border-left: 2px solid #ccc;
         }
-        .code-input {
-            flex: 2.5;
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ccc;
-            margin-bottom: 10px;
+
+        .bookmark-list {
+            width: 500px;
+            height: 50px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            border: 2px solid #ccc;
+            padding: 10px 100px;
+            box-sizing: border-box;
         }
-        .code-output {
-            flex: 1;
-            background-color: #fff;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        footer {
-            background-color: #333;
-            color: white;
+
+        .bookmark-list h4 {
             text-align: center;
-            padding: 10px;
-            position: fixed;
+            margin: 0 0 10px 0;
+            width: 100%; /* 强制占满可用宽度 */
+            display: block; /* 确保块级特性生效 */
+        }
+
+        #bookmarks {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-x: auto; /* 改为允许横向滚动 */
+            display: flex; /* 使列表项横向排列 */
+            flex-wrap: nowrap; /* 禁止换行 */
+        }
+
+        #bookmarks li {
+            cursor: pointer;
+            padding: 8px;
+            background: #fff;
+            margin-right: 10px; /* 右边距使每个书签之间有间隔 */
+            border-radius: 4px;
+            transition: background 0.3s;
+            white-space: nowrap; /* 确保文字不换行 */
+        }
+
+        #bookmarks li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .code-input textarea {
             width: 100%;
-            bottom: 0;
+            height: 75%;
+            resize: none;
+            padding: 8px;
+            border: 1px solid #ccc;
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Self-Learn Page</h1>
-    </header>
-    <nav>
-        <ul>
-            <li><a href="/login/IDE/lesson">Go Back</a></li>
-        </ul>
+<header>
+    <h1>PDF学习工作台</h1>
+</header>
+<nav>
+    <ul>
+        <li><a href="/login/IDE/lesson">返回课程</a></li>
+        {#            <li>#}
+        {#                <form action="{% url 'upload-pdf' %}" method="post" enctype="multipart/form-data" style="display:inline;">#}
+        {#                    {% csrf_token %}#}
+        {#                    <input type="file" name="pdf" required style="color:white;">#}
+        {#                    <button type="submit">上传PDF</button>#}
+        {#                </form>#}
+        {#            </li>#}
+        <div class="bookmark-list">
+            <h4>书签导航</h4>
+            <ul id="bookmarks"></ul>
+        </div>
+    </ul>
+</nav>
+
+<div class="container">
+    <div class="pdf-section">
+        <div class="controls">
+            <h3>PDF预览区</h3>
+            <img id="pdf-viewer" style="max-width: 100%; height: auto; object-fit: contain;"
+                 src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=">
+        </div>
         <div class="bookmark-bar">
-            <a href="#ppt-bookmark">PPT Bookmark</a>
-            <a href="#code-bookmark">Code Bookmark</a>
-        </div>
-    </nav>
-    <div class="container">
-        <div class="ppt-section">
-            <h2>PPT</h2>
-            <p>PPT内容</p>
-        </div>
-        <div class="notes-section">
-            <h2>Note</h2>
-            <p>笔记内容</p>
-        </div>
-        <div class="code-section">
-            <div class="code-input">
-                <h3>Code</h3>
-                <textarea style="width: 100%; height: 75%;"></textarea>
-            </div>
-            <div class="code-output">
-                <h3>Terminal</h3>
-            </div>
+            <input type="number" id="page-number" placeholder="页码" min="1" style="width:80px;margin-right:10px;">
+            <input type="text" id="bookmark-desc" placeholder="书签描述" style="margin-right:10px;">
+            <button onclick="createBookmark()">添加书签</button>
         </div>
     </div>
-    <script>
-        let isSelect = false;
-        function selectArea(){
-            if (isSelect){
-                console.log("禁止连续点击")
-                return;
-            }
-            isSelect = true
-            console.log("鼠标松开，开始执行selectArea()")
-            fetch('/login/IDE/lesson/self-learn/select_area/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
-                }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            }).then(data => {
-                if (data.error) {
-                    alert('Error: ' + data.error);
-                } else {
-                    console.log("Selected area: \nstart_x: ",data.start_x,"start_y: ",data.start_y,"end_y: ", data.end_x,"end_y: ",data.end_y)
-                    console.log("",)
-                    alert(`Selected area: (${data.start_x}, ${data.start_y}) to (${data.end_x}, ${data.end_y})`);
-                }
-            }).catch(error => {
-                alert('Failed to select area: ' + error.message);
-            });
+
+    <div class="notes-section">
+        <h3>学习笔记</h3>
+        <textarea style="width:100%;height:90%;padding:8px;"></textarea>
+    </div>
+
+    <div class="code-section">
+        <div class="code-input">
+            <h3>代码实践</h3>
+            <textarea placeholder="输入你的代码..."></textarea>
+        </div>
+        <div class="code-output">
+            <h3>运行结果</h3>
+            <div id="terminal" style="height:90%;overflow-y:auto;"></div>
+        </div>
+        <h3>截屏功能</h3>
+        <button onclick="selectArea()">Select Area</button>
+        <button onclick="PPImage()">Read Area</button>
+    </div>
+</div>
+
+<script>
+    // PDF书签功能
+    let bookmarks = {};
+
+    function createBookmark() {
+        const pageNum = document.getElementById("page-number").value;
+        const desc = document.getElementById("bookmark-desc").value.trim();
+
+        if (!pageNum || !desc) {
+            alert("请填写页码和描述");
+            return;
         }
 
-        function PPImage(){
-            // 调用 capture_area 视图
-            fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+        const imgUrl = `/media/pdf_images/page_${pageNum}.jpg`;
+
+        if (!bookmarks[pageNum]) {
+            bookmarks[pageNum] = {desc, url: imgUrl};
+
+            const li = document.createElement("li");
+            li.innerHTML = `
+                    <span style="margin-right:15px;">📌 ${desc}</span>
+                    <small>页码: ${pageNum}</small>
+                `;
+            li.dataset.url = imgUrl;
+
+            li.ondblclick = function () {
+                document.getElementById("pdf-viewer").src = this.dataset.url;
+                console.log("跳转至:", this.dataset.url);
+            };
+
+            document.getElementById("bookmarks").appendChild(li);
+            document.getElementById("bookmark-desc").value = ""; // 清空输入
+        }
+    }
+
+    // 原IDE功能增强
+    let isSelect = false;
+
+    async function selectArea() {
+        if (isSelect) {
+            console.warn("操作正在进行中...");
+            return;
+        }
+
+        try {
+            isSelect = true;
+            const response = await fetch('/login/IDE/lesson/self-learn/select_area/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+                    'X-CSRFToken': '{{ csrf_token }}'
                 }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            }).then(data => {
-                if (data.success) {
-                    alert('Image to text conversion!');
-                } else {
-                    alert('Failed to Image to text conversion: ' + (data.error || 'Unknown error'));
-                }
-            }).catch(error => {
-                alert('Failed to Image to text conversion: ' + error.message);
             });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            console.log("选区坐标:", data);
+            alert(`已选择区域: (${data.start_x}, ${data.start_y}) 到 (${data.end_x}, ${data.end_y})`);
+        } catch (error) {
+            console.error("选区操作失败:", error);
+            alert("操作失败: " + error.message);
+        } finally {
+            isSelect = false;
         }
-    </script>
+    }
+
+    function PPImage() {
+        // 调用 capture_area 视图
+        fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'  // 添加 CSRF 令牌
+            }
+        }).then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        }).then(data => {
+            if (data.success) {
+                alert('Image to text conversion!');
+            } else {
+                alert('Failed to Image to text conversion: ' + (data.error || 'Unknown error'));
+            }
+        }).catch(error => {
+            alert('Failed to Image to text conversion: ' + error.message);
+        });
+    }
+</script>
 </body>
 </html>
+
+{#<!DOCTYPE html>#}
+{#<html lang="zh">#}
+{#<head>#}
+{#    <meta charset="UTF-8">#}
+{#    <title>PDF 预览 - 书签导航</title>#}
+{#    <style>#}
+{#        body { font-family: Arial, sans-serif; }#}
+{#        #bookmarks { list-style: none; padding: 0; }#}
+{#        #bookmarks li { cursor: pointer; padding: 5px; border-bottom: 1px solid #ddd; }#}
+{#        #bookmarks li:hover { background-color: #f0f0f0; }#}
+{#    </style>#}
+{#</head>#}
+{#<body>#}
+{##}
+{#    <h1>PDF 预览 - 书签导航</h1>#}
+{#    #}
+{#    <!-- 上传 PDF -->#}
+{#    <form action="/pdf/upload/" method="post" enctype="multipart/form-data">#}
+{#        <input type="file" name="pdf" required>#}
+{#        <button type="submit">上传 PDF</button>#}
+{#    </form>#}
+{##}
+{#    <h2>创建书签</h2>#}
+{#    <input type="number" id="page-number" placeholder="页码" min="1">#}
+{#    <input type="text" id="bookmark-desc" placeholder="描述">#}
+{#    <button onclick="createBookmark()">添加书签</button>#}
+{##}
+{#    <h2>书签导航</h2>#}
+{#    <ul id="bookmarks"></ul>#}
+{##}
+{#    <h2>PDF 预览</h2>#}
+{#    <img id="pdf-viewer" width="100%" height="600px">#}
+{##}
+{#    <script>#}
+{#        let bookmarks = {};  // 存储书签信息 { 页码: {desc: "描述", url: "对应图片路径"} }#}
+{##}
+{#        function createBookmark() {#}
+{#            let pageNum = document.getElementById("page-number").value;#}
+{#            let desc = document.getElementById("bookmark-desc").value.trim();#}
+{##}
+{#            if (!pageNum || !desc) {#}
+{#                alert("请填写页码和描述");#}
+{#                return;#}
+{#            }#}
+{##}
+{#            let imgUrl = `/media/pdf_images/page_${pageNum}.jpg`;#}
+{##}
+{#            if (!bookmarks[pageNum]) {#}
+{#                bookmarks[pageNum] = { desc: desc, url: imgUrl };#}
+{##}
+{#                let li = document.createElement("li");#}
+{#                li.textContent = `📌 ${desc} (第 ${pageNum} 页)`;#}
+{#                li.setAttribute("data-url", imgUrl);#}
+{##}
+{#                // ✅ 添加 `console.log()` 方便调试#}
+{#                li.ondblclick = function () {#}
+{#                    let viewer = document.getElementById("pdf-viewer");#}
+{#                    let url = this.getAttribute("data-url");#}
+{#                    console.log("双击书签，更新到: ", url);#}
+{#                    viewer.src = url;#}
+{#                };#}
+{##}
+{#                document.getElementById("bookmarks").appendChild(li);#}
+{#            }#}
+{#        }#}
+{#    </script>#}
+{##}
+{#</body>#}
+{#</html>#}
+

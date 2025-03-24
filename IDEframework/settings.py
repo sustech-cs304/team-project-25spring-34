@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-!7k#un+au=^x!=mnlhd5)wov=5_1k%d71p$5i$qhu4e_f008%0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'IDE',
     'login',
     'register',
@@ -45,6 +46,10 @@ INSTALLED_APPS = [
     'self_learn',
     'lock_button',
     'group_learn',
+    'ai_assistant',
+
+    'bootstrap4',  # Bootstrap4 集成
+    'markdown',  # Markdown 支持
 ]
 
 MIDDLEWARE = [
@@ -111,19 +116,24 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
-
+# LANGUAGE_CODE = 'en-us'
+#
 TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'zh-hans'  # 语言设置为中文
+# TIME_ZONE = 'Asia/Shanghai'  # 时区设置为中国
 
 USE_I18N = True
-
 USE_TZ = True
-
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]  # 允许在项目中存放静态文件
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
