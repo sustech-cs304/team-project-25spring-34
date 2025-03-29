@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesson</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        nav {
+            background-color: #595d61;
+            padding: 10px;
+        }
+        nav ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: space-around;
+        }
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+        }
+        .main-content {
+            display: flex;
+            flex: 1;
+        }
+        .sidebar {
+            width: 300px;
+            background-color: #ecf0f1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .content {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        .status-bar {
+            background-color: #a3a9a9;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .status-section {
+            background-color: #6f7478;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .status-section h3 {
+            margin-top: 0;
+        }
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .task-list li {
+            background-color: #727980;
+            padding: 5px;
+            margin-bottom: 5px;
+            border-radius: 3px;
+        }
+        .group-section {
+            margin-bottom: 20px;
+        }
+        .group-section h2 {
+            margin-top: 0;
+        }
+        .courseware-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .bookmarks {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            height: 50px; 
+        }
+        .courseware-content {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 5px;
+            flex: 1; 
+        }
+        .add-task {
+            display: flex;
+            gap: 10px;
+        }
+        .add-task input {
+            flex: 1;
+            padding: 5px;
+        }
+        .add-task button {
+            padding: 5px 10px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .add-task button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Lesson Page</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/login/IDE">Go Back</a></li>
+            <li><a href="/login/IDE/lesson/self-learn">Self-Learn</a></li>
+        </ul>
+    </nav>
+<div class="main-content">
+    <div class="sidebar">
+        <div class="group-section">
+            <h2>小组学习</h2>
+            <!-- 小组学习表单（已注释） -->
+            <form method="post" action="{% url 'group_id' %}">
+                {% csrf_token %}
+                <label for="group_id">Group ID:</label>
+                <input type="text" id="group_id" name="group_id" required>
+                <button type="submit" style="margin-top: 20px;">Enter Group</button>
+            </form>
+        </div>
+        <div class="status-bar">
+            <!-- 关注 -->
+            <div class="status-section">
+                <h3>关注focus</h3>
+                <ul class="task-list" id="focus-list"></ul>
+            </div>
+            <!-- 即将 -->
+            <div class="status-section">
+                <h3>即将upcoming</h3>
+                <ul class="task-list" id="upcoming-list"></ul>
+            </div>
+            <!-- 完成 -->
+            <div class="status-section">
+                <h3>完成completed</h3>
+                <ul class="task-list" id="completed-list"></ul>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="courseware-section">
+            <div class="bookmarks">
+                <h3>书签</h3>
+            </div>
+            <div class="courseware-content">
+                <h3>课件内容</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加任务的输入框 -->
+    <div class="add-task-container">
+        <select id="task-section">
+            <option value="focus-list">关注</option>
+            <option value="upcoming-list">即将</option>
+            <option value="completed-list">完成</option>
+        </select>
+        <input type="text" id="new-task-input" placeholder="添加任务">
+        <button onclick="addTask()">添加</button>
+    </div>
+
+    <script>
+        // 添加任务
+        function addTask() {
+            const section = document.getElementById('task-section').value;
+            const input = document.getElementById('new-task-input');
+            const taskText = input.value.trim();
+            if (taskText) {
+                const list = document.getElementById(section);
+                const li = createTaskItem(taskText);
+                list.appendChild(li);
+                input.value = '';
+            }
+        }
+
+        // 创建任务项
+        function createTaskItem(taskText) {
+            const li = document.createElement('li');
+            li.className = 'task-item'; // 添加样式类
+            li.textContent = taskText;
+
+            // 删除按钮
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '删除';
+            deleteButton.onclick = () => deleteTask(li);
+
+            // 移动按钮
+            const moveButton = document.createElement('button');
+            moveButton.textContent = '移动';
+            moveButton.onclick = () => showMoveOptions(li);
+
+            // 将按钮添加到任务项中
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'task-actions';
+            buttonContainer.appendChild(deleteButton);
+            buttonContainer.appendChild(moveButton);
+
+            li.appendChild(buttonContainer); // 将按钮容器添加到任务项中
+            return li;
+        }
+
+        // 删除任务
+        function deleteTask(taskItem) {
+            const parentList = taskItem.parentElement;
+            parentList.removeChild(taskItem);
+        }
+
+        // 显示移动选项
+        function showMoveOptions(taskItem) {
+            const currentList = taskItem.parentElement;
+            const allLists = document.querySelectorAll('.task-list');
+
+            // 创建一个临时菜单
+            const menu = document.createElement('div');
+            menu.className = 'move-menu';
+            menu.style.position = 'absolute';
+            menu.style.border = '1px solid #ccc';
+            menu.style.backgroundColor = 'white';
+            menu.style.padding = '5px';
+            menu.style.zIndex = '1000';
+
+            // 添加“移动到”选项
+            allLists.forEach((list) => {
+                if (list !== currentList) {
+                    const option = document.createElement('div');
+                    option.textContent = list.id.replace('-list', ''); // 获取状态名称
+                    option.onclick = () => moveTask(taskItem, list,menu);
+                    menu.appendChild(option);
+                }
+            });
+
+            // 添加关闭选项
+            const closeButton = document.createElement('div');
+            closeButton.textContent = '关闭';
+            closeButton.onclick = () => menu.remove();
+            menu.appendChild(closeButton);
+
+            // 将菜单添加到页面
+            document.body.appendChild(menu);
+
+            // 定位菜单
+            const rect = taskItem.getBoundingClientRect();
+            menu.style.left = `${rect.left}px`;
+            menu.style.top = `${rect.bottom + 5}px`;
+        }
+
+        // 移动任务
+        function moveTask(taskItem, targetList,menu) {
+            targetList.appendChild(taskItem); // 将任务项移动到目标列表
+            menu.remove();
+        }
+    </script>
+</div>
+
+<style>
+    /* 任务项样式 */
+    .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 5px;
+        margin-bottom: 5px;
+        background-color: #727980;
+        border-radius: 3px;
+        position: relative; /* 为移动菜单定位 */
+    }
+
+    .task-actions button {
+        margin-left: 5px;
+        padding: 3px 7px;
+        background-color: #ff6f61;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    .task-actions button:hover {
+        background-color: #ff4a3d;
+    }
+
+    /* 移动菜单样式 */
+    .move-menu {
+        cursor: pointer;
+    }
+
+    .move-menu div {
+        padding: 5px;
+    }
+
+    .move-menu div:hover {
+        background-color: #f0f0f0;
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,16 @@
+import math
+print(math.sqrt(16))
+print(math.sin(math.pi / 2))
+print(math.pi)
+def print_diamond(rows):
+    for i in range(1, rows, 2):
+        spaces = " " * ((rows - i) // 2)
+        stars = "*" * i
+        print(spaces + stars)
+
+    for i in range(rows, 0, -2):
+        spaces = " " * ((rows - i) // 2)
+        stars = "*" * i
+        print(spaces + stars)
+rows = 7
+print_diamond(rows)
