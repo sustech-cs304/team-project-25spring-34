@@ -242,14 +242,6 @@
         }
     }
 
-    {#fetch('/login/IDE/lesson/deepseek-chat/embed_chat')#}
-    {#    .then(response => response.text())#}
-    {#    .then(html => {#}
-    {#        const parser = new DOMParser();#}
-    {#        const doc = parser.parseFromString(html, 'text/html');#}
-    {#        document.getElementById('chat-container').innerHTML = doc.body.innerHTML;#}
-    {#        document.getElementById('chat-container').appendChild(doc.body);#}
-    {#    });#}
 </script>
 {% include 'embed.html' %}
 </body>
