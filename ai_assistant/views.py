@@ -9,11 +9,31 @@ def embed_chat(request):
     return render(request, 'embed.html')
 
 
+import fitz  # PyMuPDF
+
 def deepseek_api(request):
     if request.method == 'POST':
-        prompt = request.POST.get('message')
-        # 这里替换成你的API密钥
-        DEEPSEEK_API_KEY = "sk-9979a581a5234ff39af6e5d816693a6e"
+        prompt = request.POST.get('message', '')
+        pdf_file = request.FILES.get('pdf')  # 支持可选 PDF 上传
+
+        # 读取 PDF 内容（如果有）
+        pdf_text = ''
+        if pdf_file:
+            try:
+                with fitz.open(stream=pdf_file.read(), filetype="pdf") as doc:
+                    for page in doc:
+                        pdf_text += page.get_text()
+            except Exception as e:
+                return JsonResponse({'error': f"读取 PDF 失败: {str(e)}"}, status=400)
+
+        # 构造最终 prompt
+        if pdf_text:
+            full_prompt = f"请根据以下 PDF 内容回答问题：\n\n{pdf_text}\n\n用户的问题是：{prompt}"
+        else:
+            full_prompt = prompt  # 仅文本提问
+
+        # 调用 DeepSeek
+        DEEPSEEK_API_KEY = "sk-2a4a810355a64ca3966364f2c8faba72"
         API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 
         headers = {
@@ -23,7 +43,7 @@ def deepseek_api(request):
 
         payload = {
             "model": "deepseek-chat",
-            "messages": [{"role": "user", "content": prompt}],
+            "messages": [{"role": "user", "content": full_prompt}],
             "temperature": 0.7
         }
 
