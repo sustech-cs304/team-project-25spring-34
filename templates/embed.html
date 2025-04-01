@@ -28,31 +28,30 @@
         height: 32px;
         border: none;
         border-radius: 50%;
-        background: #f0f2f5; /* 浅灰色背景 */
+        background: #f0f2f5;
         color: #666;
         font-size: 1.4rem;
         cursor: pointer;
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
         display: flex;
         align-items: center;
         justify-content: center;
-        
-        &:hover {
-            background: #2d8cf0;
-            color: white;
-            transform: rotate(90deg) scale(1.1);
-            box-shadow: 0 2px 8px rgba(45, 140, 240, 0.3);
-        }
-        
-        &:active {
-            transform: scale(0.95);
-        }
-        
-        &:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(45, 140, 240, 0.3);
-        }
+    }
+
+    .close-button:hover {
+        background: #2d8cf0;
+        color: white;
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 2px 8px rgba(45, 140, 240, 0.3);
+    }
+
+    .close-button:active {
+        transform: scale(0.95);
+    }
+
+    .close-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(45, 140, 240, 0.3);
     }
 
     .chat-window {
@@ -70,20 +69,19 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 5px 15px; /* 减少上下padding */
+        padding: 5px 15px;
         background: #2d8cf0;
         color: white;
         border-radius: 10px 10px 0 0;
-        min-height: 40px; /* 固定最小高度 */
+        min-height: 40px;
     }
 
     .chat-header h1 {
         margin: 5px 70px;
-        font-size: 1.2rem; /* 缩小字体大小 */
-        line-height: 1.2; /* 调整行高 */
+        font-size: 1.2rem;
+        line-height: 1.2;
     }
 
-    /* 消息容器 */
     .chat-messages {
         height: 350px;
         padding: 10px;
@@ -92,20 +90,19 @@
         scroll-behavior: smooth;
     }
 
-    /* 输入区域 */
     .chat-input-area {
         padding: 12px 15px;
         border-top: 1px solid #eee;
     }
-    
+
     .chat-input {
-        width: 71%; /* 占据全部可用宽度 */
-        min-height: 15px; /* 增加最小高度 */
-        padding: 10px 14px; /* 加大内边距 */
-        border-radius: 12px; /* 更圆润的边框 */
+        width: 71%;
+        min-height: 15px;
+        padding: 10px 14px;
+        border-radius: 12px;
         border: 1px solid #ddd;
-        font-size: 14px; /* 适当字体大小 */
-        resize: vertical; /* 允许垂直调整大小 */
+        font-size: 14px;
+        resize: vertical;
     }
 
     .send-button {
@@ -117,7 +114,6 @@
         cursor: pointer;
     }
 
-    /* 消息气泡 */
     .message-bubble {
         margin: 8px;
         padding: 12px 16px;
@@ -126,7 +122,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         word-break: break-word;
         animation: fadeIn 0.3s ease;
-        transition: all 0.2s; /* 添加悬停动画 */
+        transition: all 0.2s;
     }
 
     .user-message {
@@ -155,12 +151,34 @@
             transform: translateY(0);
         }
     }
+
+    /* 新增：PDF 上传 */
+    .pdf-upload {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+    .pdf-label {
+        font-size: 13px;
+        color: #666;
+    }
+
+    .pdf-filename {
+        font-size: 12px;
+        color: #999;
+        font-style: italic;
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 </style>
 
-<!-- 结构部分 -->
 <div class="chat-wrapper">
     <button class="chat-toggle">
-        <i class="fas fa-comment-dots"></i> <!--带有小圆点的聊天气泡图标-->
+        <i class="fas fa-comment-dots"></i>
     </button>
 
     <div class="chat-window hidden">
@@ -172,6 +190,11 @@
         <div class="chat-messages" id="chatMessages"></div>
 
         <div class="chat-input-area">
+            <div class="pdf-upload">
+                <label class="pdf-label">📎 上传 PDF：</label>
+                <input type="file" id="pdfInput" accept=".pdf" />
+                <span class="pdf-filename" id="pdfFilename">未选择文件</span>
+            </div>
             <div class="input-container">
                 <input type="text" class="chat-input"
                        id="chatInput" placeholder="输入消息...">
@@ -181,36 +204,35 @@
     </div>
 </div>
 
-<!-- 行为部分 -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+
 <script>
     (function () {
-        // 配置常量
         const CONFIG = {
             API_URL: "{% url 'deepseek_api' %}",
             CSRF_TOKEN: "{{ csrf_token }}",
             STORAGE_KEY: 'chatVisible'
         };
 
-        // DOM元素引用
         const DOM = {
             toggleBtn: document.querySelector('.chat-toggle'),
             chatWindow: document.querySelector('.chat-window'),
             closeBtn: document.querySelector('.close-button'),
             chatInput: document.getElementById('chatInput'),
             sendBtn: document.querySelector('.send-button'),
-            messagesContainer: document.getElementById('chatMessages')
+            messagesContainer: document.getElementById('chatMessages'),
+            pdfInput: document.getElementById('pdfInput'),
+            pdfFilename: document.getElementById('pdfFilename')
         };
 
-        // 状态管理
         let chatVisible = localStorage.getItem(CONFIG.STORAGE_KEY) === 'true';
 
-        // 初始化
         function init() {
             updateChatVisibility();
             bindEvents();
         }
 
-        // 事件绑定
         function bindEvents() {
             DOM.toggleBtn.addEventListener('click', toggleChat);
             DOM.closeBtn.addEventListener('click', toggleChat);
@@ -218,47 +240,56 @@
             DOM.chatInput.addEventListener('keypress', e => {
                 if (e.key === 'Enter') handleSendMessage();
             });
+            DOM.pdfInput.addEventListener('change', updatePdfFilename);
         }
 
-        // 聊天窗口切换
         function toggleChat() {
             chatVisible = !chatVisible;
             localStorage.setItem(CONFIG.STORAGE_KEY, chatVisible);
             updateChatVisibility();
         }
 
-        // 更新界面状态
         function updateChatVisibility() {
             DOM.chatWindow.classList.toggle('hidden', !chatVisible);
             DOM.toggleBtn.style.background = chatVisible ? '#ff4d4f' : '#2d8cf0';
             if (chatVisible) setTimeout(() => DOM.chatInput.focus(), 100);
         }
 
-        // 消息处理
+        function updatePdfFilename() {
+            const file = DOM.pdfInput.files[0];
+            DOM.pdfFilename.textContent = file ? file.name : '未选择文件';
+        }
+
         async function handleSendMessage() {
             const message = DOM.chatInput.value.trim();
-            if (!message) return;
+            const pdfFile = DOM.pdfInput.files[0];
+            if (!message && !pdfFile) return;
 
-            addMessage('user', message);
+            addMessage('user', message || '[已上传 PDF]');
             DOM.chatInput.value = '';
+
+            const formData = new FormData();
+            formData.append('message', message);
+            if (pdfFile) formData.append('pdf', pdfFile);
 
             try {
                 const response = await fetch(CONFIG.API_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRFToken': CONFIG.CSRF_TOKEN
                     },
-                    body: `message=${encodeURIComponent(message)}`
+                    body: formData
                 });
 
                 handleResponse(await response.json());
             } catch (error) {
                 handleError(error);
             }
+
+            DOM.pdfInput.value = '';
+            DOM.pdfFilename.textContent = '未选择文件';
         }
 
-        // 处理API响应
         function handleResponse(data) {
             if (data.error) {
                 addMessage('error', data.error);
@@ -267,26 +298,24 @@
             }
         }
 
-        // 错误处理
         function handleError(error) {
             addMessage('error', `请求失败: ${error.message}`);
             console.error('API Error:', error);
         }
 
-        // 添加消息
         function addMessage(role, content) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message-bubble ${
                 role === 'user' ? 'user-message' :
-                    role === 'error' ? 'error-message' : 'assistant-message'
+                role === 'error' ? 'error-message' : 'assistant-message'
             }`;
-            messageDiv.innerHTML = content.replace(/\n/g, '<br>');
+            messageDiv.innerHTML = marked.parse(content);
+
 
             DOM.messagesContainer.appendChild(messageDiv);
             DOM.messagesContainer.scrollTop = DOM.messagesContainer.scrollHeight;
         }
 
-        // 启动应用
         init();
     })();
 </script>
