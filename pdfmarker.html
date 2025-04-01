@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>PDF 标注系统</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+      padding: 30px;
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+    #controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      background: #ffffffcc;
+      padding: 15px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    #controls > * {
+      font-size: 14px;
+    }
+    select, input[type=color], input[type=number] {
+      padding: 5px 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background: linear-gradient(to right, #667eea, #764ba2);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    #pdf-container {
+      position: relative;
+      display: block;
+      margin: 0 auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+    }
+    canvas {
+      display: block;
+    }
+    #overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+
+<h2>PDF 标注系统</h2>
+
+<div id="controls">
+  <label>工具:
+    <select id="tool">
+      <option value="pen">画笔</option>
+      <option value="highlight">荧光笔</option>
+      <option value="eraser">橡皮擦</option>
+    </select>
+  </label>
+
+  <label>颜色:
+    <input type="color" id="color" value="#ffcc00">
+  </label>
+
+  <label>粗细:
+    <input type="number" id="size" value="4" min="1" max="30">
+  </label>
+
+  <button onclick="prevPage()">⬅ 上一页</button>
+  <button onclick="nextPage()">➡ 下一页</button>
+  <span>第 <span id="page-num">1</span> / <span id="page-count">1</span> 页</span>
+
+  <button onclick="zoomOut()">➖ 缩小</button>
+  <button onclick="zoomIn()">➕ 放大</button>
+  <span>缩放：<span id="zoom-level">100%</span></span>
+
+  <button onclick="saveAnnotations()">💾 保存标注</button>
+</div>
+
+<div id="pdf-container">
+  <canvas id="pdf-canvas"></canvas>
+  <canvas id="overlay"></canvas>
+</div>
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<script>
+const pdfUrl = 'sample.pdf';
+const storageKey = pdfUrl + '.annotations';
+
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let pdfDoc = null, currentPage = 1, scale = 1.0;
+let dpiScale = window.devicePixelRatio || 1;
+
+const canvas = document.getElementById('pdf-canvas');
+const ctx = canvas.getContext('2d');
+const overlay = document.getElementById('overlay');
+const overlayCtx = overlay.getContext('2d');
+
+const tool = document.getElementById('tool');
+const color = document.getElementById('color');
+const size = document.getElementById('size');
+
+let annotations = {};
+let drawing = false;
+let currentPath = [];
+
+function renderPage(num) {
+  pdfDoc.getPage(num).then(page => {
+    const viewport = page.getViewport({ scale });
+    const pixelRatio = dpiScale;
+
+    canvas.width = viewport.width * pixelRatio;
+    canvas.height = viewport.height * pixelRatio;
+    canvas.style.width = viewport.width + "px";
+    canvas.style.height = viewport.height + "px";
+
+    overlay.width = canvas.width;
+    overlay.height = canvas.height;
+    overlay.style.width = canvas.style.width;
+    overlay.style.height = canvas.style.height;
+
+    const renderContext = {
+      canvasContext: ctx,
+      viewport: page.getViewport({ scale }),
+      transform: [pixelRatio, 0, 0, pixelRatio, 0, 0]
+    };
+    page.render(renderContext);
+
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    if (annotations[num]) {
+      for (const path of annotations[num]) drawPath(path);
+    }
+
+    document.getElementById('page-num').textContent = num;
+    document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+  });
+}
+
+function drawPath(path) {
+  overlayCtx.strokeStyle = path.color;
+  overlayCtx.lineWidth = path.size * scale;
+  overlayCtx.lineJoin = 'round';
+  overlayCtx.lineCap = 'round';
+  overlayCtx.globalAlpha = path.tool === 'highlight' ? 0.3 : 1.0;
+
+  overlayCtx.beginPath();
+  const p0 = path.points[0];
+  overlayCtx.moveTo(p0.x * scale, p0.y * scale);
+  for (let i = 1; i < path.points.length; i++) {
+    const pt = path.points[i];
+    overlayCtx.lineTo(pt.x * scale, pt.y * scale);
+  }
+  overlayCtx.stroke();
+  overlayCtx.globalAlpha = 1.0;
+}
+
+overlay.addEventListener('mousedown', e => {
+  if (tool.value === 'eraser') {
+    if (annotations[currentPage] && annotations[currentPage].length > 0) {
+      annotations[currentPage].pop();  // 正确删除最后一条路径
+    }
+    overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+    if (annotations[currentPage]) {
+      for (const path of annotations[currentPage]) drawPath(path);
+    }
+    return;
+  }
+  drawing = true;
+  currentPath = [];
+  const { x, y } = getRelativePosition(e);
+  currentPath.push({ x, y });
+});
+
+overlay.addEventListener('mousemove', e => {
+  if (!drawing || tool.value === 'eraser') return;
+  const { x, y } = getRelativePosition(e);
+  currentPath.push({ x, y });
+
+  overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+  if (annotations[currentPage]) {
+    for (const path of annotations[currentPage]) drawPath(path);
+  }
+  drawPath({
+    points: currentPath,
+    tool: tool.value,
+    color: color.value,
+    size: parseInt(size.value)
+  });
+});
+
+overlay.addEventListener('mouseup', () => {
+  if (!drawing) return;
+  drawing = false;
+
+  if (!annotations[currentPage]) annotations[currentPage] = [];
+  annotations[currentPage].push({
+    points: currentPath,
+    tool: tool.value,
+    color: color.value,
+    size: parseInt(size.value)
+  });
+});
+
+function getRelativePosition(e) {
+  const rect = overlay.getBoundingClientRect();
+  return {
+    x: (e.clientX - rect.left) * (dpiScale / scale),
+    y: (e.clientY - rect.top) * (dpiScale / scale)
+  };
+}
+
+function prevPage() {
+  if (currentPage <= 1) return;
+  currentPage--;
+  renderPage(currentPage);
+}
+
+function nextPage() {
+  if (currentPage >= pdfDoc.numPages) return;
+  currentPage++;
+  renderPage(currentPage);
+}
+
+function zoomIn() {
+  scale = Math.min(scale + 0.1, 3.0);
+  renderPage(currentPage);
+}
+
+function zoomOut() {
+  scale = Math.max(scale - 0.1, 0.5);
+  renderPage(currentPage);
+}
+
+function saveAnnotations() {
+  localStorage.setItem(storageKey, JSON.stringify(annotations));
+  alert('标注已保存 ✅');
+}
+
+pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+  pdfDoc = pdf;
+  document.getElementById('page-count').textContent = pdf.numPages;
+  const saved = localStorage.getItem(storageKey);
+  if (saved) annotations = JSON.parse(saved);
+  renderPage(currentPage);
+});
+</script>
+
+</body>
+</html>
