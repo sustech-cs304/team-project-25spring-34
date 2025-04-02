@@ -13,19 +13,16 @@
             flex-direction: column;
             height: 100vh;
         }
-
         header {
             background-color: #2c3e50;
             color: white;
             padding: 10px;
             text-align: center;
         }
-
         nav {
             background-color: #595d61;
             padding: 10px;
         }
-
         nav ul {
             list-style-type: none;
             margin: 0;
@@ -33,17 +30,14 @@
             display: flex;
             justify-content: space-around;
         }
-
         nav ul li a {
             color: white;
             text-decoration: none;
         }
-
         .main-content {
             display: flex;
             flex: 1;
         }
-
         .sidebar {
             width: 300px;
             background-color: #ecf0f1;
@@ -52,14 +46,12 @@
             flex-direction: column;
             justify-content: space-between;
         }
-
         .content {
             flex: 1;
             padding: 10px;
             display: flex;
             flex-direction: column;
         }
-
         .status-bar {
             background-color: #a3a9a9;
             color: white;
@@ -69,69 +61,57 @@
             flex-direction: column;
             gap: 15px;
         }
-
         .status-section {
             background-color: #6f7478;
             padding: 10px;
             border-radius: 5px;
         }
-
         .status-section h3 {
             margin-top: 0;
         }
-
         .task-list {
             list-style-type: none;
             padding: 0;
             margin: 0;
         }
-
         .task-list li {
             background-color: #727980;
             padding: 5px;
             margin-bottom: 5px;
             border-radius: 3px;
         }
-
         .group-section {
             margin-bottom: 20px;
         }
-
         .group-section h2 {
             margin-top: 0;
         }
-
         .courseware-section {
             flex: 1;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
-
         .bookmarks {
             background-color: #ecf0f1;
             padding: 10px;
             border-radius: 5px;
             height: 50px;
         }
-
         .courseware-content {
             background-color: #ecf0f1;
             padding: 10px;
             border-radius: 5px;
             flex: 1;
         }
-
         .add-task {
             display: flex;
             gap: 10px;
         }
-
         .add-task input {
             flex: 1;
             padding: 5px;
         }
-
         .add-task button {
             padding: 5px 10px;
             background-color: #3498db;
@@ -140,109 +120,223 @@
             border-radius: 3px;
             cursor: pointer;
         }
-
         .add-task button:hover {
             background-color: #2980b9;
         }
-
-        .chat-toggle {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 60px;
-            height: 60px;
-            /* 其他原有属性 */
-            z-index: 9999;
+        /* 新增的房间选择样式 */
+        .room-form {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #d6dbdf;
+            border-radius: 5px;
         }
-
-        .chat-container {
-            position: fixed;
-            bottom: 100px;
-            right: 30px;
-            width: 400px;
-            height: 600px;
-            /* 其他原有属性 */
-            z-index: 9998;
+        .room-form h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+        .room-form input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 8px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .room-form button {
+            width: 100%;
+            padding: 5px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .room-form button:hover {
+            background-color: #2980b9;
+        }
+        .messages {
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .messages .error {
+            color: #e74c3c;
+        }
+        .messages .success {
+            color: #27ae60;
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>Lesson Page</h1>
-</header>
+    <header>
+        <h1>Lesson Page</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="/login/IDE">Go Back</a></li>
+            <li><a href="/login/IDE/lesson/self-learn">Self-Learn</a></li>
+        </ul>
+    </nav>
+    <div class="main-content">
+        <div class="sidebar">
+            <div class="group-section">
+                <h2>小组学习</h2>
 
-{% load static %}
-<!-- 添加聊天组件 -->
-<nav>
-    <ul>
-        <li><a href="/login/IDE">Go Back</a></li>
-        <li><a href="/login/IDE/lesson/self-learn">Self-Learn</a></li>
-    </ul>
-</nav>
-<div class="main-content">
-    <div class="sidebar">
-        <div class="group-section">
-            <h2>小组学习</h2>
-            <form method="post" action="{% url 'group_id' %}">
-                {% csrf_token %}
-                <label for="group_id">Group ID:</label>
-                <input type="text" id="group_id" name="group_id" required>
-                <button type="submit" style="margin-top: 20px;">Enter Group</button>
-            </form>
+                <!-- 房间选择功能 -->
+                <div id="message" class="messages"></div>
+
+                <div class="room-form">
+                    <h4>创建房间</h4>
+                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">
+                        {% csrf_token %}
+                        <input type="text" name="room_name" placeholder="输入房间名称" required>
+                        <button type="submit">创建房间</button>
+                    </form>
+                </div>
+
+                <div class="room-form">
+                    <h4>加入房间</h4>
+                    <form id="join-room-form" method="POST" action="{% url 'lesson:join_room' %}">
+                        {% csrf_token %}
+                        <input type="text" name="room_name" placeholder="输入房间名称" required>
+                        <button type="submit">加入房间</button>
+                    </form>
+                </div>
+
+                <div class="room-form">
+                    <h4>删除房间</h4>
+                    <form id="delete-room-form" method="POST" action="">
+                        {% csrf_token %}
+                        <input type="text" name="room_name" placeholder="输入房间名称" required>
+                        <button type="submit">删除房间</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="status-section">
+                    <h3>关注</h3>
+                    <ul class="task-list" id="focus-list"></ul>
+                    <div class="add-task">
+                        <input type="text" id="focus-input" placeholder="添加任务">
+                        <button onclick="addTask('focus')">添加</button>
+                    </div>
+                </div>
+                <div class="status-section">
+                    <h3>即将</h3>
+                    <ul class="task-list" id="upcoming-list"></ul>
+                    <div class="add-task">
+                        <input type="text" id="upcoming-input" placeholder="添加任务">
+                        <button onclick="addTask('upcoming')">添加</button>
+                    </div>
+                </div>
+                <div class="status-section">
+                    <h3>完成</h3>
+                    <ul class="task-list" id="completed-list"></ul>
+                    <div class="add-task">
+                        <input type="text" id="completed-input" placeholder="添加任务">
+                        <button onclick="addTask('completed')">添加</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="status-bar">
-            <div class="status-section">
-                <h3>关注</h3>
-                <ul class="task-list" id="focus-list"></ul>
-                <div class="add-task">
-                    <input type="text" id="focus-input" placeholder="添加任务">
-                    <button onclick="addTask('focus')">添加</button>
+        <div class="content">
+            <div class="courseware-section">
+                <div class="bookmarks">
+                    <h3>书签</h3>
                 </div>
-            </div>
-            <div class="status-section">
-                <h3>即将</h3>
-                <ul class="task-list" id="upcoming-list"></ul>
-                <div class="add-task">
-                    <input type="text" id="upcoming-input" placeholder="添加任务">
-                    <button onclick="addTask('upcoming')">添加</button>
-                </div>
-            </div>
-            <div class="status-section">
-                <h3>完成</h3>
-                <ul class="task-list" id="completed-list"></ul>
-                <div class="add-task">
-                    <input type="text" id="completed-input" placeholder="添加任务">
-                    <button onclick="addTask('completed')">添加</button>
+                <div class="courseware-content">
+                    <h3>课件内容</h3>
                 </div>
             </div>
         </div>
     </div>
-    <div class="content">
-        <div class="courseware-section">
-            <div class="bookmarks">
-                <h3>书签</h3>
-            </div>
-            <div class="courseware-content">
-                <h3>课件内容</h3>
-            </div>
-        </div>
-    </div>
-</div>
-<div id="chat-container"></div>
-<script>
-    function addTask(section) {
-        const input = document.getElementById(`${section}-input`);
-        const taskText = input.value.trim();
-        if (taskText) {
-            const list = document.getElementById(`${section}-list`);
-            const li = document.createElement('li');
-            li.textContent = taskText;
-            list.appendChild(li);
-            input.value = '';
+
+    <script>
+        function addTask(section) {
+            const input = document.getElementById(`${section}-input`);
+            const taskText = input.value.trim();
+            if (taskText) {
+                const list = document.getElementById(`${section}-list`);
+                const li = document.createElement('li');
+                li.textContent = taskText;
+                list.appendChild(li);
+                input.value = '';
+            }
         }
-    }
 
-</script>
-{% include 'embed.html' %}
+        // 处理创建房间表单提交
+        document.getElementById('create-room-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            fetch("{% url 'lesson:create_room' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                if (response.status === 201) {
+                    document.getElementById('message').innerHTML = `<div class="success">房间创建成功！</div>`;
+                } else {
+                    document.getElementById('message').innerHTML = `<div class="error">房间已存在，请使用其他名称！</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 处理加入房间表单提交
+        document.getElementById('join-room-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch("{% url 'lesson:join_room' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = `/login/IDE/lesson/group-${data.room_name}`;
+                } else {
+                    document.getElementById('message').innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        // 处理删除房间表单提交
+        document.getElementById('delete-room-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const roomName = formData.get('room_name');
+
+            const deleteUrl = `/login/IDE/lesson/delete-room/group-${roomName}/`;
+
+            fetch(deleteUrl, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+                }
+            })
+            .then(response => {
+                if (response.status === 200) {
+                    document.getElementById('message').innerHTML = `<div class="success">房间删除成功！</div>`;
+                } else {
+                    document.getElementById('message').innerHTML = `<div class="error">你无法删除该房间！</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>

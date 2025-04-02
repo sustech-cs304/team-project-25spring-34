@@ -54,17 +54,12 @@
             flex: 1;
         }
         .ppt-section {
-            flex: 3.5;
+            flex: 4.5;  /* 增大宽度 */
             background-color: #f4f4f4;
             padding: 10px;
         }
-        .notes-section {
-            flex: 2;
-            background-color: #e2e2e2;
-            padding: 10px;
-        }
         .code-section {
-            flex: 3;
+            flex: 4.5;  /* 增大宽度 */
             background-color: #d4d4d4;
             padding: 10px;
             display: flex;
@@ -91,6 +86,108 @@
             position: fixed;
             width: 100%;
             bottom: 0;
+        }
+
+        /* 聊天按钮样式 */
+        #chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        #chat-button:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* 聊天框容器样式 - 默认隐藏 */
+        .chat-container {
+            display: none;
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background-color: white;
+            width: 400px;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            flex-direction: column;
+            height: 60vh;
+            z-index: 999;
+        }
+
+        /* 显示聊天框时的样式 */
+        .chat-container.visible {
+            display: flex;
+        }
+
+        /* 聊天日志框样式 */
+        #chat-log {
+            width: 100%;
+            height: 100%;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: none;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        /* 输入框样式 */
+        #chat-message-input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            margin-right: 10px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        #chat-message-input:focus {
+            border-color: #0056b3;
+        }
+
+        /* 发送按钮样式 */
+        #chat-message-submit {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #chat-message-submit:hover {
+            background-color: #0056b3;
+        }
+
+        /* 消息样式 */
+        .chat-message {
+            margin-bottom: 10px;
+        }
+        .chat-message span.user {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .chat-message span.message {
+            color: #333;
         }
     </style>
 </head>
@@ -121,9 +218,84 @@
                 <h3>Terminal</h3>
             </div>
         </div>
-        <div class="notes-section">
-            <h2>聊天室</h2>
-        </div>
     </div>
+
+    <!-- 添加聊天按钮 -->
+    <button id="chat-button">聊天</button>
+
+    <div class="chat-container" id="chat-box">
+        <textarea id="chat-log" cols="100" rows="20" readonly></textarea>
+        <input id="chat-message-input" type="text" placeholder="输入消息..." size="100">
+        <input id="chat-message-submit" type="button" value="发送">
+        {{ group_id|json_script:"group_id" }}
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const chatButton = document.getElementById('chat-button');
+        const chatBox = document.getElementById('chat-box');
+        const group_id = "{{ group_id }}"
+
+        if (!group_id) {
+            console.error("Invalid group_id:", group_id);
+            alert("无效的房间ID，请返回重试");
+        }
+
+        // 点击按钮切换聊天框显示/隐藏
+        chatButton.addEventListener('click', function() {
+            chatBox.classList.toggle('visible');
+        });
+
+        // WebSocket功能
+        // const roomName = JSON.parse(document.getElementById('group_id').textContent);
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/group_learn/' + group_id + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const chatLog = document.querySelector('#chat-log');
+            const [user, message] = data.message.split(' : ');
+            console.log("打印：" + user);
+            chatLog.value += `${user}: ${message}\n`;
+            chatLog.scrollTop = chatLog.scrollHeight;  // 滚动到底部
+
+            // 如果有新消息且聊天框是关闭的，闪烁按钮提醒
+            if (!chatBox.classList.contains('visible')) {
+                chatButton.style.backgroundColor = '#ff5722';
+                setTimeout(() => {
+                    chatButton.style.backgroundColor = '#007bff';
+                }, 300);
+                setTimeout(() => {
+                    chatButton.style.backgroundColor = '#ff5722';
+                }, 600);
+                setTimeout(() => {
+                    chatButton.style.backgroundColor = '#007bff';
+                }, 900);
+            }
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+            console.log(e.code);
+        };
+
+        // 自动聚焦到输入框
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+            messageInputDom.value = '';
+        };
+    </script>
 </body>
 </html>
