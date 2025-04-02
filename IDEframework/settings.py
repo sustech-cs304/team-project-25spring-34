@@ -32,12 +32,16 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'channels',  # 实时通信
 
     'IDE',
     'login',
@@ -81,7 +85,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'IDEframework.wsgi.application'
-
+ASGI_APPLICATION = 'IDEframework.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -97,6 +101,22 @@ DATABASES = {
     }
 }
 
+CHANNEL_LAYERS = {  # 通信
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+CACHES = {  # 学习主题的缓存
+    'default': {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'TIMEOUT': 86400,  # 默认缓存1天
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

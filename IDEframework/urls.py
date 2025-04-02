@@ -32,11 +32,11 @@ urlpatterns = [
     path('login/IDE/', include([
         path('', IDE_views.index),
         path('lesson/', include([
-            path('', lesson_views.index),
+            path('', include('lesson.urls')),
             path('self-learn/', include('self_learn.urls')),  # ✅ 关键修改点
             path('deepseek-chat/', include('ai_assistant.urls')),  # 新增聊天应用路由
             path('group-<str:group_id>/', include([
-                path('', group_id_views.index),
+                path('', include('group_id.urls')),
                 path('group-learn', group_learn_views.index),
             ]))
         ]))
