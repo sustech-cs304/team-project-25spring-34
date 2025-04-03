@@ -8,6 +8,9 @@ from django.views.decorators.http import require_POST, require_GET
 from lesson.models import ChatRoom, ChatMessage
 
 # group_topics = dict()
+# 使用Django缓存代替内存字典
+TOPIC_CACHE_PREFIX = "chat_room_topic_"
+
 
 def index(request, group_id):
     return render(request, 'group-id.html', {'group_id': group_id})
@@ -99,13 +102,10 @@ def get_learning_topics(request, group_id):
 from django.core.cache import cache
 import json
 
-# 使用Django缓存代替内存字典
-TOPIC_CACHE_PREFIX = "group_topic_"
-
 
 @login_required
 @require_POST
-@csrf_exempt
+
 def validate_room(request, group_id):
     try:
         room = ChatRoom.objects.get(id=group_id)
