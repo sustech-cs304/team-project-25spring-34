@@ -50,6 +50,7 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            height: 100%; 
         }
 
         .pdf-section {
@@ -76,8 +77,12 @@
         .notes-section {
             flex: 2;
             background-color: #e2e2e2;
+            height: 100%;
             padding: 10px;
             border-left: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;   /* 🔧 添加这个，防止溢出 */
         }
 
         .code-section {
@@ -106,6 +111,25 @@
             display: block; /* 确保块级特性生效 */
         }
 
+        .notes-section table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+        .notes-section th,
+        .notes-section td {
+            border: 1px solid #999;
+            padding: 8px;
+            text-align: left;
+            background-color: #fff;
+        }
+
+        .notes-section th {
+            background-color: #eee;
+        }
+
+        
         #bookmarks {
             list-style: none;
             padding: 0;
@@ -138,6 +162,25 @@
             pointer-events: all; /* 确保 overlay 能接收鼠标事件 */
         }
 
+        #note-editor {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 8px;
+            background: #fff;
+            width: 100%;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        #preview {
+            flex: 2;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 8px;
+            background: #fff;
+        }
+
 
         .code-input textarea {
             width: 100%;
@@ -147,6 +190,18 @@
             border: 1px solid #ccc;
         }
     </style>
+    <!-- Markdown 渲染 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- KaTeX 数学公式支持 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+            onload="renderMathInElement(document.body);"
+            data-mathml='true'></script>
+
+    <!-- 导出 PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 <header>
@@ -215,9 +270,11 @@
         </div>
     </div>
 
-    <div class="notes-section">
-        <h3>学习笔记</h3>
-        <textarea style="width:100%;height:90%;padding:8px;"></textarea>
+    <div class="notes-section" id="note-container">
+        <h3>📝 Markdown 笔记</h3>
+        <textarea id="note-editor" placeholder="输入 Markdown..." style="width:100%;height:40%;padding:8px;"></textarea>
+        <button onclick="saveAsPDF()" style="margin-top:10px;">📥 保存为 PDF</button>
+        <div id="preview" style="background:#fff;border:1px solid #ccc;padding:8px;margin-top:10px;height:45%;overflow-y:auto;"></div>
     </div>
 
     <div class="code-section">
@@ -239,7 +296,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
-    const pdfUrl = '/media/pdfs/sample2.pdf';  // 可替换为上传后路径
+    const pdfUrl = '/media/pdfs/sample.pdf';  // 可替换为上传后路径
     const storageKey = pdfUrl + '.annotations';
     
     // PDF.js 初始化
@@ -410,6 +467,48 @@
 </script>
     
 
+<script>
+    const textarea = document.getElementById("note-editor");
+    const preview = document.getElementById("preview");
+
+    // 实时渲染 markdown 和公式
+    textarea.addEventListener("input", () => {
+        const html = marked.parse(textarea.value);
+        preview.innerHTML = html;
+        renderMathInElement(preview); // 渲染公式
+    });
+
+    // 保存预览区为 PDF 文件
+    function saveAsPDF() {
+        const opt = {
+            margin:       0.5,
+            filename:     'markdown_notes.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(preview).save();
+    }
+</script>
+
+<script>
+    const noteStorageKey = pdfUrl + '.markdownNote';
+
+    window.addEventListener("load", () => {
+        const savedNote = localStorage.getItem(noteStorageKey);
+        if (savedNote) {
+            textarea.value = savedNote;
+            preview.innerHTML = marked.parse(savedNote);
+            renderMathInElement(preview);
+        }
+    });
+
+    textarea.addEventListener("input", () => {
+        localStorage.setItem(noteStorageKey, textarea.value);  // ✅ 自动保存
+        preview.innerHTML = marked.parse(textarea.value);
+        renderMathInElement(preview);
+    });
+</script>
 
 <script>
     // PDF书签功能
