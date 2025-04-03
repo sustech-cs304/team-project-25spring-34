@@ -273,7 +273,7 @@
     <nav>
         <ul>
             <li><a href="#" id="goBackBtn">Go Back</a></li>
-            <a href="/login/IDE/lesson/group-{{ group_id }}/group-learn" id="groupLearnLink">Group-Learn</a>
+            <li><a href="/login/IDE/lesson/group-{{ group_id }}/group-learn">Group-Learn</a></li>
         </ul>
     </nav>
     <div class="container">
@@ -333,7 +333,7 @@
         }
 
         // 验证房间有效性
-                async function validateRoom() {
+        async function validateRoom() {
             try {
                 const response = await fetch(`/login/IDE/lesson/group-${groupId}/validate-room/`, {
                     method: 'POST',
@@ -344,27 +344,38 @@
                     credentials: 'include'
                 });
 
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                // 首先检查HTTP状态码
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
                 const data = await response.json();
-                if (!data || typeof data !== 'object') throw new Error('Invalid response data');
+
+                // 验证返回的数据结构
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Invalid response data');
+                }
 
                 if (data.is_valid) {
                     isValidRoom = true;
                     roomName = data.room_name;
                     isLeader = data.leader || false;
 
+                    // 更新页面显示
                     document.title = `Group-${roomName}`;
                     document.querySelector('header h1').textContent = `Group-${roomName}`;
 
+                    // 如果是leader，显示编辑按钮
                     if (isLeader) {
                         document.getElementById('editTopicBtn').classList.add('active');
                     }
 
+                    // 更新学习主题 - 添加更健壮的检查
                     if (data.topics !== undefined && data.topics !== null && data.topics !== currentTopic) {
                         currentTopic = data.topics;
                         updateTopicDisplay();
                     }
+
                 } else {
                     alert(data.message || "房间验证失败");
                     window.location.href = '/login/IDE/lesson';
@@ -701,21 +712,18 @@
 
         // ================= 初始化 =================
         document.addEventListener('DOMContentLoaded', async () => {
+            // 首先验证房间
             await validateRoom();
 
             if (isValidRoom) {
-                // 初始化成员列表和定时刷新
+                // 初始化成员列表（立即加载+每3秒刷新）
                 updateMembersList();
                 membersInterval = setInterval(updateMembersList, 3000);
-
-                // 初始化学习主题
+                // 学习主题
                 updateTopicDisplay();
                 setInterval(updateTopicDisplay, 3000);
-
-                // 初始化文件列表
                 updateFileList();
 
-                // 绑定Go Back按钮事件 - 会调用leave-room
                 document.getElementById('goBackBtn').addEventListener('click', function(e) {
                     e.preventDefault();
                     if (confirm('确定要离开这个小组吗？')) {
@@ -723,12 +731,6 @@
                     }
                 });
 
-                // 绑定Group-Learn链接事件 - 不会调用leave-room
-                document.getElementById('groupLearnLink').addEventListener('click', function(e) {
-
-                });
-
-                // 其他事件绑定保持不变...
                 document.getElementById('editTopicBtn').addEventListener('click', function() {
                     const topicInput = document.getElementById('topicInput');
                     topicInput.value = document.getElementById('current-topic').textContent;
@@ -737,7 +739,6 @@
 
                 document.getElementById('saveTopicBtn').addEventListener('click', saveTopic);
 
-                // 页面关闭时的处理
                 window.addEventListener('beforeunload', function(e) {
                     if (!isLeaving && isValidRoom) {
                         const data = new Blob([JSON.stringify({

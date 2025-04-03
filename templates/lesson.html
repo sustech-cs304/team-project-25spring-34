@@ -184,11 +184,16 @@
                 <div id="message" class="messages"></div>
 
                 <div class="room-form">
+{#                    <h4>创建房间</h4>#}
+{#                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">#}
+{#                        {% csrf_token %}#}
+{#                        <input type="text" name="room_name" placeholder="输入房间名称" required>#}
+{#                        <button type="submit">创建房间</button>#}
+{#                    </form>#}
                     <h4>创建房间</h4>
                     <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">
                         {% csrf_token %}
-                        <input type="text" name="room_name" placeholder="输入房间名称" required>
-                        <button type="submit">创建房间</button>
+                        <button type="submit">创建新房间</button>
                     </form>
                 </div>
 
@@ -264,9 +269,32 @@
         }
 
         // 处理创建房间表单提交
+        {#document.getElementById('create-room-form').addEventListener('submit', function (e) {#}
+        {#    e.preventDefault();#}
+        {#    const formData = new FormData(this);#}
+        {#    fetch("{% url 'lesson:create_room' %}", {#}
+        {#        method: 'POST',#}
+        {#        body: formData,#}
+        {#        headers: {#}
+        {#            'X-CSRFToken': formData.get('csrfmiddlewaretoken')#}
+        {#        }#}
+        {#    })#}
+        {#    .then(response => {#}
+        {#        if (response.status === 201) {#}
+        {#            document.getElementById('message').innerHTML = `<div class="success">房间创建成功！</div>`;#}
+        {#        } else {#}
+        {#            document.getElementById('message').innerHTML = `<div class="error">房间已存在，请使用其他名称！</div>`;#}
+        {#        }#}
+        {#    })#}
+        {#    .catch(error => {#}
+        {#        console.error('Error:', error);#}
+        {#    });#}
+        {#);#}
+
         document.getElementById('create-room-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const formData = new FormData(this);
+
             fetch("{% url 'lesson:create_room' %}", {
                 method: 'POST',
                 body: formData,
@@ -274,11 +302,16 @@
                     'X-CSRFToken': formData.get('csrfmiddlewaretoken')
                 }
             })
-            .then(response => {
-                if (response.status === 201) {
-                    document.getElementById('message').innerHTML = `<div class="success">房间创建成功！</div>`;
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('message').innerHTML =
+                        `<div class="success">房间创建成功！房间号: ${data.room_id}</div>`;
+                    // 自动跳转到新创建的房间
+                    window.location.href = `/login/IDE/lesson/group-${data.room_id}`;
                 } else {
-                    document.getElementById('message').innerHTML = `<div class="error">房间已存在，请使用其他名称！</div>`;
+                    document.getElementById('message').innerHTML =
+                        `<div class="error">${data.message}</div>`;
                 }
             })
             .catch(error => {
