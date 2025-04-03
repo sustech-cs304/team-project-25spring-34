@@ -4,6 +4,7 @@ from urllib.parse import quote
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
+from django.contrib.auth.decorators import login_required
 
 def index(request):
     return render(request, 'lesson.html')
@@ -12,18 +13,23 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import ChatRoom
 
+@login_required
 def create_room(request):
     if request.method == 'POST':
-        room_name = request.POST.get('room_name')
-        # 检查房间是否已存在
-        if ChatRoom.objects.filter(name=room_name).exists():
-            return HttpResponse('group已存在，请使用其他名称！', status=400)
-        else:
-            # 创建新房间
-            new_room = ChatRoom.objects.create(name=room_name, creator=request.user)
-            new_room.members.add(request.user)  # 强制将leader放入members中
-            # 返回成功响应
-            return HttpResponse(f'group "{room_name}" 创建成功！', status=201)
+        # 直接创建房间（name先设为空或占位符）
+        new_room = ChatRoom.objects.create(creator=request.user)
+
+        # 将name更新为id值
+        new_room.name = str(new_room.id)  # 如果name需要字符串类型
+        new_room.save()
+
+        new_room.members.add(request.user)
+        return JsonResponse({
+            'status': 'success',
+            'room_id': new_room.id,
+            'message': '房间创建成功'
+        })
+        # return HttpResponse(f'group "{new_room.name}" 创建成功！', status=201)
     return redirect('index')
 
 def join_room(request):
