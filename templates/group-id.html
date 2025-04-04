@@ -173,6 +173,18 @@
         .file-list button:hover {
             background-color: #c0392b;
         }
+        .file-list .preview-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .file-list .preview-btn:hover {
+            background-color: #2980b9;
+        }
         .upload-form {
             margin-bottom: 20px;
             display: flex;
@@ -637,10 +649,21 @@
                         ${file.name}
                         <small>(${file.size}) - ${file.uploadedAt}</small>
                     </a>
+                    <button class="preview-btn" onclick="previewFile(${index})">预览</button>
                     <button onclick="deleteFile(${index})">删除</button>
                 `;
                 fileList.appendChild(li);
             });
+        }
+
+        // preview
+        function previewFile(index) {
+            const file = files[index];
+            if (file.name.toLowerCase().endsWith('.pdf')) {
+                window.open(file.url, '_blank');
+            } else {
+                alert('目前仅支持预览PDF文件');
+            }
         }
 
         // ================= 离开房间功能 =================
