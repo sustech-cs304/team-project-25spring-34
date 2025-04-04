@@ -163,6 +163,26 @@
         .messages .success {
             color: #27ae60;
         }
+         .add-task-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px; /* 增加上边距 */
+        }
+         .add-task-container select,
+        .add-task-container input[type="text"],
+        .add-task-container button {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .add-task-container button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+        .add-task-container button:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -216,32 +236,24 @@
                 </div>
             </div>
 
-            <div class="status-bar">
-                <div class="status-section">
-                    <h3>关注</h3>
-                    <ul class="task-list" id="focus-list"></ul>
-                    <div class="add-task">
-                        <input type="text" id="focus-input" placeholder="添加任务">
-                        <button onclick="addTask('focus')">添加</button>
-                    </div>
-                </div>
-                <div class="status-section">
-                    <h3>即将</h3>
-                    <ul class="task-list" id="upcoming-list"></ul>
-                    <div class="add-task">
-                        <input type="text" id="upcoming-input" placeholder="添加任务">
-                        <button onclick="addTask('upcoming')">添加</button>
-                    </div>
-                </div>
-                <div class="status-section">
-                    <h3>完成</h3>
-                    <ul class="task-list" id="completed-list"></ul>
-                    <div class="add-task">
-                        <input type="text" id="completed-input" placeholder="添加任务">
-                        <button onclick="addTask('completed')">添加</button>
-                    </div>
-                </div>
+        <div class="status-bar">
+            <!-- 关注 -->
+            <div class="status-section">
+                <h3>关注focus</h3>
+                <ul class="task-list" id="focus-list"></ul>
             </div>
+            <!-- 即将 -->
+            <div class="status-section">
+                <h3>即将upcoming</h3>
+                <ul class="task-list" id="upcoming-list"></ul>
+            </div>
+            <!-- 完成 -->
+            <div class="status-section">
+                <h3>完成completed</h3>
+                <ul class="task-list" id="completed-list"></ul>
+            </div>
+        </div>
+            
         </div>
         <div class="content">
             <div class="courseware-section">
@@ -253,6 +265,17 @@
                 </div>
             </div>
         </div>
+    </div>
+    
+        <!-- 添加任务的输入框 -->
+    <div class="add-task-container">
+        <select id="task-section">
+            <option value="focus-list">关注</option>
+            <option value="upcoming-list">即将</option>
+            <option value="completed-list">完成</option>
+        </select>
+        <input type="text" id="new-task-input" placeholder="添加任务">
+        <button onclick="addTask()">添加</button>
     </div>
 
     <script>
@@ -370,6 +393,97 @@
                 console.error('Error:', error);
             });
         });
+    </script>
+<script>
+        // 添加任务
+        function addTask() {
+            const section = document.getElementById('task-section').value;
+            const input = document.getElementById('new-task-input');
+            const taskText = input.value.trim();
+            if (taskText) {
+                const list = document.getElementById(section);
+                const li = createTaskItem(taskText);
+                list.appendChild(li);
+                input.value = '';
+            }
+        }
+
+        // 创建任务项
+        function createTaskItem(taskText) {
+            const li = document.createElement('li');
+            li.className = 'task-item'; // 添加样式类
+            li.textContent = taskText;
+
+            // 删除按钮
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = '删除';
+            deleteButton.onclick = () => deleteTask(li);
+
+            // 移动按钮
+            const moveButton = document.createElement('button');
+            moveButton.textContent = '移动';
+            moveButton.onclick = () => showMoveOptions(li);
+
+            // 将按钮添加到任务项中
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'task-actions';
+            buttonContainer.appendChild(deleteButton);
+            buttonContainer.appendChild(moveButton);
+
+            li.appendChild(buttonContainer); // 将按钮容器添加到任务项中
+            return li;
+        }
+
+        // 删除任务
+        function deleteTask(taskItem) {
+            const parentList = taskItem.parentElement;
+            parentList.removeChild(taskItem);
+        }
+
+        // 显示移动选项
+        function showMoveOptions(taskItem) {
+            const currentList = taskItem.parentElement;
+            const allLists = document.querySelectorAll('.task-list');
+
+            // 创建一个临时菜单
+            const menu = document.createElement('div');
+            menu.className = 'move-menu';
+            menu.style.position = 'absolute';
+            menu.style.border = '1px solid #ccc';
+            menu.style.backgroundColor = 'white';
+            menu.style.padding = '5px';
+            menu.style.zIndex = '1000';
+
+            // 添加“移动到”选项
+            allLists.forEach((list) => {
+                if (list !== currentList) {
+                    const option = document.createElement('div');
+                    option.textContent = list.id.replace('-list', ''); // 获取状态名称
+                    option.onclick = () => moveTask(taskItem, list,menu);
+                    menu.appendChild(option);
+                }
+            });
+
+            // 添加关闭选项
+            const closeButton = document.createElement('div');
+            closeButton.textContent = '关闭';
+            closeButton.onclick = () => menu.remove();
+            menu.appendChild(closeButton);
+
+            // 将菜单添加到页面
+            document.body.appendChild(menu);
+
+            // 定位菜单
+            const rect = taskItem.getBoundingClientRect();
+            menu.style.left = `${rect.left}px`;
+            menu.style.top = `${rect.bottom + 5}px`;
+        }
+
+        // 移动任务
+        function moveTask(taskItem, targetList,menu) {
+            targetList.appendChild(taskItem); // 将任务项移动到目标列表
+            menu.remove();
+        }
     </script>
 </body>
 </html>

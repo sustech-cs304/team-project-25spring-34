@@ -1,5 +1,5 @@
 import os
-import fitz  # PyMuPDF
+#import fitz  # PyMuPDF
 from urllib.parse import quote
 from django.shortcuts import render, redirect
 from django.http import JsonResponse

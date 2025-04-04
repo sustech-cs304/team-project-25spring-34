@@ -278,14 +278,10 @@
     </div>
 
     <div class="code-section">
-        <div class="code-input">
-            <h3>代码实践</h3>
-            <textarea placeholder="输入你的代码..."></textarea>
-        </div>
-        <div class="code-output">
-            <h3>运行结果</h3>
-            <div id="terminal" style="height:90%;overflow-y:auto;"></div>
-        </div>
+        <h3>代码实践</h3>
+        <textarea id="code" >{{ code }}</textarea>
+        <button onclick="runCode()">Run</button>
+        <div class="output" id="output"></div>
         <h3>截屏功能</h3>
         <button onclick="selectArea()">Select Area</button>
         <button onclick="PPImage()">Read Area</button>
@@ -296,6 +292,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
+    
     const pdfUrl = '/media/pdfs/sample.pdf';  // 可替换为上传后路径
     const storageKey = pdfUrl + '.annotations';
     
@@ -600,6 +597,41 @@
             alert('Failed to Image to text conversion: ' + error.message);
         });
     }
+</script>
+<script>
+               //运行代码
+            function runCode() {
+            const code = document.getElementById('code').value;
+
+            // 显示加载状态
+            document.getElementById('output').innerText = 'Running...';
+
+            // 发送 POST 请求到后端
+            fetch('/login/IDE/lesson/self-learn/run/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
+                },
+                body: `code=${encodeURIComponent(code)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('output').innerText = `Error: ${data.error}`;
+                } else {
+                    document.getElementById('output').innerText =
+                        `Output:
+${data.stdout}
+
+Errors:
+${data.stderr}`;
+                }
+            })
+            .catch(error => {
+                document.getElementById('output').innerText = `Error: ${error}`;
+            });
+        }
 </script>
 </body>
 </html>
