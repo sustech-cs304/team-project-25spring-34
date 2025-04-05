@@ -113,7 +113,7 @@ CHANNEL_LAYERS = {  # 通信
 CACHES = {  # 学习主题的缓存
     'default': {
         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'LOCATION': 'redis://:000000@127.0.0.1:6379/1',
         'TIMEOUT': 86400,  # 默认缓存1天
     }
 }
