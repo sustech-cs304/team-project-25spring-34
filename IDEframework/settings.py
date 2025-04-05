@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'lock_button',
     'group_learn',
     'ai_assistant',
+    'group_id',
 
     'bootstrap4',  # Bootstrap4 集成
     'markdown',  # Markdown 支持
@@ -63,7 +64,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
 ROOT_URLCONF = 'IDEframework.urls'

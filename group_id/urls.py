@@ -12,4 +12,7 @@ urlpatterns = [
     path('validate-room/', views.validate_room, name='validate-room'),
     path('update-topic/', views.update_topic, name='update-topic'),
     path('get-learning-topics/', views.get_learning_topics, name='get-learning-topics'),
+    path('upload-file/', views.upload_file, name='upload_file'),
+    path('get-files/', views.get_files, name='get_files'),
+    path('delete-file/', views.delete_file, name='delete_file'),
 ]

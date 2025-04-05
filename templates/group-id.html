@@ -360,7 +360,8 @@
 
                 // 首先检查HTTP状态码
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.message || `HTTP错误! 状态码: ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -609,30 +610,134 @@
         }
 
         // ================= 文件管理功能 =================
-        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
 
             if (file) {
-                const fileUrl = URL.createObjectURL(file);
-                files.push({
-                    name: file.name,
-                    url: fileUrl,
-                    size: (file.size / 1024).toFixed(2) + ' KB',
-                    uploadedAt: new Date().toLocaleTimeString()
-                });
-                updateFileList();
-                fileInput.value = '';
-                showMessage(`文件 "${file.name}" 上传成功`, 'success');
+                const formData = new FormData();
+                formData.append('file', file);
+
+                try {
+                    const response = await fetch(`/login/IDE/lesson/group-${groupId}/upload-file/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: formData,
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        showMessage(`文件 "${file.name}" 上传成功`, 'success');
+                        loadFiles(); // 重新加载文件列表
+                    } else {
+                        throw new Error(data.message || '上传失败');
+                    }
+                } catch (error) {
+                    console.error('文件上传错误:', error);
+                    showMessage('文件上传失败: ' + error.message, 'error');
+                }
             }
         });
 
-        function deleteFile(index) {
-            const fileName = files[index].name;
-            files.splice(index, 1);
-            updateFileList();
-            showMessage(`文件 "${fileName}" 已删除`, 'info');
+        async function loadFiles() {
+            try {
+                const response = await fetch(`/login/IDE/lesson/group-${groupId}/get-files/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+
+                    if (data.files.length === 0) {
+                        fileList.innerHTML = '<li>暂无文件</li>';
+                        return;
+                    }
+
+                    // 更新全局文件列表
+                    files = data.files;
+
+                    data.files.forEach((file, index) => {
+                        const li = document.createElement('li');
+
+                        // 去掉文件名前的 "room_files/" 前缀
+                        const displayName = file.name.replace(/^room_files\//, '');
+
+                        li.innerHTML = `
+                            <a href="${file.url}" download="${displayName}">
+                                ${displayName}
+                                <small>(${file.uploaded_at}) - 上传者: ${file.uploaded_by}</small>
+                            </a>
+                        `;
+
+                        // 添加预览按钮
+                        const previewBtn = document.createElement('button');
+                        previewBtn.textContent = '预览';
+                        previewBtn.className = 'preview-btn';
+                        previewBtn.onclick = () => previewFile(index);
+                        li.appendChild(previewBtn);
+
+                        // 添加删除按钮
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = '删除';
+                        deleteBtn.onclick = () => deleteFile(index);
+                        li.appendChild(deleteBtn);
+
+                        fileList.appendChild(li);
+                    });
+                } else {
+                    throw new Error(data.message || '加载文件失败');
+                }
+            } catch (error) {
+                console.error('加载文件错误:', error);
+                showMessage('加载文件失败: ' + error.message, 'error');
+            }
+        }
+
+        // 在页面加载时调用
+        document.addEventListener('DOMContentLoaded', loadFiles);
+
+        async function deleteFile(index) {
+            const file = files[index]; // 获取要删除的文件
+            const fileName = file.name;
+
+            try {
+                // 向后端发送删除请求
+                const response = await fetch(`/login/IDE/lesson/group-${groupId}/delete-file/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({ file_name: fileName }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // 从前端的文件列表中移除
+                    files.splice(index, 1);
+                    updateFileList();
+                    showMessage(`文件 "${fileName}" 已删除`, 'success');
+                } else {
+                    throw new Error(data.message || '删除文件失败');
+                }
+            } catch (error) {
+                console.error('删除文件错误:', error);
+                showMessage(`删除文件失败: ${error.message}`, 'error');
+            }
         }
 
         function updateFileList() {
@@ -646,10 +751,14 @@
 
             files.forEach((file, index) => {
                 const li = document.createElement('li');
+
+                // 去掉文件名前的 "room_files/" 前缀
+                const displayName = file.name.replace(/^room_files\//, '');
+
                 li.innerHTML = `
-                    <a href="${file.url}" download="${file.name}">
-                        ${file.name}
-                        <small>(${file.size}) - ${file.uploadedAt}</small>
+                    <a href="${file.url}" download="${displayName}">
+                        ${displayName}
+                        <small>(${file.uploaded_at}) - 上传者: ${file.uploaded_by}</small>
                     </a>
                     <button class="preview-btn" onclick="previewFile(${index})">预览</button>
                     <button onclick="deleteFile(${index})">删除</button>

@@ -171,4 +171,83 @@ def update_topic(request, group_id):
             'status': 'error',
             'message': '无效的JSON数据'
         }, status=400)
+    
+from .models import RoomFile
 
+@login_required
+@csrf_exempt
+def upload_file(request, group_id):
+    try:
+        room = ChatRoom.objects.get(id=group_id)
+        if request.user not in room.members.all():
+            return JsonResponse({'status': 'error', 'message': '无权上传文件'}, status=403)
+
+        if request.method == 'POST' and request.FILES.get('file'):
+            uploaded_file = request.FILES['file']
+            room_file = RoomFile.objects.create(
+                room=room,
+                file=uploaded_file,
+                uploaded_by=request.user
+            )
+            return JsonResponse({
+                'status': 'success',
+                'message': '文件上传成功',
+                'file': {
+                    'name': room_file.file.name,
+                    'url': room_file.file.url,
+                    'uploaded_at': room_file.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
+                    'uploaded_by': room_file.uploaded_by.username
+                }
+            })
+        return JsonResponse({'status': 'error', 'message': '无效的请求'}, status=400)
+    except ChatRoom.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+    
+@login_required
+def get_files(request, group_id):
+    try:
+        room = ChatRoom.objects.get(id=group_id)
+        if request.user not in room.members.all():
+            return JsonResponse({'status': 'error', 'message': '无权访问文件'}, status=403)
+
+        files = room.files.all()
+        file_list = [{
+            'name': f.file.name,
+            'url': f.file.url,
+            'uploaded_at': f.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'uploaded_by': f.uploaded_by.username
+        } for f in files]
+
+        return JsonResponse({'status': 'success', 'files': file_list})
+    except ChatRoom.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+
+import os
+from django.conf import settings
+@login_required
+@csrf_exempt
+def delete_file(request, group_id):
+    try:
+        room = ChatRoom.objects.get(id=group_id)
+        if request.user not in room.members.all():
+            return JsonResponse({'status': 'error', 'message': '无权删除文件'}, status=403)
+
+        if request.method == 'POST':
+            data = json.loads(request.body)
+            file_name = data.get('file_name')
+
+            # 查找文件
+            room_file = RoomFile.objects.filter(room=room, file=f'{file_name}').first()     
+            if not room_file:
+                return JsonResponse({'status': 'error', 'message': '文件不存在'}, status=404)
+
+            # 删除文件
+            file_path = os.path.join(settings.MEDIA_ROOT, room_file.file.name)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            room_file.delete()
+
+            return JsonResponse({'status': 'success', 'message': '文件已删除'})
+        return JsonResponse({'status': 'error', 'message': '无效的请求'}, status=400)
+    except ChatRoom.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
