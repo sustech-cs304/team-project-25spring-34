@@ -572,7 +572,7 @@
     });
     
     overlay.addEventListener('mousemove', e => {
-      if (!drawing || tool.value === 'eraser') return;
+      if (!drawing || tool.value === 'eraser' || tool.value === 'none') return;
       const { x, y } = getRelativePosition(e);
       currentPath.push({ x, y });
     
@@ -589,7 +589,7 @@
     });
     
     overlay.addEventListener('mouseup', () => {
-      if (!drawing) return;
+      if (!drawing || tool.value === 'none') return;
       drawing = false;
     
       if (!annotations[currentPage]) annotations[currentPage] = [];
