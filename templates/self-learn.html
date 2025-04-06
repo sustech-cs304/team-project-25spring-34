@@ -260,6 +260,7 @@
                         <option value="pen">画笔</option>
                         <option value="highlight">荧光笔</option>
                         <option value="eraser">橡皮擦</option>
+                        <option value="none">无</option> <!-- 添加此选项 -->
                     </select>
                 </label>
         
@@ -560,6 +561,10 @@
         }
         return;
       }
+            // 检查是否选择了“无”
+        if (tool.value === 'none') {
+            return;  // 如果选中了“无”，则不进行任何操作
+        }
       drawing = true;
       currentPath = [];
       const { x, y } = getRelativePosition(e);
