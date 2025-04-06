@@ -260,6 +260,7 @@
                         <option value="pen">画笔</option>
                         <option value="highlight">荧光笔</option>
                         <option value="eraser">橡皮擦</option>
+                        <option value="none">无</option> <!-- 添加此选项 -->
                     </select>
                 </label>
         
@@ -468,8 +469,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
-    
-    const pdfUrl = '/media/pdfs/sample.pdf';  // 可替换为上传后路径
+    const urlParams = new URLSearchParams(window.location.search);
+    const pdfName = urlParams.get('pdf_name') || 'sample.pdf'; // 获取 URL 参数中的 pdf_name，默认为 sample.pdf
+    const pdfUrl = `/media/pdfs/${pdfName}`; // 动态设置 PDF 路径
     const storageKey = pdfUrl + '.annotations';
     
     // PDF.js 初始化
@@ -560,6 +562,10 @@
         }
         return;
       }
+            // 检查是否选择了“无”
+        if (tool.value === 'none') {
+            return;  // 如果选中了“无”，则不进行任何操作
+        }
       drawing = true;
       currentPath = [];
       const { x, y } = getRelativePosition(e);
@@ -567,7 +573,7 @@
     });
     
     overlay.addEventListener('mousemove', e => {
-      if (!drawing || tool.value === 'eraser') return;
+      if (!drawing || tool.value === 'eraser' || tool.value === 'none') return;
       const { x, y } = getRelativePosition(e);
       currentPath.push({ x, y });
     
@@ -584,7 +590,7 @@
     });
     
     overlay.addEventListener('mouseup', () => {
-      if (!drawing) return;
+      if (!drawing || tool.value === 'none') return;
       drawing = false;
     
       if (!annotations[currentPage]) annotations[currentPage] = [];

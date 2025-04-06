@@ -187,11 +187,15 @@ def upload_pdf(request):
 
 def view_bookmarks(request):
     """展示 PDF 转换后的页面"""
+    pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
     img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
     img_files = sorted(f for f in os.listdir(img_folder) if f.endswith(".jpg"))
     bookmarks = {i + 1: f"/media/pdf_images/{img}" for i, img in enumerate(img_files)}
 
-    return render(request, "self-learn.html", {"bookmarks": bookmarks})
+    return render(request, "self-learn.html", {
+        "pdf_name": pdf_name,
+        "bookmarks": bookmarks
+    })
 
 
 @csrf_exempt

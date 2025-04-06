@@ -183,6 +183,40 @@
         .add-task-container button:hover {
             background-color: #2980b9;
         }
+        .pdf-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            overflow-y: auto;
+            height: calc(100vh - 60px); /* 减去 header 的高度 */
+        }
+
+        .pdf-item {
+            width: 200px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .pdf-item img {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .pdf-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .pdf-title {
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -262,6 +296,9 @@
                 </div>
                 <div class="courseware-content">
                     <h3>课件内容</h3>
+                    <div class="pdf-gallery" id="pdf-gallery">
+                        <!-- PDF 展示区域 -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -393,6 +430,39 @@
                 console.error('Error:', error);
             });
         });
+
+        async function loadPdfGallery() {
+            const response = await fetch('/login/IDE/lesson/self-learn/get_pdf_list/');
+            const data = await response.json();
+            const pdfGallery = document.getElementById('pdf-gallery');
+
+            data.pdfs.forEach(pdf => {
+                const pdfName = pdf.split('.pdf')[0]; // 去掉扩展名
+                const encodedPdfName = encodeURIComponent(pdfName); // 编码文件名
+                const thumbnailUrl = `/media/pdf_images/${encodedPdfName}_page_1.jpg`; // 第一页缩略图路径
+
+                // 创建 PDF 展示项
+                const pdfItem = document.createElement('div');
+                pdfItem.className = 'pdf-item';
+                pdfItem.dataset.pdfName = pdf; // 存储 PDF 文件名
+
+                pdfItem.innerHTML = `
+                    <img src="${thumbnailUrl}" alt="${pdfName}" onerror="this.src='/static/images/default-thumbnail.jpg';">
+                    <div class="pdf-title">${pdfName}</div>
+                `;
+
+                // 双击事件：跳转到 self-learn 界面
+                pdfItem.ondblclick = () => {
+                    const url = `/login/IDE/lesson/self-learn/pdf/viewer/?pdf_name=${encodeURIComponent(pdf)}`;
+                    window.location.href = url;
+                };
+
+                pdfGallery.appendChild(pdfItem);
+            });
+        }
+
+        // 加载 PDF 展示
+        loadPdfGallery();
     </script>
 <script>
         // 添加任务
