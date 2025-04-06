@@ -18,6 +18,13 @@ urlpatterns = [
     path('upload_pdf/', views.upload_pdf, name='upload_pdf'),
 ]
 
+urlpatterns += [
+    path('get_pdf_list/', views.get_pdf_list, name='get_pdf_list'),
+    path('get_bookmarks/', views.get_bookmarks, name='get_bookmarks'),
+    path('add_bookmark/', views.add_bookmark, name='add_bookmark'),
+    path('delete_bookmark/', views.delete_bookmark, name='delete_bookmark'),
+]
+
 # # 允许 Django 在开发模式下提供媒体文件（用户上传的 PDF）
 # if settings.DEBUG:
 #     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
