@@ -217,10 +217,22 @@
         {#                    <button type="submit">上传PDF</button>#}
         {#                </form>#}
         {#            </li>#}
-        <div class="bookmark-list">
+       
+
+        <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">
             <h4>书签导航</h4>
-            <ul id="bookmarks"></ul>
+            <select id="pdf-selector" style="margin-left: 10px;">
+                <option value="">选择 PDF</option>
+            </select>
+            <button id="view-bookmarks-btn" style="margin-left: 10px;">查看书签</button>
+            <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>
+            <button id="delete-bookmark-btn" style="margin-left: 10px;">删除书签</button>
+            <!-- 新增书签下拉框 -->
+            <select id="bookmark-dropdown" style="margin-left: 10px; display: none;">
+                <option value="">选择书签</option>
+            </select>
         </div>
+
         <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">
             <h4>上传PDF</h4>
             <form id="pdf-upload-form" method="POST" enctype="multipart/form-data" action="/login/IDE/lesson/self-learn/upload_pdf/">
@@ -301,7 +313,158 @@
     </div>
 </div>
 
-<!-- PDF.js -->
+<script>
+    const pdfSelector = document.getElementById('pdf-selector');
+    const viewBookmarksBtn = document.getElementById('view-bookmarks-btn');
+    const addBookmarkBtn = document.getElementById('add-bookmark-btn');
+    const deleteBookmarkBtn = document.getElementById('delete-bookmark-btn');
+    const bookmarkDropdown = document.getElementById('bookmark-dropdown');
+
+    // 动态加载 PDF 列表
+    async function loadPdfList() {
+        const response = await fetch('/login/IDE/lesson/self-learn/get_pdf_list/');
+        const data = await response.json();
+        pdfSelector.innerHTML = '<option value="">选择 PDF</option>';
+        data.pdfs.forEach(pdf => {
+            const option = document.createElement('option');
+            option.value = pdf;
+            option.textContent = pdf;
+            pdfSelector.appendChild(option);
+        });
+    }
+
+    // 查看书签并显示下拉框
+    viewBookmarksBtn.addEventListener('click', async () => {
+        const pdfName = pdfSelector.value;
+        if (!pdfName) {
+            alert('请选择一个 PDF');
+            return;
+        }
+
+        const response = await fetch(`/login/IDE/lesson/self-learn/get_bookmarks/?pdf_name=${pdfName}`);
+        const bookmarks = await response.json();
+        console.log('书签数据:', bookmarks); // 调试日志
+
+        bookmarkDropdown.innerHTML = '<option value="">选择书签</option>';
+        bookmarks.forEach((bookmark, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${bookmark.description} (${bookmark.category}, 页码: ${bookmark.page})`;
+            bookmarkDropdown.appendChild(option);
+        });
+
+        // 显示下拉框
+        bookmarkDropdown.style.display = 'inline-block';
+    });
+
+
+    // 下拉框选中事件，显示对应 PDF 页面的图片
+    bookmarkDropdown.addEventListener('change', async () => {
+        const selectedIndex = bookmarkDropdown.value;  // 获取选中的书签索引
+        const pdfName = pdfSelector.value;
+
+        if (selectedIndex !== "" && pdfName) {
+            // 获取选中的书签
+            const response = await fetch(`/login/IDE/lesson/self-learn/get_bookmarks/?pdf_name=${pdfName}`);
+            const bookmarks = await response.json();
+            const selectedBookmark = bookmarks[selectedIndex];
+
+            if (selectedBookmark) {
+                const { page, description } = selectedBookmark;  // 获取书签的页码和描述
+
+                if (page) {
+                    // 根据新的命名规则生成图片 URL
+                    const encodedPdfName = encodeURIComponent(pdfName.split('.pdf')[0]);  // 仅取文件名，不带扩展名
+                    const imageUrl = `/media/pdf_images/${encodedPdfName}_page_${page}.jpg`;
+
+                    // 打印加载的图片名字
+                    console.log(`加载图片：${imageUrl}`);
+
+                    // 创建图片元素
+                    const img = new Image();
+                    img.src = imageUrl;
+                    img.alt = `Page ${page} of ${pdfName}`;
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = '100%';
+
+                    // 等待图片加载完成后打开弹窗
+                    img.onload = () => {
+                        console.log(`图片加载成功：${imageUrl}`);  // 打印加载成功信息
+                        const popup = window.open('', '_blank');
+                        popup.document.write('<html><head><title>书签页面</title></head><body style="margin:0;display:flex;justify-content:center;align-items:center;height:100vh;background-color:#f4f4f4;">');
+                        popup.document.write(`<img src="${imageUrl}" alt="${img.alt}" style="max-width:100%;max-height:100%;">`);
+                        popup.document.write('</body></html>');
+                    };
+
+                    // 如果图片加载失败（例如文件不存在），可以加一个 onerror 处理
+                    img.onerror = () => {
+                        console.error(`图片加载失败：${imageUrl}`);
+                        alert('图片加载失败，请检查文件路径。');
+                    };
+                } else {
+                    alert('该书签没有对应的页码。');
+                }
+            } else {
+                alert('无法找到对应的书签。');
+            }
+        }
+    });
+
+        
+        // 创建书签
+        addBookmarkBtn.addEventListener('click', async () => {
+        const pdfName = pdfSelector.value;
+        if (!pdfName) {
+            alert('请选择一个 PDF');
+            return;
+        }
+
+        const description = prompt('输入书签描述:');
+        const category = prompt('输入书签分类 (疑问/代码/重点/其他):');
+        const page = prompt('输入书签页码:');
+
+        if (!description || !category || !page) {
+            alert('所有字段均为必填！');
+            return;
+        }
+
+        await fetch('/login/IDE/lesson/self-learn/add_bookmark/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdf_name: pdfName, description, category, page })
+        });
+
+        alert('书签已创建！');
+        viewBookmarksBtn.click(); // 刷新书签列表
+    });
+
+    // 删除书签
+    deleteBookmarkBtn.addEventListener('click', async () => {
+        const pdfName = pdfSelector.value;
+        if (!pdfName) {
+            alert('请选择一个 PDF');
+            return;
+        }
+
+        const index = prompt('输入要删除的书签索引 (从 0 开始):');
+        if (index === null || isNaN(index)) {
+            alert('请输入有效的索引！');
+            return;
+        }
+
+        await fetch('/login/IDE/lesson/self-learn/delete_bookmark/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdf_name: pdfName, index: parseInt(index) })
+        });
+
+        alert('书签已删除！');
+        viewBookmarksBtn.click(); // 刷新书签列表
+    });
+
+    // 初始化加载 PDF 列表
+    loadPdfList();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
@@ -363,6 +526,7 @@
       });
     }
 </script>
+
 
 <script>
     // ⬇️ 衔接前面那段后继续写下去
