@@ -23,8 +23,12 @@ def process_pdf(pdf_file):
     images = convert_from_path(pdf_path)
     bookmarks = {}  # 存储书签（索引 -> 图片路径）
 
+    # 获取 PDF 文件名（去掉扩展名）
+    pdf_name = os.path.splitext(pdf_file.name)[0]
+
     for i, image in enumerate(images):
-        image_name = f"page_{i+1}.jpg"
+        # 修改图片命名，包含 PDF 名字
+        image_name = f"{pdf_name}_page_{i+1}.jpg"
         image_path = os.path.join(IMG_FOLDER, image_name)
         image.save(image_path, "JPEG")
         bookmarks[i+1] = f"/media/pdf_images/{image_name}"

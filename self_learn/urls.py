@@ -15,6 +15,7 @@ urlpatterns = [
     # path("pdf/upload/", upload_pdf, name="upload-pdf"),
     path("pdf/viewer/", view_bookmarks, name="viewer"),
     path('run/', views.run_code, name='run_code'), # 执行代码的接口
+    path('upload_pdf/', views.upload_pdf, name='upload_pdf'),
 ]
 
 # # 允许 Django 在开发模式下提供媒体文件（用户上传的 PDF）
