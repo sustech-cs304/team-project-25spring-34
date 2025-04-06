@@ -14,13 +14,19 @@ from utils.OCR_inspection import auto_format_code_improved
 import subprocess
 from django.http import HttpResponse
 from django.shortcuts import render
-
+import json
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'media')
 THUMBNAIL_DIR = os.path.join(UPLOAD_DIR, 'thumbnails')
+BOOKMARKS_FILE = os.path.join(UPLOAD_DIR, 'bookmarks.json')
 
 # 确保缩略图目录存在
 os.makedirs(THUMBNAIL_DIR, exist_ok=True)
+
+# 确保书签文件存在
+if not os.path.exists(BOOKMARKS_FILE):
+    with open(BOOKMARKS_FILE, 'w') as f:
+        json.dump({}, f)
 
 file_path = 'self_learn/code_test/8_java.txt'
 
@@ -267,4 +273,82 @@ def preprocess_image(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)
+
+
+@csrf_exempt
+def get_pdf_list(request):
+    """获取 media/pdfs 目录中的 PDF 文件列表"""
+    pdf_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
+    pdfs = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')] if os.path.exists(pdf_dir) else []
+    return JsonResponse({'pdfs': pdfs})
+
+@csrf_exempt
+def get_bookmarks(request):
+    """获取指定 PDF 的书签"""
+    pdf_name = request.GET.get('pdf_name')
+    bookmarks = load_bookmarks()
+
+    # 如果 PDF 没有书签，添加默认书签
+    if pdf_name not in bookmarks:
+        bookmarks[pdf_name] = [{
+            'description': f'{pdf_name} 书签样例',
+            'category': '其他',
+            'page': 1
+        }]
+        save_bookmarks(bookmarks)  # 保存默认书签
+        print(f"为 {pdf_name} 添加默认书签")  # 调试日志
+
+    return JsonResponse(bookmarks.get(pdf_name, []), safe=False)
+
+@csrf_exempt
+def add_bookmark(request):
+    """添加书签"""
+    data = json.loads(request.body)
+    pdf_name = data.get('pdf_name')
+    description = data.get('description')
+    category = data.get('category')
+    page = data.get('page')
+
+    if not (pdf_name and description and category and page):
+        return JsonResponse({'error': '缺少必要参数'}, status=400)
+
+    bookmarks = load_bookmarks()
+    if pdf_name not in bookmarks:
+        bookmarks[pdf_name] = []
+
+    bookmarks[pdf_name].append({
+        'description': description,
+        'category': category,
+        'page': page
+    })
+    save_bookmarks(bookmarks)
+    print(f"书签已保存: {bookmarks}")  # 调试日志
+    return JsonResponse({'success': True})
+
+@csrf_exempt
+def delete_bookmark(request):
+    """删除书签"""
+    data = json.loads(request.body)
+    pdf_name = data.get('pdf_name')
+    index = data.get('index')
+
+    bookmarks = load_bookmarks()
+    if pdf_name in bookmarks and 0 <= index < len(bookmarks[pdf_name]):
+        bookmarks[pdf_name].pop(index)
+        save_bookmarks(bookmarks)
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'error': '书签不存在'}, status=404)
+
+def load_bookmarks():
+    """加载书签文件"""
+    print(f"加载书签文件: {BOOKMARKS_FILE}")  # 调试日志
+    with open(BOOKMARKS_FILE, 'r') as f:
+        return json.load(f)
+
+def save_bookmarks(bookmarks):
+    """保存书签到文件"""
+    print(f"保存书签到文件: {BOOKMARKS_FILE}")  # 调试日志
+    with open(BOOKMARKS_FILE, 'w') as f:
+        json.dump(bookmarks, f)
 
