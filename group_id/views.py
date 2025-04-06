@@ -105,6 +105,7 @@ import json
 
 @login_required
 @require_POST
+@csrf_exempt
 
 def validate_room(request, group_id):
     try:
@@ -186,15 +187,15 @@ def upload_file(request, group_id):
             uploaded_file = request.FILES['file']
             room_file = RoomFile.objects.create(
                 room=room,
-                file=uploaded_file,
+                file_name=uploaded_file.name,
+                file_data=uploaded_file.read(),  # 读取文件的二进制数据
                 uploaded_by=request.user
             )
             return JsonResponse({
                 'status': 'success',
                 'message': '文件上传成功',
                 'file': {
-                    'name': room_file.file.name,
-                    'url': room_file.file.url,
+                    'name': room_file.file_name,
                     'uploaded_at': room_file.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
                     'uploaded_by': room_file.uploaded_by.username
                 }
@@ -212,8 +213,7 @@ def get_files(request, group_id):
 
         files = room.files.all()
         file_list = [{
-            'name': f.file.name,
-            'url': f.file.url,
+            'name': f.file_name,
             'uploaded_at': f.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
             'uploaded_by': f.uploaded_by.username
         } for f in files]
@@ -237,17 +237,40 @@ def delete_file(request, group_id):
             file_name = data.get('file_name')
 
             # 查找文件
-            room_file = RoomFile.objects.filter(room=room, file=f'{file_name}').first()     
+            room_file = RoomFile.objects.filter(room=room, file_name=file_name).first()
             if not room_file:
                 return JsonResponse({'status': 'error', 'message': '文件不存在'}, status=404)
 
-            # 删除文件
-            file_path = os.path.join(settings.MEDIA_ROOT, room_file.file.name)
-            if os.path.exists(file_path):
-                os.remove(file_path)
             room_file.delete()
-
             return JsonResponse({'status': 'success', 'message': '文件已删除'})
         return JsonResponse({'status': 'error', 'message': '无效的请求'}, status=400)
+    except ChatRoom.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+
+from django.http import HttpResponse
+
+@login_required
+def download_file(request, group_id, file_name):
+    try:
+        room = ChatRoom.objects.get(id=group_id)
+        if request.user not in room.members.all():
+            return JsonResponse({'status': 'error', 'message': '无权下载文件'}, status=403)
+
+        room_file = get_object_or_404(RoomFile, room=room, file_name=file_name)
+        response = HttpResponse(room_file.file_data, content_type='application/octet-stream')
+
+        # 根据文件类型设置正确的 Content-Type
+        if file_name.lower().endswith('.pdf'):
+            response['Content-Type'] = 'application/pdf'
+        elif file_name.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
+            response['Content-Type'] = 'image/jpeg'
+        else:
+            response['Content-Type'] = 'application/octet-stream'
+
+        # 仅在非预览情况下设置下载标头
+        if not request.GET.get('preview', False):
+            response['Content-Disposition'] = f'attachment; filename="{room_file.file_name}"'
+
+        return response
     except ChatRoom.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)

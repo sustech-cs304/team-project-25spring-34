@@ -670,12 +670,13 @@
 
                     data.files.forEach((file, index) => {
                         const li = document.createElement('li');
+                        const displayName = file.name;
 
-                        // 去掉文件名前的 "room_files/" 前缀
-                        const displayName = file.name.replace(/^room_files\//, '');
+                        // 修改下载链接指向正确的后端端点
+                        const downloadUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
 
                         li.innerHTML = `
-                            <a href="${file.url}" download="${displayName}">
+                            <a href="${downloadUrl}" download="${displayName}">
                                 ${displayName}
                                 <small>(${file.uploaded_at}) - 上传者: ${file.uploaded_by}</small>
                             </a>
@@ -685,7 +686,7 @@
                         const previewBtn = document.createElement('button');
                         previewBtn.textContent = '预览';
                         previewBtn.className = 'preview-btn';
-                        previewBtn.onclick = () => previewFile(index);
+                        previewBtn.onclick = () => previewFile(file.name, index);
                         li.appendChild(previewBtn);
 
                         // 添加删除按钮
@@ -709,11 +710,10 @@
         document.addEventListener('DOMContentLoaded', loadFiles);
 
         async function deleteFile(index) {
-            const file = files[index]; // 获取要删除的文件
+            const file = files[index];
             const fileName = file.name;
 
             try {
-                // 向后端发送删除请求
                 const response = await fetch(`/login/IDE/lesson/group-${groupId}/delete-file/`, {
                     method: 'POST',
                     headers: {
@@ -727,7 +727,6 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    // 从前端的文件列表中移除
                     files.splice(index, 1);
                     updateFileList();
                     showMessage(`文件 "${fileName}" 已删除`, 'success');
@@ -751,29 +750,33 @@
 
             files.forEach((file, index) => {
                 const li = document.createElement('li');
-
-                // 去掉文件名前的 "room_files/" 前缀
-                const displayName = file.name.replace(/^room_files\//, '');
+                const displayName = file.name;
+                const downloadUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
 
                 li.innerHTML = `
-                    <a href="${file.url}" download="${displayName}">
+                    <a href="${downloadUrl}" download="${displayName}">
                         ${displayName}
                         <small>(${file.uploaded_at}) - 上传者: ${file.uploaded_by}</small>
                     </a>
-                    <button class="preview-btn" onclick="previewFile(${index})">预览</button>
+                    <button class="preview-btn" onclick="previewFile('${file.name}', ${index})">预览</button>
                     <button onclick="deleteFile(${index})">删除</button>
                 `;
                 fileList.appendChild(li);
             });
         }
 
-        // preview
-        function previewFile(index) {
+        function previewFile(filename, index) {
             const file = files[index];
-            if (file.name.toLowerCase().endsWith('.pdf')) {
-                window.open(file.url, '_blank');
+            const previewUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(filename)}/?preview=true`;
+
+            if (filename.toLowerCase().endsWith('.pdf')) {
+                // 打开 PDF 文件
+                window.open(previewUrl, '_blank');
+            } else if (filename.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
+                // 打开图片文件
+                window.open(previewUrl, '_blank');
             } else {
-                alert('目前仅支持预览PDF文件');
+                alert('目前仅支持预览PDF和图片文件');
             }
         }
 
