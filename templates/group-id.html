@@ -665,14 +665,11 @@
                         return;
                     }
 
-                    // 更新全局文件列表
                     files = data.files;
 
                     data.files.forEach((file, index) => {
                         const li = document.createElement('li');
                         const displayName = file.name;
-
-                        // 修改下载链接指向正确的后端端点
                         const downloadUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
 
                         li.innerHTML = `
@@ -682,14 +679,12 @@
                             </a>
                         `;
 
-                        // 添加预览按钮
                         const previewBtn = document.createElement('button');
                         previewBtn.textContent = '预览';
                         previewBtn.className = 'preview-btn';
                         previewBtn.onclick = () => previewFile(file.name, index);
                         li.appendChild(previewBtn);
 
-                        // 添加删除按钮
                         const deleteBtn = document.createElement('button');
                         deleteBtn.textContent = '删除';
                         deleteBtn.onclick = () => deleteFile(index);
@@ -706,7 +701,6 @@
             }
         }
 
-        // 在页面加载时调用
         document.addEventListener('DOMContentLoaded', loadFiles);
 
         async function deleteFile(index) {
@@ -728,8 +722,8 @@
 
                 if (data.status === 'success') {
                     files.splice(index, 1);
-                    updateFileList();
                     showMessage(`文件 "${fileName}" 已删除`, 'success');
+                    loadFiles();
                 } else {
                     throw new Error(data.message || '删除文件失败');
                 }
@@ -739,41 +733,13 @@
             }
         }
 
-        function updateFileList() {
-            const fileList = document.getElementById('fileList');
-            fileList.innerHTML = '';
-
-            if (files.length === 0) {
-                fileList.innerHTML = '<li>暂无文件</li>';
-                return;
-            }
-
-            files.forEach((file, index) => {
-                const li = document.createElement('li');
-                const displayName = file.name;
-                const downloadUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
-
-                li.innerHTML = `
-                    <a href="${downloadUrl}" download="${displayName}">
-                        ${displayName}
-                        <small>(${file.uploaded_at}) - 上传者: ${file.uploaded_by}</small>
-                    </a>
-                    <button class="preview-btn" onclick="previewFile('${file.name}', ${index})">预览</button>
-                    <button onclick="deleteFile(${index})">删除</button>
-                `;
-                fileList.appendChild(li);
-            });
-        }
-
         function previewFile(filename, index) {
             const file = files[index];
             const previewUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(filename)}/?preview=true`;
 
             if (filename.toLowerCase().endsWith('.pdf')) {
-                // 打开 PDF 文件
                 window.open(previewUrl, '_blank');
             } else if (filename.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
-                // 打开图片文件
                 window.open(previewUrl, '_blank');
             } else {
                 alert('目前仅支持预览PDF和图片文件');

@@ -185,6 +185,18 @@ def upload_file(request, group_id):
 
         if request.method == 'POST' and request.FILES.get('file'):
             uploaded_file = request.FILES['file']
+
+            existing_file = RoomFile.objects.filter(
+                room=room,
+                file_name=uploaded_file.name
+            ).first()
+
+            if existing_file:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': f'文件 "{uploaded_file.name}" 已经存在，不能重复上传'
+                }, status=400)
+            
             room_file = RoomFile.objects.create(
                 room=room,
                 file_name=uploaded_file.name,
@@ -238,11 +250,10 @@ def delete_file(request, group_id):
             data = json.loads(request.body)
             file_name = data.get('file_name')
 
-            room_file = RoomFile.objects.filter(room=room, file_name=file_name).first()
-            if not room_file:
+            deleted_count, _ = RoomFile.objects.filter(room=room, file_name=file_name).delete()
+            if deleted_count == 0:
                 return JsonResponse({'status': 'error', 'message': '文件不存在'}, status=404)
-
-            room_file.delete()
+            
             return JsonResponse({'status': 'success', 'message': '文件已删除'})
         return JsonResponse({'status': 'error', 'message': '无效的请求'}, status=400)
     except ChatRoom.DoesNotExist:
@@ -260,7 +271,6 @@ def download_file(request, group_id, file_name):
         room_file = get_object_or_404(RoomFile, room=room, file_name=file_name)
         response = HttpResponse(room_file.file_data, content_type='application/octet-stream')
 
-        # 根据文件类型设置正确的 Content-Type
         if file_name.lower().endswith('.pdf'):
             response['Content-Type'] = 'application/pdf'
         elif file_name.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')):
@@ -268,7 +278,6 @@ def download_file(request, group_id, file_name):
         else:
             response['Content-Type'] = 'application/octet-stream'
 
-        # 仅在非预览情况下设置下载标头
         if not request.GET.get('preview', False):
             response['Content-Disposition'] = f'attachment; filename="{room_file.file_name}"'
 
