@@ -211,7 +211,9 @@ def get_files(request, group_id):
         if request.user not in room.members.all():
             return JsonResponse({'status': 'error', 'message': '无权访问文件'}, status=403)
 
-        files = room.files.all()
+        files = room.files.all().select_related('uploaded_by').only(
+            'file_name', 'uploaded_at', 'uploaded_by__username'
+        )
         file_list = [{
             'name': f.file_name,
             'uploaded_at': f.uploaded_at.strftime('%Y-%m-%d %H:%M:%S'),
@@ -236,7 +238,6 @@ def delete_file(request, group_id):
             data = json.loads(request.body)
             file_name = data.get('file_name')
 
-            # 查找文件
             room_file = RoomFile.objects.filter(room=room, file_name=file_name).first()
             if not room_file:
                 return JsonResponse({'status': 'error', 'message': '文件不存在'}, status=404)
