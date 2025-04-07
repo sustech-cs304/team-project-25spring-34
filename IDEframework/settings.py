@@ -99,6 +99,14 @@ DATABASES = {
         'PASSWORD': 'gcjjlHgideaNMlD0',
         'HOST': 'mysql2.sqlpub.com',
         'PORT': '3307',
+        'POOL_OPTIONS': {
+            'POOL_SIZE': 10,        
+            'MAX_OVERFLOW': 15,      
+            'RECYCLE': 1800,     
+            'PRE_PING': True,     
+            'ECHO': False,      
+            'TIMEOUT': 3,  
+        }
     }
 }
 
