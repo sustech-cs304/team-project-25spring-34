@@ -94,14 +94,14 @@ ASGI_APPLICATION = 'IDEframework.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'maplebase',
-        'USER': 'maplezhu',
-        'PASSWORD': 'gcjjlHgideaNMlD0',
-        'HOST': 'mysql2.sqlpub.com',
-        'PORT': '3307',
+        'NAME': 'maplebase1',
+        'USER': 'maplezhuu',
+        'PASSWORD': 'cZAHUmMrpJtR1KlN',
+        'HOST': 'mysql3.sqlpub.com',
+        'PORT': '3308',
         'POOL_OPTIONS': {
-            'POOL_SIZE': 10,        
-            'MAX_OVERFLOW': 15,      
+            'POOL_SIZE': 20,        
+            'MAX_OVERFLOW': 25,      
             'RECYCLE': 1800,     
             'PRE_PING': True,     
             'ECHO': False,      

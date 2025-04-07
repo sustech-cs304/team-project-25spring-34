@@ -633,7 +633,7 @@
 
                     if (data.status === 'success') {
                         showMessage(`文件 "${file.name}" 上传成功`, 'success');
-                        loadFiles(); // 重新加载文件列表
+                        loadFiles();
                     } else {
                         throw new Error(data.message || '上传失败');
                     }
