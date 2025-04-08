@@ -189,6 +189,23 @@
         .chat-message span.message {
             color: #333;
         }
+        #preview table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #preview th, #preview td {
+            border: 1px solid #ccc;
+            padding: 8px 12px;
+            text-align: left;
+        }
+
+        #preview th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
     </style>
 </head>
 <body>
@@ -206,8 +223,55 @@
     </nav>
     <div class="container">
         <div class="ppt-section">
-            <h2>PPT</h2>
-            <p>PPT内容</p>
+         
+
+            <h2>📄 PDF 学习区</h2>
+
+            <div class="pdf-section" style="display: flex; flex-direction: column; align-items: flex-start;">
+                <div id="controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 12px;">
+                    <label>工具:
+                        <select id="tool">
+                            <option value="pen">画笔</option>
+                            <option value="highlight">荧光笔</option>
+                            <option value="eraser">橡皮擦</option>
+                            <option value="none">无</option>
+                        </select>
+                    </label>
+            
+                    <label>颜色:
+                        <input type="color" id="color" value="#ffcc00">
+                    </label>
+            
+                    <label>粗细:
+                        <input type="number" id="size" value="4" min="1" max="30">
+                    </label>
+            
+                    <button onclick="prevPage()">⬅ 上一页</button>
+                    <button onclick="nextPage()">➡ 下一页</button>
+                    <span>第 <span id="page-num">1</span> / <span id="page-count">1</span> 页</span>
+            
+                    <button onclick="zoomOut()">➖ 缩小</button>
+                    <button onclick="zoomIn()">➕ 放大</button>
+                    <span>缩放：<span id="zoom-level">100%</span></span>
+            
+                    <button onclick="saveAnnotations()">💾 保存标注</button>
+                </div>
+            
+                <div id="pdf-container" style="position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;">
+                    <canvas id="pdf-canvas"></canvas>
+                    <canvas id="overlay" style="position: absolute; left: 0; top: 0;"></canvas>
+                </div>
+            </div>
+            
+
+
+            <div class="notes-section" style="margin-top: 20px;">
+                <h3>📝 Markdown 笔记</h3>
+                <textarea id="note-editor" placeholder="输入 Markdown..." style="width:100%;height:120px;"></textarea>
+                <button onclick="saveAsMD()" style="margin-top:10px;">📥 保存为 MD</button>
+                <div id="preview" style="background:#fff;border:1px solid #ccc;padding:8px;margin-top:10px;height:150px;overflow-y:auto;"></div>
+            </div>
+            
         </div>
         <div class="code-section">
             <div class="code-input">
@@ -229,6 +293,19 @@
         <input id="chat-message-submit" type="button" value="发送">
         {{ group_id|json_script:"group_id" }}
     </div>
+
+
+<!-- PDF.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Markdown & KaTeX -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body);" data-mathml="true"></script>
+<!-- 导出 PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
 
     <script>
         // 获取DOM元素
@@ -297,5 +374,201 @@
             messageInputDom.value = '';
         };
     </script>
+
+
+
+<script>
+     const pdfUrl = "/media/pdfs/lecture7-quality.pdf";
+     //const pdfUrl = "/media/pdfs/lab3.pdf";
+    const storageKey = pdfUrl + '.annotations';
+    const pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    
+    let pdfDoc = null, currentPage = 1, scale = 1.0;
+    let dpiScale = window.devicePixelRatio || 1;
+    
+    const canvas = document.getElementById('pdf-canvas');
+    const ctx = canvas.getContext('2d');
+    const overlay = document.getElementById('overlay');
+    const overlayCtx = overlay.getContext('2d');
+    const tool = document.getElementById('tool');
+    const color = document.getElementById('color');
+    const size = document.getElementById('size');
+    
+    let annotations = {};
+    let drawing = false;
+    let currentPath = [];
+    
+    function renderPage(num) {
+        pdfDoc.getPage(num).then(page => {
+            const viewport = page.getViewport({ scale });
+            canvas.width = viewport.width * dpiScale;
+            canvas.height = viewport.height * dpiScale;
+            canvas.style.width = viewport.width + "px";
+            canvas.style.height = viewport.height + "px";
+    
+            overlay.width = canvas.width;
+            overlay.height = canvas.height;
+            overlay.style.width = canvas.style.width;
+            overlay.style.height = canvas.style.height;
+    
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: page.getViewport({ scale }),
+                transform: [dpiScale, 0, 0, dpiScale, 0, 0]
+            };
+            page.render(renderContext);
+    
+            overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+            if (annotations[num]) {
+                for (const path of annotations[num]) drawPath(path);
+            }
+    
+            document.getElementById('page-num').textContent = num;
+            document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
+        });
+    }
+    
+    function drawPath(path) {
+        overlayCtx.strokeStyle = path.color;
+        overlayCtx.lineWidth = path.size * scale;
+        overlayCtx.lineJoin = 'round';
+        overlayCtx.lineCap = 'round';
+        overlayCtx.globalAlpha = path.tool === 'highlight' ? 0.3 : 1.0;
+        overlayCtx.beginPath();
+        const p0 = path.points[0];
+        overlayCtx.moveTo(p0.x * scale, p0.y * scale);
+        for (let i = 1; i < path.points.length; i++) {
+            const pt = path.points[i];
+            overlayCtx.lineTo(pt.x * scale, pt.y * scale);
+        }
+        overlayCtx.stroke();
+        overlayCtx.globalAlpha = 1.0;
+    }
+    
+    overlay.addEventListener('mousedown', e => {
+        if (tool.value === 'eraser') {
+            if (annotations[currentPage]?.length > 0) annotations[currentPage].pop();
+            overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+            annotations[currentPage]?.forEach(drawPath);
+            return;
+        }
+        if (tool.value === 'none') return;
+        drawing = true;
+        currentPath = [getRelativePosition(e)];
+    });
+    
+    overlay.addEventListener('mousemove', e => {
+        if (!drawing || tool.value === 'none' || tool.value === 'eraser') return;
+        currentPath.push(getRelativePosition(e));
+        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        annotations[currentPage]?.forEach(drawPath);
+        drawPath({ points: currentPath, tool: tool.value, color: color.value, size: parseInt(size.value) });
+    });
+    
+    overlay.addEventListener('mouseup', () => {
+        if (!drawing || tool.value === 'none') return;
+        drawing = false;
+        if (!annotations[currentPage]) annotations[currentPage] = [];
+        annotations[currentPage].push({
+            points: currentPath,
+            tool: tool.value,
+            color: color.value,
+            size: parseInt(size.value)
+        });
+    });
+    
+    function getRelativePosition(e) {
+        const rect = overlay.getBoundingClientRect();
+        return {
+            x: (e.clientX - rect.left) * (dpiScale / scale),
+            y: (e.clientY - rect.top) * (dpiScale / scale)
+        };
+    }
+    
+    function prevPage() {
+        if (currentPage <= 1) return;
+        currentPage--;
+        renderPage(currentPage);
+    }
+    
+    function nextPage() {
+        if (currentPage >= pdfDoc.numPages) return;
+        currentPage++;
+        renderPage(currentPage);
+    }
+    
+    function zoomIn() {
+        scale = Math.min(scale + 0.1, 3.0);
+        renderPage(currentPage);
+    }
+    
+    function zoomOut() {
+        scale = Math.max(scale - 0.1, 0.5);
+        renderPage(currentPage);
+    }
+    
+    function saveAnnotations() {
+        localStorage.setItem(storageKey, JSON.stringify(annotations));
+        alert('标注已保存 ✅');
+    }
+    
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+        pdfDoc = pdf;
+        document.getElementById('page-count').textContent = pdf.numPages;
+        const saved = localStorage.getItem(storageKey);
+        if (saved) annotations = JSON.parse(saved);
+        renderPage(currentPage);
+    });
+    </script>
+
+
+
+<script>
+    const textarea = document.getElementById("note-editor");
+    const preview = document.getElementById("preview");
+
+    // 实时渲染 markdown 和公式
+    textarea.addEventListener("input", () => {
+        const html = marked.parse(textarea.value);
+        preview.innerHTML = html;
+        renderMathInElement(preview); // 渲染公式
+    });
+
+    function saveAsMD() {
+        const markdownText = document.getElementById("note-editor").value;
+        const blob = new Blob([markdownText], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "markdown_notes.md"; // 文件名
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+</script>
+
+<script>
+    const noteStorageKey = pdfUrl + '.markdownNote';
+
+    window.addEventListener("load", () => {
+        const savedNote = localStorage.getItem(noteStorageKey);
+        if (savedNote) {
+            textarea.value = savedNote;
+            preview.innerHTML = marked.parse(savedNote);
+            renderMathInElement(preview);
+        }
+    });
+
+    textarea.addEventListener("input", () => {
+        localStorage.setItem(noteStorageKey, textarea.value);  // ✅ 自动保存
+        preview.innerHTML = marked.parse(textarea.value);
+        renderMathInElement(preview);
+    });
+</script>
+
+
 </body>
 </html>
