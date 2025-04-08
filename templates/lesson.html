@@ -299,6 +299,15 @@
                     <div class="pdf-gallery" id="pdf-gallery">
                         <!-- PDF 展示区域 -->
                     </div>
+                    <!-- 修改 PDF 上传按钮 -->
+                    <div class="pdf-upload-btn" style="margin-top: 20px;">
+                        <h4>上传PDF</h4>
+                        <form id="pdf-upload-form" method="POST" enctype="multipart/form-data" action="/login/IDE/lesson/self-learn/upload_pdf/">
+                            {% csrf_token %}
+                            <input type="file" name="pdf" accept=".pdf" required>
+                            <button type="submit">上传PDF</button>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -464,6 +473,26 @@
         // 加载 PDF 展示
         loadPdfGallery();
     </script>
+<script>
+    document.getElementById('pdf-upload-form').addEventListener('submit', async function (e) {
+        e.preventDefault(); // 阻止默认表单提交行为
+
+        const formData = new FormData(this);
+        const response = await fetch('/login/IDE/lesson/self-learn/upload_pdf/', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            alert(data.message || 'PDF 上传成功！');
+            location.reload(); // 上传成功后刷新页面
+        } else {
+            const errorData = await response.json();
+            alert(errorData.error || 'PDF 上传失败！');
+        }
+    });
+</script>
 <script>
         // 添加任务
         function addTask() {

@@ -218,16 +218,7 @@
                 <option value="">选择书签</option>
             </select>
         </div>
-
-        <!-- 保留 PDF 上传相关功能 -->
-        <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">
-            <h4>上传PDF</h4>
-            <form id="pdf-upload-form" method="POST" enctype="multipart/form-data" action="/login/IDE/lesson/self-learn/upload_pdf/">
-                {% csrf_token %}
-                <input type="file" name="pdf" accept=".pdf" required>
-                <button type="submit">上传PDF</button>
-            </form>
-        </div>
+        <!-- 删除 PDF 上传相关功能 -->
     </ul>
 </nav>
 
