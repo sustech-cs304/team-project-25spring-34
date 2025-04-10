@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'group_learn',
     'ai_assistant',
     'group_id',
+    'button_lock',
 
     'bootstrap4',  # Bootstrap4 集成
     'markdown',  # Markdown 支持

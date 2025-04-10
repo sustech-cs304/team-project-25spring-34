@@ -26,6 +26,7 @@ from IDE import views as IDE_views
 from lesson import views as lesson_views
 from group_id import views as group_id_views
 from group_learn import views as group_learn_views
+from button_lock import views as button_lock_views
 
 urlpatterns = [
     path('', lambda request: redirect('login/')),
@@ -37,13 +38,13 @@ urlpatterns = [
             path('deepseek-chat/', include('ai_assistant.urls')),  # 新增聊天应用路由
             path('group-<str:group_id>/', include([
                 path('', include('group_id.urls')),
-                path('group-learn', group_learn_views.index),
+                path('group-learn/', group_learn_views.index),
+                path('group-learn/revise_button/', button_lock_views.revise_button, name='revise_button'),
+                path('group-learn/save_button/', button_lock_views.save_button, name='save_button'),
+                path('group-learn/get_button_state/', button_lock_views.get_button_state, name='get_button_state'),
             ]))
         ]))
     ])),
-    # path('revise_button/', lock_button_views.revise_button, name='revise_button'),
-    # path('save_button/', lock_button_views.save_button, name='save_button'),
-    # path('get_button_state/', lock_button_views.get_button_state, name='get_button_state'),
     path('login/', login_views.user_login, name='login'),
     path('register/', register_views.user_register, name='register'),
     path('group_id/', group_id_views.group_id, name='group_id'),

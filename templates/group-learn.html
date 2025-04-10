@@ -612,6 +612,105 @@
     });
 </script>
 
+<script>
+
+    // 新增的按钮状态管理脚本
+    const groupId = "{{ group_id }}";
+    const reviseBtn = document.getElementById('revise-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const codeTextarea = document.getElementById('code-textarea');
+    const lockStatus = document.getElementById('lock-status');
+
+    // 检查按钮状态
+    function checkButtonState() {
+        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_button_state/`)
+            .then(response => response.json())
+            .then(data => {
+                const isLocked = data.is_locked;
+                const lastUser = data.last_user;
+                const currentUser = data.username;
+
+                if (isLocked) {
+                    if (currentUser === lastUser) {
+                        // 当前用户是锁定者
+                        reviseBtn.disabled = true;
+                        saveBtn.disabled = false;
+                        codeTextarea.disabled = false;
+                        lockStatus.textContent = '您正在编辑';
+                        lockStatus.style.color = 'green';
+                    } else {
+                        // 其他用户被锁定
+                        reviseBtn.disabled = true;
+                        saveBtn.disabled = true;
+                        codeTextarea.disabled = true;
+                        lockStatus.textContent = `${lastUser}正在编辑`;
+                        lockStatus.style.color = 'red';
+                    }
+                } else {
+                    // 未被锁定
+                    reviseBtn.disabled = false;
+                    saveBtn.disabled = true;
+                    codeTextarea.disabled = true;
+                    lockStatus.textContent = '可编辑';
+                    lockStatus.style.color = 'green';
+                }
+            });
+    }
+
+    // 初始检查
+    checkButtonState();
+    // 每5秒检查一次状态
+    setInterval(checkButtonState, 5000);
+
+    // 修改按钮点击事件
+    reviseBtn.addEventListener('click', function() {
+        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/revise_button/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            checkButtonState(); // 更新按钮状态
+        });
+    });
+
+    // 保存按钮点击事件
+    saveBtn.addEventListener('click', function() {
+        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_button/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({})
+        })
+        .then(response => response.json())
+        .then(data => {
+            checkButtonState(); // 更新按钮状态
+        });
+    });
+
+    // 获取CSRF token的函数
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
 
 </body>
 </html>
