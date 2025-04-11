@@ -42,6 +42,9 @@ urlpatterns = [
                 path('group-learn/revise_button/', button_lock_views.revise_button, name='revise_button'),
                 path('group-learn/save_button/', button_lock_views.save_button, name='save_button'),
                 path('group-learn/get_button_state/', button_lock_views.get_button_state, name='get_button_state'),
+                path('group-learn/save_annotations/', group_learn_views.save_annotations, name='save_annotations'),
+                path('group-learn/get_annotations/', group_learn_views.get_annotations, name='get_annotations'),
+
             ]))
         ]))
     ])),

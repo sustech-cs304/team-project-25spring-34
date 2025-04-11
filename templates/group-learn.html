@@ -563,19 +563,61 @@
         renderPage(currentPage);
     }
     
-    function saveAnnotations() {
-        localStorage.setItem(storageKey, JSON.stringify(annotations));
-        alert('标注已保存 ✅');
+    async function saveAnnotations() {
+        const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                pdf_url: pdfUrl,
+                annotations: annotations
+            })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert('标注已保存到云端 ✅');
+        } else {
+            alert('保存失败 ❌');
+        }
     }
-    
+
+    async function loadAnnotations() {
+       
+        const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_annotations/?pdf_url=${encodeURIComponent(pdfUrl)}`); // 添加 groupId 到路径
+        const result = await response.json();
+
+        if (result.success) {
+            annotations = result.annotations || {};
+            renderPage(currentPage);
+        } else {
+            console.error('加载标注失败:', result.error);
+        }
+    }
+
     pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
         pdfDoc = pdf;
         document.getElementById('page-count').textContent = pdf.numPages;
-        const saved = localStorage.getItem(storageKey);
-        if (saved) annotations = JSON.parse(saved);
-        renderPage(currentPage);
+        loadAnnotations(); // 从云端加载标注
     });
-    </script>
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 
 
 
