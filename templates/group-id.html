@@ -286,6 +286,7 @@
     </header>
     <nav>
         <ul>
+            <li><a href="#" id="exitBtn">Exit Group</a></li>
             <li><a href="/login/IDE/lesson" id="goBackBtn">Go Back</a></li>
             <li><a href="/login/IDE/lesson/group-{{ group_id }}/group-learn">Group-Learn</a></li>
         </ul>
@@ -335,9 +336,9 @@
         let roomName = "{{ room.name }}";
         let files = [];
         let membersInterval;
-        let isLeaving = false;
+        let isLeaving = false;  // 是否需要退出房间
         let isValidRoom = false;
-        let isLeader = false; // 新增变量，标识当前用户是否为leader
+        let isLeader = false; // 标识当前用户是否为leader
         let currentTopic = "暂无主题";
 
         // 获取CSRF Token的统一方法
@@ -385,7 +386,7 @@
                         document.getElementById('editTopicBtn').classList.add('active');
                     }
 
-                    // 更新学习主题 - 添加更健壮的检查
+                    // 更新学习主题
                     if (data.topics !== undefined && data.topics !== null && data.topics !== currentTopic) {
                         currentTopic = data.topics;
                         updateTopicDisplay();
@@ -748,9 +749,8 @@
 
         // ================= 离开房间功能 =================
         async function leaveGroup() {
-            if (isLeaving || !isValidRoom) return;
+            if (isLeaving || !isValidRoom) return false;
             isLeaving = true;
-
             try {
                 const response = await fetch(`/login/IDE/lesson/group-${groupId}/leave-room/`, {
                     method: 'POST',
@@ -765,15 +765,15 @@
 
                 if (data && data.status === 'success') {
                     clearInterval(membersInterval);
-                    window.location.href = '/login/IDE/lesson';
+                    return true;
                 } else {
-                    console.error('Failed to leave group:', data ? data.message : 'Unknown error');
-                    showMessage('离开房间失败: ' + (data ? data.message : '未知错误'), 'error');
-                    isLeaving = false;
+                    throw new Error(data.message || 'Unknown error');
                 }
             } catch (error) {
                 console.error('Error leaving group:', error);
                 showMessage('离开房间时出错: ' + error.message, 'error');
+                return false;
+            } finally {
                 isLeaving = false;
             }
         }
@@ -825,12 +825,25 @@
                 // 学习主题
                 updateTopicDisplay();
                 setInterval(updateTopicDisplay, 3000);
-                updateFileList();
+                // updateFileList();
 
-                document.getElementById('goBackBtn').addEventListener('click', function(e) {
+                document.getElementById('exitBtn').addEventListener('click', async function(e) {
                     e.preventDefault();
-                    if (confirm('确定要离开这个小组吗？')) {
-                        leaveGroup();
+                    console.log('点击了退出按钮');
+                    const confirmed = confirm('确定要离开这个小组吗？');
+                    console.log('确认结果:', confirmed);
+                    if (confirmed) {
+                        console.log('尝试退出小组');
+                        const leftSuccessfully = await leaveGroup();
+                        console.log('退出小组结果:', leftSuccessfully);
+                        if (leftSuccessfully) {
+                            console.log('跳转到课程页面');
+                            window.location.href = '/login/IDE/lesson';
+                        } else {
+                            console.log('退出小组失败，未跳转');
+                        }
+                    } else {
+                        console.log('用户取消退出');
                     }
                 });
 
@@ -842,19 +855,19 @@
 
                 document.getElementById('saveTopicBtn').addEventListener('click', saveTopic);
 
-                window.addEventListener('beforeunload', function(e) {
-                    if (!isLeaving && isValidRoom) {
-                        const data = new Blob([JSON.stringify({
-                            username: currentUser,
-                            csrfmiddlewaretoken: getCSRFToken()
-                        })], { type: 'application/json' });
-
-                        navigator.sendBeacon(
-                            `/login/IDE/lesson/group-${groupId}/leave-room/`,
-                            data
-                        );
-                    }
-                });
+                {#window.addEventListener('beforeunload', function(e) {#}
+                {#    if (!isLeaving && isValidRoom) {#}
+                {#        const data = new Blob([JSON.stringify({#}
+                {#            username: currentUser,#}
+                {#            csrfmiddlewaretoken: getCSRFToken()#}
+                {#        })], { type: 'application/json' });#}
+                {##}
+                {#        navigator.sendBeacon(#}
+                {#            `/login/IDE/lesson/group-${groupId}/leave-room/`,#}
+                {#            data#}
+                {#        );#}
+                {#    }#}
+                {#);#}
             }
         });
     </script>
