@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>SplaTAM: 3D高斯泼溅的密集RGB-D SLAM</h1>
+
+    <div class="mermaid">
+        graph TD;
+            A[SplaTAM核心] --> B[3D高斯表示]
+            A --> C[相机跟踪]
+            A --> D[地图构建]
+            
+            B --> B1[快速渲染(400FPS)]
+            B --> B2[显式空间范围]
+            B --> B3[直接优化场景参数]
+            
+            C --> C1[速度传播初始化]
+            C --> C2[轮廓掩码引导]
+            C --> C3[RGB-D联合优化]
+            
+            D --> D1[高斯密度化]
+            D --> D2[关键帧选择]
+            D --> D3[持续地图优化]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

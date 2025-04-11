@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>SplaTAM 技术总结</h1>
+
+    <div class="mermaid">
+        graph TD;
+            A[SplaTAM核心] --> B[3D高斯表示]
+            A --> C[关键优势]
+            A --> D[系统流程]
+            
+            B --> B1[8参数表示]
+            B --> B2[快速可微渲染]
+            
+            C --> C1[400FPS实时渲染]
+            C --> C2[亚厘米级定位]
+            C --> C3[显式空间边界]
+            
+            D --> D1[相机跟踪]
+            D --> D2[高斯密集化]
+            D --> D3[地图更新]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

@@ -314,6 +314,9 @@
         <div class="code-section">
             <div class="code-input">
                 <h3>Code</h3>
+                <h3>截屏功能</h3>
+                <button onclick="selectArea()">Select Area</button>
+                <button onclick="PPImage()">Read Area</button>
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <button id="revise-btn" class="btn-revise">修改</button>
                     <button id="save-btn" class="btn-save" disabled>保存</button>
@@ -336,7 +339,16 @@
         <input id="chat-message-submit" type="button" value="发送">
         {{ group_id|json_script:"group_id" }}
     </div>
-
+    
+{#    <div class="code-section">#}
+{#        <h3>代码实践</h3>#}
+{#        <textarea id="code">{{ code }}</textarea>#}
+{#        <button onclick="runCode()">Run</button>#}
+{#        <div class="output" id="output"></div>#}
+{#        <h3>截屏功能</h3>#}
+{#        <button onclick="selectArea()">Select Area</button>#}
+{#        <button onclick="PPImage()">Read Area</button>#}
+{#    </div>#}
 
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -708,6 +720,64 @@
             }
         }
         return cookieValue;
+    }
+</script>
+
+<script>
+        let isSelect = false;
+
+    async function selectArea() {
+        if (isSelect) {
+            console.warn("操作正在进行中...");
+            return;
+        }
+
+        try {
+            isSelect = true;
+            const response = await fetch('/login/IDE/lesson/self-learn/select_area/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                }
+            });
+
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            console.log("选区坐标:", data);
+            alert(`已选择区域: (${data.start_x}, ${data.start_y}) 到 (${data.end_x}, ${data.end_y})`);
+        } catch (error) {
+            console.error("选区操作失败:", error);
+            alert("操作失败: " + error.message);
+        } finally {
+            isSelect = false;
+        }
+    }
+
+    function PPImage() {
+        try{
+            fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            // 如果需要，可以加上请求体
+            // body: JSON.stringify({ key: 'value' })
+        }).then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        }).then(data => {
+            if (data.success) alert('Image to text conversion!');
+            else alert('Failed: ' + (data.error || 'Unknown error'));
+        }).catch(error => {
+            alert('Failed: ' + error.message);
+        });
+        } catch (e){
+            console.error("选区操作失败:", error);
+            print("error:", error)
+        }
     }
 </script>
 
