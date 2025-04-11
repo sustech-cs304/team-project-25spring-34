@@ -29,20 +29,14 @@ if not os.path.exists(BOOKMARKS_FILE):
         json.dump({}, f)
 
 # location
-file_path = 'self_learn/code_test/8_java.txt'
+file_path = ''
+
 
 def index(request):
-    # 从本地文件读取代码
-    print(os.getcwd())
-    try:
-        with open(file_path, 'r', ) as file:
-            code = file.read()
-            print("code read:", code)
-    except FileNotFoundError:
-        return render(request, 'self-learn.html', {'code': 'error:File not found'})
-
+    code = ''
     # 渲染主页面，并将代码传递到模板
     return render(request, 'self-learn.html', {'code': code})
+
 
 def determine_file_type(file_path):
     """
@@ -52,6 +46,14 @@ def determine_file_type(file_path):
     :param file_path: 文件的完整路径
     :return: 文件类型 ('java' 或 'python')
     """
+    """
+     * AI-generated-content
+     * tool:Hunyuan
+     * version: latest
+     * usage: I used the prompt "根据是否以java.txt结尾来确定文件类型", and
+     * directly copy the code from its response
+    """
+
     # 获取文件名（不包括路径）
     filename = os.path.basename(file_path)
 
@@ -72,6 +74,13 @@ def extract_class_name(java_code):
     """
     从Java代码中提取公共类名.必须是public class xxx才能提取到.且提取第一个
     """
+    """
+     * AI-generated-content
+     * tool:Hunyuan
+     * version: latest
+     * usage: I used the prompt "从Java代码中提取公共类名.必须是public class xxx才能提取到.且提取第一个", and
+     * directly copy the code from its response
+    """
     match = re.search(r'public\s+class\s+([A-Za-z_$][A-Za-z\d_$]*)', java_code)
     if match:
         return match.group(1)
@@ -86,21 +95,14 @@ def hello(request):
     return HttpResponse("Hello world ! ")
 
 
-def index(request):
-    # 从本地文件读取代码
-    print(os.getcwd())
-    try:
-        with open(file_path, 'r', ) as file:
-            code = file.read()
-            print("code read:", code)
-    except FileNotFoundError:
-        return render(request, 'self-learn.html', {'code': 'error:File not found'})
-
-    # 渲染主页面，并将代码传递到模板
-    return render(request, 'self-learn.html', {'code': code})
-
-
 def run_code(request):
+    """
+     * AI-generated-content
+     * tool:Hunyuan
+     * version: latest
+     * usage: I used the prompt "读取txt并返回运行结果到前端", and
+     * use the framework it provides, but modify some of the details
+    """
     if request.method == 'POST':
         # 获取前端传递的代码
         code = request.POST.get('code', '')
@@ -133,6 +135,7 @@ def run_code(request):
 
             # 处理编译错误
             if compile_result.returncode != 0:
+                print("compile error:", compile_result)
                 return JsonResponse({
                     'error': 'Java compilation failed',
                     'stderr': compile_result.stderr
@@ -213,6 +216,7 @@ def select_area(request):
                 else:
                     coordinates['end'] = (x, y)
                     return False
+
             with mouse.Listener(on_click=on_click) as listener:
                 listener.join()  # 阻塞等待鼠标操作
 
@@ -255,6 +259,7 @@ def select_area(request):
 
 
 def preprocess_image(request):
+    global file_path
     if request.method == 'POST':
         try:
             image_path = 'media/screenshot/improved_screenshot.png'
@@ -264,9 +269,11 @@ def preprocess_image(request):
             if type == "p":
                 with open("media/screenshot/output_python.txt", "w", encoding="utf-8") as file:
                     file.write(formed_code)
+                    file_path = "media/screenshot/output_python.txt"
             if type == "j":
                 with open("media/screenshot/output_java.txt", "w", encoding="utf-8") as file:
                     file.write(formed_code)
+                    file_path = "media/screenshot/output_java.txt"
             print(formed_code)
             return JsonResponse({
                 'code': formed_code,
@@ -286,6 +293,7 @@ def get_pdf_list(request):
     pdfs = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')] if os.path.exists(pdf_dir) else []
     return JsonResponse({'pdfs': pdfs})
 
+
 @csrf_exempt
 def get_bookmarks(request):
     """获取指定 PDF 的书签"""
@@ -297,6 +305,7 @@ def get_bookmarks(request):
         save_bookmarks(bookmarks)
 
     return JsonResponse(bookmarks.get(pdf_name, []), safe=False)
+
 
 @csrf_exempt
 def add_bookmark(request):
@@ -322,6 +331,7 @@ def add_bookmark(request):
     save_bookmarks(bookmarks)
     return JsonResponse({'success': True})
 
+
 @csrf_exempt
 def delete_bookmark(request):
     """删除书签"""
@@ -337,15 +347,16 @@ def delete_bookmark(request):
 
     return JsonResponse({'error': '书签不存在'}, status=404)
 
+
 def load_bookmarks():
     """加载书签文件"""
     print(f"加载书签文件: {BOOKMARKS_FILE}")  # 调试日志
     with open(BOOKMARKS_FILE, 'r') as f:
         return json.load(f)
 
+
 def save_bookmarks(bookmarks):
     """保存书签到文件"""
     print(f"保存书签到文件: {BOOKMARKS_FILE}")  # 调试日志
     with open(BOOKMARKS_FILE, 'w') as f:
         json.dump(bookmarks, f)
-

@@ -75,6 +75,8 @@
             margin: 0;
         }
         .task-list li {
+            white-space: normal; /* 允许文本换行 */
+            word-wrap: break-word; /* 在单词内换行 */
             background-color: #727980;
             padding: 5px;
             margin-bottom: 5px;
@@ -166,7 +168,7 @@
          .add-task-container {
             display: flex;
             gap: 10px;
-            margin-top: 10px; /* 增加上边距 */
+             margin-top: 10px; /* 增加上边距 */
         }
          .add-task-container select,
         .add-task-container input[type="text"],
@@ -269,7 +271,21 @@
                     </form>
                 </div>
             </div>
-
+            
+            
+                <!-- 添加任务的输入框 -->
+        <h2>任务栏</h2>    
+        <div class="add-task-container">
+            <select id="task-section">
+                <option value="focus-list">关注</option>
+                <option value="upcoming-list">即将</option>
+                <option value="completed-list">完成</option>
+            </select>
+            <input type="text" id="new-task-input" placeholder="添加任务">
+            <button onclick="addTask()">添加</button>
+        </div>    
+            
+            
         <div class="status-bar">
             <!-- 关注 -->
             <div class="status-section">
@@ -313,52 +329,30 @@
         </div>
     </div>
     
-        <!-- 添加任务的输入框 -->
-    <div class="add-task-container">
-        <select id="task-section">
-            <option value="focus-list">关注</option>
-            <option value="upcoming-list">即将</option>
-            <option value="completed-list">完成</option>
-        </select>
-        <input type="text" id="new-task-input" placeholder="添加任务">
-        <button onclick="addTask()">添加</button>
-    </div>
 
     <script>
-        function addTask(section) {
-            const input = document.getElementById(`${section}-input`);
+        
+        function addTask() {
+            /*
+             * AI-generated-content
+             * tool:Hunyuan
+             * version: latest
+             * usage: I used the prompt "将任务添加到对应list中", and
+             * use the framework it provides, but modify some of the details
+             */
+             const section = document.getElementById('task-section').value;
+             const input = document.getElementById('new-task-input');
+
             const taskText = input.value.trim();
             if (taskText) {
-                const list = document.getElementById(`${section}-list`);
-                const li = document.createElement('li');
-                li.textContent = taskText;
-                list.appendChild(li);
+                const list = document.getElementById(section);
+                 const li = createTaskItem(taskText);
+                 list.appendChild(li);
                 input.value = '';
             }
         }
 
-        // 处理创建房间表单提交
-        {#document.getElementById('create-room-form').addEventListener('submit', function (e) {#}
-        {#    e.preventDefault();#}
-        {#    const formData = new FormData(this);#}
-        {#    fetch("{% url 'lesson:create_room' %}", {#}
-        {#        method: 'POST',#}
-        {#        body: formData,#}
-        {#        headers: {#}
-        {#            'X-CSRFToken': formData.get('csrfmiddlewaretoken')#}
-        {#        }#}
-        {#    })#}
-        {#    .then(response => {#}
-        {#        if (response.status === 201) {#}
-        {#            document.getElementById('message').innerHTML = `<div class="success">房间创建成功！</div>`;#}
-        {#        } else {#}
-        {#            document.getElementById('message').innerHTML = `<div class="error">房间已存在，请使用其他名称！</div>`;#}
-        {#        }#}
-        {#    })#}
-        {#    .catch(error => {#}
-        {#        console.error('Error:', error);#}
-        {#    });#}
-        {#);#}
+       
 
         document.getElementById('create-room-form').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -494,23 +488,18 @@
     });
 </script>
 <script>
-        // 添加任务
-        function addTask() {
-            const section = document.getElementById('task-section').value;
-            const input = document.getElementById('new-task-input');
-            const taskText = input.value.trim();
-            if (taskText) {
-                const list = document.getElementById(section);
-                const li = createTaskItem(taskText);
-                list.appendChild(li);
-                input.value = '';
-            }
-        }
-
+    
         // 创建任务项
+        /*
+     * AI-generated-content
+     * tool:Hunyuan
+     * version: latest
+     * usage: I used the prompt "创建任务项，可以移动到其他状态和删除", and
+     * use the framework it provides, but modify some of the details
+        */
         function createTaskItem(taskText) {
             const li = document.createElement('li');
-            li.className = 'task-item'; // 添加样式类
+            li.className = 'task-list li'; // 添加样式类
             li.textContent = taskText;
 
             // 删除按钮
@@ -572,10 +561,22 @@
             // 将菜单添加到页面
             document.body.appendChild(menu);
 
-            // 定位菜单
+           // 获取鼠标点击位置（推荐方式）
+            const clickEvent = new MouseEvent('click'); // 创建一个模拟的鼠标事件
+            taskItem.dispatchEvent(clickEvent); // 触发点击事件以获取坐标（仅适用于某些场景）
+            // 或者直接使用鼠标事件的 clientX 和 clientY（推荐）
+            // 你需要将点击事件的坐标传递给 showMoveOptions 函数
+        
+            // 如果你有鼠标点击事件的坐标，可以直接使用：
+            // const { clientX, clientY } = mouseClickEvent;
+        
+            // 如果没有鼠标事件坐标，使用 getBoundingClientRect() 并修正滚动偏移
             const rect = taskItem.getBoundingClientRect();
-            menu.style.left = `${rect.left}px`;
-            menu.style.top = `${rect.bottom + 5}px`;
+            const scrollX = window.scrollX || window.pageXOffset;
+            const scrollY = window.scrollY || window.pageYOffset;
+        
+            menu.style.left = `${rect.left + scrollX}px`; // 修正水平位置
+            menu.style.top = `${rect.bottom + scrollY + 5}px`; // 修正垂直位置
         }
 
         // 移动任务

@@ -758,6 +758,8 @@
 
     function PPImage() {
         try{
+             //获取code区域
+            const codeTextarea = document.getElementById('code');
             fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
             method: 'POST',
             headers: {
@@ -770,7 +772,11 @@
             if (!response.ok) throw new Error('Network response was not ok');
             return response.json();
         }).then(data => {
-            if (data.success) alert('Image to text conversion!');
+            if (data.success){
+                 //add code to area
+                alert('Image to text conversion!');
+                codeTextarea.value = data.code;
+            }
             else alert('Failed: ' + (data.error || 'Unknown error'));
         }).catch(error => {
             alert('Failed: ' + error.message);
@@ -780,8 +786,7 @@
             print("error:", error)
         }
     }
-
-    // 获取 Cookie 中的 CSRF Token
+        // 获取 Cookie 中的 CSRF Token
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -798,22 +803,28 @@
     }
 </script>
 <script>
-    //运行代码
-    function runCode() {
-        const code = document.getElementById('code').value;
+        function runCode() {
+            /*
+     * AI-generated-content
+     * tool:Hunyuan
+     * version: latest
+     * usage: I used the prompt "读取txt并返回运行结果到前端", and
+     * use the framework it provides, but modify some of the details
+     */
+            const code = document.getElementById('code').value;
 
-        // 显示加载状态
-        document.getElementById('output').innerText = 'Running...';
+            // 显示加载状态
+            document.getElementById('output').innerText = 'Running...';
 
-        // 发送 POST 请求到后端
-        fetch('/login/IDE/lesson/self-learn/run/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
-            },
-            body: `code=${encodeURIComponent(code)}`
-        })
+            // 发送 POST 请求到后端
+            fetch('/login/IDE/lesson/self-learn/run/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
+                },
+                body: `code=${encodeURIComponent(code)}`
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.error) {
