@@ -9,11 +9,14 @@ import asyncio
 import sys
 from playwright.async_api import async_playwright
 from IDEframework import settings
+
 # pip install playwright
 # playwright install chromium  # 自动下载内置的 Chromium
 
 if sys.platform == "win32":
     asyncio.set_event_loop_policy(asyncio.WindowsProactorEventLoopPolicy())
+
+
 @xframe_options_exempt
 def embed_chat(request):
     return render(request, 'embed.html')
@@ -47,6 +50,8 @@ Mind_map_tem = """
 </body>
 </html>
 """
+
+
 # ai start
 # def html_to_png(html_path: str, output_png_path: str):
 #     """将 HTML 文件转为 PNG 图片（智能裁剪）"""
@@ -133,6 +138,8 @@ async def html_to_png(html_path: str, output_png_path: str):
             type="png",
         )
         await browser.close()
+
+
 # ai end
 
 
@@ -155,12 +162,14 @@ def deepseek_api(request):
         # 构造最终 prompt
         if pdf_text:
             if (any(word in prompt for word in ["画", "给", "用",
-                                               "建", "拿", "创",
-                                               "造", "成", "生",
-                                               "总", "结"]) and
+                                                "建", "拿", "创",
+                                                "造", "成", "生",
+                                                "总", "结", "表",
+                                                "示"]) and
                     any(word in prompt for word in ["思维导图", "思维图", "导图"])):
                 Mind_map = True
-                full_prompt = (f"以{Mind_map_tem}为模板，总结\n{pdf_text}\n，只填充<body>中类似<h1>和<div class=\"mermaid\">的相关部分，并回复完整html代码(注意：节点和子节点不超过4个)。\n用户的要求是：{prompt}")
+                full_prompt = (
+                    f"以{Mind_map_tem}为模板，总结\n{pdf_text}\n，只填充<body>中类似<h1>和<div class=\"mermaid\">的相关部分，并回复完整html代码(注意：节点和子节点不超过4个)。\n用户的要求是：{prompt}")
             else:
                 full_prompt = f"请根据以下 PDF 内容回答问题：\n\n{pdf_text}\n\n用户的问题是：{prompt}"
         else:
