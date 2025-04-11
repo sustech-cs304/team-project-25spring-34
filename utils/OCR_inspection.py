@@ -222,7 +222,8 @@ def auto_format_code_improved(code_str):
         formatted_code = fix_extra_spaces(formatted_code)
         formatted_code = fix_mismatched_quotes_in_comparisons(formatted_code)
         formatted_code = fix_dictionary_key_quotes(formatted_code)
-        return balance_code(formatted_code)
+        code = balance_code(formatted_code)
+        return code, "p"
 
     else:  # Java处理流程
         # 预处理
@@ -256,4 +257,5 @@ def auto_format_code_improved(code_str):
             else:
                 formatted_code.append(line.rstrip() + ';')
 
-        return '\n'.join(formatted_code)
+        code = '\n'.join(formatted_code)
+        return code, "j"

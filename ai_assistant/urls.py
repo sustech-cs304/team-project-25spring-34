@@ -10,6 +10,7 @@ urlpatterns = [
     path('embed_chat/', embed_chat, name='embed_chat'),
     path('api/', deepseek_api, name='deepseek_api'),
 ]
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # # 允许 Django 在开发模式下提供媒体文件（用户上传的 PDF）
 # if settings.DEBUG:

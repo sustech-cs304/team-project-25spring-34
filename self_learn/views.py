@@ -28,6 +28,7 @@ if not os.path.exists(BOOKMARKS_FILE):
     with open(BOOKMARKS_FILE, 'w') as f:
         json.dump({}, f)
 
+# location
 file_path = 'self_learn/code_test/8_java.txt'
 
 def index(request):
@@ -259,21 +260,20 @@ def preprocess_image(request):
             image_path = 'media/screenshot/improved_screenshot.png'
             image = Image.open(image_path)
             code = pytesseract.image_to_string(image, lang='eng+chi_sim', config="--oem 1 --psm 6")
-            # reader = easyocr.Reader(['en', 'ch_sim'])  # 加载英文和简体中文
-            # text_lines = reader.readtext('media/screenshot/improved_screenshot.png')
-            #
-            # text = "\n".join([line[1] for line in text_lines])
-
-            with open("media/screenshot/output.txt", "w", encoding="utf-8") as file:
-                formed_code = auto_format_code_improved(code)
-                file.write(formed_code)
+            formed_code, type = auto_format_code_improved(code)
+            if type == "p":
+                with open("media/screenshot/output_python.txt", "w", encoding="utf-8") as file:
+                    file.write(formed_code)
+            if type == "j":
+                with open("media/screenshot/output_java.txt", "w", encoding="utf-8") as file:
+                    file.write(formed_code)
             print(formed_code)
-
             return JsonResponse({
                 'code': formed_code,
                 'success': True
             })
         except Exception as e:
+            print(f"Error in preprocess_image: {e}")  # 打印详细错误
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)

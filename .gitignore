@@ -12,7 +12,7 @@ ai_assistant/__pycache__/
 utils/__pycache__/
 *.pyc
 *.pyo
-
+node_modules
 # 虚拟环境
 
 
