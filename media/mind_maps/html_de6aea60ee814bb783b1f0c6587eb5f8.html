@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>uaccess 原语优化</h1>
+
+    <div class="mermaid">
+        graph TD;
+            A[uaccess原语] --> B[背景]
+            A --> C[问题描述]
+            A --> D[检查点]
+            
+            B --> B1[内核访问用户空间]
+            B --> B2[安全性考虑]
+            
+            C --> C1[当前实现问题]
+            C --> C2[性能优化需求]
+            
+            D --> D1[Checkpoint 1]
+            D --> D2[Checkpoint 2]
+            D --> D3[Checkpoint 3]
+            D --> D4[Checkpoint 4]
+            
+            B1 --> B1a[使用copy_from_user]
+            B1 --> B1b[使用copy_to_user]
+            B2 --> B2a[指针不可信]
+            B2 --> B2b[防止内核访问]
+            
+            C1 --> C1a[手动地址转换]
+            C1 --> C1b[缺少TLB缓存]
+            C2 --> C2a[MMU硬件加速]
+            C2 --> C2b[减少walk操作]
+            
+            D1 --> D1a[修改页表模型]
+            D2 --> D2a[直接memmove]
+            D3 --> D3a[地址合法性检查]
+            D4 --> D4a[处理Page Fault]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

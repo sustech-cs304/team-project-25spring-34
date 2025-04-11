@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>uaccess思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>uaccess作业总结</h1>
+
+    <div class="mermaid">
+        graph TD;
+        A[uaccess作业] --> B[Checkpoint 1: 页表修改]
+        A --> C[Checkpoint 2: SUM标志位]
+        A --> D[Checkpoint 3: 地址验证]
+        A --> E[Checkpoint 4: 异常处理]
+        
+        B --> B1[用户页表包含内核页表]
+        B --> B2[内核线程使用用户页表]
+        
+        C --> C1[直接使用memmove]
+        C --> C2[设置SUM位解决页错误]
+        
+        D --> D1[access_ok检查]
+        D --> D2[区分用户/内核地址]
+        
+        E --> E1[用户地址页错误处理]
+        E --> E2[exit(-9)退出进程]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

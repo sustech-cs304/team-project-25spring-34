@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>uaccess 作业总结</h1>
+
+    <div class="mermaid">
+        graph TD;
+        A[uaccess 作业] --> B[背景]
+        A --> C[问题描述]
+        A --> D[4个Checkpoint]
+        A --> E[Debug方法]
+        
+        B --> B1[用户空间访问原语]
+        B --> B2[安全原因]
+        
+        C --> C1[当前实现问题]
+        C --> C2[优化目标]
+        
+        D --> D1[页表修改]
+        D --> D2[SUM标志位]
+        D --> D3[地址检查]
+        D --> D4[异常处理]
+        
+        E --> E1[Backtrace]
+        E --> E2[Stack Frame]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>
