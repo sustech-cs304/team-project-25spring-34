@@ -187,11 +187,15 @@ def upload_pdf(request):
 
 def view_bookmarks(request):
     """展示 PDF 转换后的页面"""
+    pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
     img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
     img_files = sorted(f for f in os.listdir(img_folder) if f.endswith(".jpg"))
     bookmarks = {i + 1: f"/media/pdf_images/{img}" for i, img in enumerate(img_files)}
 
-    return render(request, "self-learn.html", {"bookmarks": bookmarks})
+    return render(request, "self-learn.html", {
+        "pdf_name": pdf_name,
+        "bookmarks": bookmarks
+    })
 
 
 @csrf_exempt
@@ -288,15 +292,9 @@ def get_bookmarks(request):
     pdf_name = request.GET.get('pdf_name')
     bookmarks = load_bookmarks()
 
-    # 如果 PDF 没有书签，添加默认书签
     if pdf_name not in bookmarks:
-        bookmarks[pdf_name] = [{
-            'description': f'{pdf_name} 书签样例',
-            'category': '其他',
-            'page': 1
-        }]
-        save_bookmarks(bookmarks)  # 保存默认书签
-        print(f"为 {pdf_name} 添加默认书签")  # 调试日志
+        bookmarks[pdf_name] = []  # 初始化空书签列表
+        save_bookmarks(bookmarks)
 
     return JsonResponse(bookmarks.get(pdf_name, []), safe=False)
 
@@ -305,12 +303,12 @@ def add_bookmark(request):
     """添加书签"""
     data = json.loads(request.body)
     pdf_name = data.get('pdf_name')
-    description = data.get('description')
-    category = data.get('category')
+    description = data.get('description', '').strip()
+    category = data.get('category', '').strip()
     page = data.get('page')
 
-    if not (pdf_name and description and category and page):
-        return JsonResponse({'error': '缺少必要参数'}, status=400)
+    if not (pdf_name and description and category and isinstance(page, int) and page > 0):
+        return JsonResponse({'error': '缺少必要参数或参数无效'}, status=400)
 
     bookmarks = load_bookmarks()
     if pdf_name not in bookmarks:
@@ -322,7 +320,6 @@ def add_bookmark(request):
         'page': page
     })
     save_bookmarks(bookmarks)
-    print(f"书签已保存: {bookmarks}")  # 调试日志
     return JsonResponse({'success': True})
 
 @csrf_exempt

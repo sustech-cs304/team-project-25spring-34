@@ -2,6 +2,8 @@ from django.shortcuts import render, redirect
 from django.shortcuts import reverse
 from django.contrib.auth import authenticate, login as user_login, logout as user_logout
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+
 
 def index(request, group_id):
     return render(request, 'group-learn.html', {'group_id': group_id})

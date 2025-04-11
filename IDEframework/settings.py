@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'group_learn',
     'ai_assistant',
     'group_id',
+    'button_lock',
 
     'bootstrap4',  # Bootstrap4 集成
     'markdown',  # Markdown 支持
@@ -94,11 +95,19 @@ ASGI_APPLICATION = 'IDEframework.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'maplebase',
-        'USER': 'maplezhu',
-        'PASSWORD': 'gcjjlHgideaNMlD0',
-        'HOST': 'mysql2.sqlpub.com',
-        'PORT': '3307',
+        'NAME': 'maplebase1',
+        'USER': 'maplezhuu',
+        'PASSWORD': 'cZAHUmMrpJtR1KlN',
+        'HOST': 'mysql3.sqlpub.com',
+        'PORT': '3308',
+        'POOL_OPTIONS': {
+            'POOL_SIZE': 20,        
+            'MAX_OVERFLOW': 25,      
+            'RECYCLE': 1800,     
+            'PRE_PING': True,     
+            'ECHO': False,      
+            'TIMEOUT': 3,  
+        }
     }
 }
 
@@ -124,13 +133,7 @@ CACHES = {  # 学习主题的缓存
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
