@@ -261,9 +261,25 @@
     </nav>
     <div class="container">
         <div class="ppt-section">
-         
+            <h2 style="display: flex; align-items: center; margin-top: 0; gap: 5px; justify-content: flex-start;">
+                📄 PDF学习区
+                {% if is_creator %}
+                <div class="upload-btn-container" style="position: relative; top: -5px; left: 80px;">
+                    <input type="file" id="file-input" accept=".pdf" style="display: none;">
+                </div>
+                {% endif %}
+            </h2>
 
-            <h2>📄 PDF 学习区</h2>
+            <div style="margin-bottom: 10px;">
+                {% if is_creator %}
+                <button id="select-pdf-btn" style="padding: 5px 10px; font-size: 14px;">选择PDF</button>
+                {% else %}
+                <div style="color: #666; font-style: italic;">
+                    （只有房间创建者可以选择PDF文件）
+                </div>
+                {% endif %}
+                <span id="current-pdf" style="margin-left: 10px;"></span>
+            </div>
 
             <div class="pdf-section" style="display: flex; flex-direction: column; align-items: flex-start;">
                 <div id="controls" style="margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 12px;">
@@ -275,32 +291,32 @@
                             <option value="none">无</option>
                         </select>
                     </label>
-            
+
                     <label>颜色:
                         <input type="color" id="color" value="#ffcc00">
                     </label>
-            
+
                     <label>粗细:
                         <input type="number" id="size" value="4" min="1" max="30">
                     </label>
-            
+
                     <button onclick="prevPage()">⬅ 上一页</button>
                     <button onclick="nextPage()">➡ 下一页</button>
                     <span>第 <span id="page-num">1</span> / <span id="page-count">1</span> 页</span>
-            
+
                     <button onclick="zoomOut()">➖ 缩小</button>
                     <button onclick="zoomIn()">➕ 放大</button>
                     <span>缩放：<span id="zoom-level">100%</span></span>
-            
+
                     <button onclick="saveAnnotations()">💾 保存标注</button>
                 </div>
-            
+
                 <div id="pdf-container" style="position: relative; border: 1px solid #ccc; border-radius: 8px; overflow: hidden;">
                     <canvas id="pdf-canvas"></canvas>
                     <canvas id="overlay" style="position: absolute; left: 0; top: 0;"></canvas>
                 </div>
             </div>
-            
+
 
 
             <div class="notes-section" style="margin-top: 20px;">
@@ -309,7 +325,7 @@
                 <button onclick="saveAsMD()" style="margin-top:10px;">📥 保存为 MD</button>
                 <div id="preview" style="background:#fff;border:1px solid #ccc;padding:8px;margin-top:10px;height:150px;overflow-y:auto;"></div>
             </div>
-            
+
         </div>
         <div class="code-section">
             <div class="code-input">
@@ -341,7 +357,16 @@
         <input id="chat-message-submit" type="button" value="发送">
         {{ group_id|json_script:"group_id" }}
     </div>
-    
+
+    <!-- 新增 -->
+    <div id="pdf-modal" style="display: none;">
+        <div>
+            <h3>选择PDF文件</h3>
+            <ul id="pdf-list"></ul>
+            <button id="close-modal">关闭</button>
+        </div>
+    </div>
+
 {#    <div class="code-section">#}
 {#        <h3>代码实践</h3>#}
 {#        <textarea id="code">{{ code }}</textarea>#}
@@ -476,15 +501,15 @@ ${data.stderr}`;
 
 
 <script>
-     const pdfUrl = "/media/pdfs/lecture7-quality.pdf";
+     let pdfUrl = "/media/pdfs/lecture7-quality.pdf";
      //const pdfUrl = "/media/pdfs/lab3.pdf";
     const storageKey = pdfUrl + '.annotations';
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    
+
     let pdfDoc = null, currentPage = 1, scale = 1.0;
     let dpiScale = window.devicePixelRatio || 1;
-    
+
     const canvas = document.getElementById('pdf-canvas');
     const ctx = canvas.getContext('2d');
     const overlay = document.getElementById('overlay');
@@ -492,11 +517,11 @@ ${data.stderr}`;
     const tool = document.getElementById('tool');
     const color = document.getElementById('color');
     const size = document.getElementById('size');
-    
+
     let annotations = {};
     let drawing = false;
     let currentPath = [];
-    
+
     function renderPage(num) {
         pdfDoc.getPage(num).then(page => {
             const viewport = page.getViewport({ scale });
@@ -504,29 +529,29 @@ ${data.stderr}`;
             canvas.height = viewport.height * dpiScale;
             canvas.style.width = viewport.width + "px";
             canvas.style.height = viewport.height + "px";
-    
+
             overlay.width = canvas.width;
             overlay.height = canvas.height;
             overlay.style.width = canvas.style.width;
             overlay.style.height = canvas.style.height;
-    
+
             const renderContext = {
                 canvasContext: ctx,
                 viewport: page.getViewport({ scale }),
                 transform: [dpiScale, 0, 0, dpiScale, 0, 0]
             };
             page.render(renderContext);
-    
+
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
             if (annotations[num]) {
                 for (const path of annotations[num]) drawPath(path);
             }
-    
+
             document.getElementById('page-num').textContent = num;
             document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
         });
     }
-    
+
     function drawPath(path) {
         overlayCtx.strokeStyle = path.color;
         overlayCtx.lineWidth = path.size * scale;
@@ -543,7 +568,7 @@ ${data.stderr}`;
         overlayCtx.stroke();
         overlayCtx.globalAlpha = 1.0;
     }
-    
+
     overlay.addEventListener('mousedown', e => {
         if (tool.value === 'eraser') {
             if (annotations[currentPage]?.length > 0) annotations[currentPage].pop();
@@ -555,7 +580,7 @@ ${data.stderr}`;
         drawing = true;
         currentPath = [getRelativePosition(e)];
     });
-    
+
     overlay.addEventListener('mousemove', e => {
         if (!drawing || tool.value === 'none' || tool.value === 'eraser') return;
         currentPath.push(getRelativePosition(e));
@@ -563,7 +588,7 @@ ${data.stderr}`;
         annotations[currentPage]?.forEach(drawPath);
         drawPath({ points: currentPath, tool: tool.value, color: color.value, size: parseInt(size.value) });
     });
-    
+
     overlay.addEventListener('mouseup', () => {
         if (!drawing || tool.value === 'none') return;
         drawing = false;
@@ -575,7 +600,7 @@ ${data.stderr}`;
             size: parseInt(size.value)
         });
     });
-    
+
     function getRelativePosition(e) {
         const rect = overlay.getBoundingClientRect();
         return {
@@ -583,29 +608,29 @@ ${data.stderr}`;
             y: (e.clientY - rect.top) * (dpiScale / scale)
         };
     }
-    
+
     function prevPage() {
         if (currentPage <= 1) return;
         currentPage--;
         renderPage(currentPage);
     }
-    
+
     function nextPage() {
         if (currentPage >= pdfDoc.numPages) return;
         currentPage++;
         renderPage(currentPage);
     }
-    
+
     function zoomIn() {
         scale = Math.min(scale + 0.1, 3.0);
         renderPage(currentPage);
     }
-    
+
     function zoomOut() {
         scale = Math.max(scale - 0.1, 0.5);
         renderPage(currentPage);
     }
-    
+
     async function saveAnnotations() {
         const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
             method: 'POST',
@@ -628,7 +653,7 @@ ${data.stderr}`;
     }
 
     async function loadAnnotations() {
-       
+
         const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_annotations/?pdf_url=${encodeURIComponent(pdfUrl)}`); // 添加 groupId 到路径
         const result = await response.json();
 
@@ -646,6 +671,159 @@ ${data.stderr}`;
         loadAnnotations(); // 从云端加载标注
     });
 
+    // 获取并更新创建者选择的 PDF
+        async function updateCurrentPdf() {
+            try {
+                const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_current_pdf/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                if (data.success && data.pdf) {
+                    const newPdfUrl = data.pdf.file_url;
+                    const newPdfName = data.pdf.file_name;
+                    if (newPdfUrl !== pdfUrl) {
+                        pdfUrl = newPdfUrl;
+                        document.getElementById('current-pdf').textContent = `当前PDF: ${newPdfName}`;
+                        try {
+                            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                            pdfDoc = pdf;
+                            document.getElementById('page-count').textContent = pdf.numPages;
+                            currentPage = 1;
+                            annotations = {};
+                            await loadAnnotations();
+                            renderPage(currentPage);
+                        } catch (err) {
+                            console.error('加载 PDF 失败:', err);
+                            document.getElementById('current-pdf').textContent = '加载 PDF 失败';
+                        }
+                    }
+                } else {
+                    pdfUrl = null;
+                    pdfDoc = null;
+                    document.getElementById('current-pdf').textContent = '未选择 PDF';
+                    canvas.width = 0;
+                    canvas.height = 0;
+                    overlay.width = 0;
+                    overlay.height = 0;
+                }
+            } catch (err) {
+                console.error('获取当前 PDF 失败:', err);
+            }
+        }
+
+    // PDF选择模态框逻辑
+        const selectPdfBtn = document.getElementById('select-pdf-btn');
+        const pdfModal = document.getElementById('pdf-modal');
+        const pdfList = document.getElementById('pdf-list');
+        const closeModalBtn = document.getElementById('close-modal');
+        const currentPdfSpan = document.getElementById('current-pdf');
+        const groupId = "{{ group_id }}";
+
+        {% if is_creator %}
+        selectPdfBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_room_pdfs/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken'),
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    pdfList.innerHTML = '';
+                    if (data.pdfs.length === 0) {
+                        pdfList.innerHTML = '<li>暂无PDF文件</li>';
+                    } else {
+                        data.pdfs.forEach(pdf => {
+                            const li = document.createElement('li');
+                            li.innerHTML = `<a href="#" data-url="${pdf.file_url}" data-name="${pdf.file_name}" data-id="${pdf.id}">${pdf.file_name} (上传于: ${pdf.uploaded_at})</a>`;
+                            pdfList.appendChild(li);
+
+                            li.querySelector('a').addEventListener('click', async (e) => {
+                                e.preventDefault();
+                                pdfUrl = pdf.file_url;
+                                const pdfId = pdf.id;
+                                currentPdfSpan.textContent = `当前PDF: ${pdf.file_name}`;
+                                pdfModal.style.display = 'none';
+
+                                // 保存创建者选择的 PDF 到缓存
+                                try {
+                                    const saveResponse = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/set_current_pdf/`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': getCookie('csrftoken')
+                                        },
+                                        body: JSON.stringify({
+                                            pdf_id: pdfId
+                                        })
+                                    });
+                                    const saveResult = await saveResponse.json();
+                                    if (!saveResult.success) {
+                                        console.error('保存当前 PDF 失败:', saveResult.error);
+                                    }
+                                } catch (err) {
+                                    console.error('保存当前 PDF 失败:', err);
+                                }
+
+                                // 加载选中的 PDF
+                                try {
+                                    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                                    pdfDoc = pdf;
+                                    document.getElementById('page-count').textContent = pdf.numPages;
+                                    currentPage = 1;
+                                    annotations = {};
+                                    await loadAnnotations();
+                                    renderPage(currentPage);
+                                } catch (err) {
+                                    console.error('加载 PDF 失败:', err);
+                                    alert('加载 PDF 失败');
+                                }
+                            });
+                        });
+                    }
+                    pdfModal.style.display = 'flex';
+                } else {
+                    alert('获取 PDF 列表失败: ' + data.error);
+                }
+            } catch (err) {
+                console.error('获取 PDF 列表失败:', err);
+                alert('获取 PDF 列表失败');
+            }
+        });
+        {% endif %}
+
+        closeModalBtn.addEventListener('click', () => {
+            pdfModal.style.display = 'none';
+        });
+
+        // 加载初始PDF
+        pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+            pdfDoc = pdf;
+            document.getElementById('page-count').textContent = pdf.numPages;
+            loadAnnotations();
+        });
+
+        // 初始化和定时更新 PDF
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCurrentPdf();
+            pdfInterval = setInterval(updateCurrentPdf, 3000);
+        });
+
+        // 清理定时器
+        window.addEventListener('beforeunload', () => {
+            if (pdfInterval) {
+                clearInterval(pdfInterval);
+                pdfInterval = null;
+            }
+        })
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
@@ -661,7 +839,6 @@ ${data.stderr}`;
         return cookieValue;
     }
 </script>
-
 
 
 <script>
@@ -712,7 +889,6 @@ ${data.stderr}`;
 <script>
 
     // 新增的按钮状态管理脚本
-    const groupId = "{{ group_id }}";
     const reviseBtn = document.getElementById('revise-btn');
     const saveBtn = document.getElementById('save-btn');
     const codeTextarea = document.getElementById('code-textarea');
