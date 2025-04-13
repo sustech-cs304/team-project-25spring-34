@@ -53,7 +53,7 @@ def save_annotations(request, group_id):
     AI-generated-content
     tool: GitHub Copilot
     version: latest
-    usage: I used Copilot to fix syntax errors and standardize the code for saving PDF annotations.
+    usage: I used Copilot to fix syntax errors and standardize code.
     """
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -80,7 +80,7 @@ def get_annotations(request, group_id):
     AI-generated-content
     tool: GitHub Copilot
     version: latest
-    usage: I used Copilot to fix syntax errors and standardize the code for retrieving PDF annotations.
+    usage: I used Copilot to fix syntax errors and standardize code.
     """
     if request.method == 'GET':
         pdf_url = request.GET.get('pdf_url')
