@@ -293,7 +293,12 @@ def get_pdf_list(request):
     pdfs = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')] if os.path.exists(pdf_dir) else []
     return JsonResponse({'pdfs': pdfs})
 
-
+#  /*
+#      * AI-generated-content
+#      * tool: GitHub Copilot
+#      * version: latest
+#      * usage: I used Copilot to fix syntax errors and standardize the JavaScript code for handling PDF annotations.
+#      */
 @csrf_exempt
 def get_bookmarks(request):
     """获取指定 PDF 的书签"""

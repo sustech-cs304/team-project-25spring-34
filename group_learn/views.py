@@ -49,6 +49,12 @@ def index(request, group_id):
 
 @csrf_exempt
 def save_annotations(request, group_id):
+    """
+    AI-generated-content
+    tool: GitHub Copilot
+    version: latest
+    usage: I used Copilot to fix syntax errors and standardize the code for saving PDF annotations.
+    """
     if request.method == 'POST':
         data = json.loads(request.body)
         pdf_url = data.get('pdf_url')
@@ -70,6 +76,12 @@ def save_annotations(request, group_id):
 
 @csrf_exempt
 def get_annotations(request, group_id):
+    """
+    AI-generated-content
+    tool: GitHub Copilot
+    version: latest
+    usage: I used Copilot to fix syntax errors and standardize the code for retrieving PDF annotations.
+    """
     if request.method == 'GET':
         pdf_url = request.GET.get('pdf_url')
 
