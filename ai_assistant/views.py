@@ -171,6 +171,7 @@ def deepseek_api(request):
                 full_prompt = (
                     f"以{Mind_map_tem}为模板，总结\n{pdf_text}\n，只填充<body>中类似<h1>和<div class=\"mermaid\">的相关部分，并回复完整html代码(注意：节点和子节点不超过4个)。\n用户的要求是：{prompt}")
             else:
+                Mind_map = False
                 full_prompt = f"请根据以下 PDF 内容回答问题：\n\n{pdf_text}\n\n用户的问题是：{prompt}"
         else:
             Mind_map = False

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>思维导图</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.0.0/dist/mermaid.esm.min.mjs';
+    </script>
+</head>
+<body>
+    <h1>CS304 SOFTWARE ENGINEERING</h1>
+
+    <div class="mermaid">
+        graph TD;
+            A[CS304 Software Engineering] --> B[Course Info]
+            A --> C[Lecture 1 Content]
+            A --> D[Coursework]
+            A --> E[References]
+            
+            B --> B1[Instructor: Yida Tao]
+            B --> B2[Schedule]
+            B --> B3[Website: Blackboard/GitHub]
+            
+            C --> C1[What is Software]
+            C --> C2[Software Engineering]
+            C --> C3[Objectives]
+            
+            D --> D1[Individual Work]
+            D --> D2[Team Project]
+            
+            E --> E1[Software Engineering at Google]
+    </div>
+
+    <script type="text/javascript">
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>
