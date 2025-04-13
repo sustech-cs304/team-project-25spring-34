@@ -165,7 +165,7 @@ def deepseek_api(request):
                                                 "建", "拿", "创",
                                                 "造", "成", "生",
                                                 "总", "结", "表",
-                                                "示"]) and
+                                                "示", "看"]) and
                     any(word in prompt for word in ["思维导图", "思维图", "导图"])):
                 Mind_map = True
                 full_prompt = (
