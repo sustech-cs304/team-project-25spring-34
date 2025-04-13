@@ -297,7 +297,7 @@ def get_pdf_list(request):
 #      * AI-generated-content
 #      * tool: GitHub Copilot
 #      * version: latest
-#      * usage: I used Copilot to fix syntax errors and standardize the JavaScript code for handling PDF annotations.
+#      * usage: I used Copilot to fix syntax errors and standardize code.
 #      */
 @csrf_exempt
 def get_bookmarks(request):
