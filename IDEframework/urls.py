@@ -34,7 +34,7 @@ urlpatterns = [
         path('', IDE_views.index),
         path('lesson/', include([
             path('', include('lesson.urls')),
-            path('self-learn/', include('self_learn.urls')),  # ✅ 关键修改点
+            path('self-learn/', include('self_learn.urls')),
             path('deepseek-chat/', include('ai_assistant.urls')),  # 新增聊天应用路由
             path('group-<str:group_id>/', include([
                 path('', include('group_id.urls')),
@@ -44,7 +44,7 @@ urlpatterns = [
                 path('group-learn/get_button_state/', button_lock_views.get_button_state, name='get_button_state'),
                 path('group-learn/save_annotations/', group_learn_views.save_annotations, name='save_annotations'),
                 path('group-learn/get_annotations/', group_learn_views.get_annotations, name='get_annotations'),
-
+                path('group-learn/', include('group_learn.urls')),
             ]))
         ]))
     ])),
