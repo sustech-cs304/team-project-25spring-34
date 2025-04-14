@@ -338,7 +338,7 @@
                     <button id="save-btn" class="btn-save" disabled>保存</button>
                     <span id="lock-status" style="color: red;"></span>
                 </div>
-                <textarea id="code-textarea" style="width: 100%; height: 25%;" >{{ code }}</textarea>
+                <textarea id="code" style="width: 100%; height: 25%;" >{{ code }}</textarea>
                 <button onclick="runCode()">Run</button>
                 <div class="output" id="output"></div>
             </div>
@@ -498,14 +498,11 @@ ${data.stderr}`;
         };
     </script>
 
+
+
 <script>
-    /*
-     * AI-generated-content
-     * tool: GitHub Copilot
-     * version: latest
-     * usage: I used Copilot to fix syntax errors and standardize the JavaScript code for handling PDF annotations.
-     */
-    let pdfUrl = "/media/pdfs/lecture7-quality.pdf";
+     let pdfUrl = "/media/pdfs/lecture7-quality.pdf";
+     //const pdfUrl = "/media/pdfs/lab3.pdf";
     const storageKey = pdfUrl + '.annotations';
     const pdfjsLib = window['pdfjs-dist/build/pdf'];
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -668,67 +665,76 @@ ${data.stderr}`;
         }
     }
 
-    // pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-    //     pdfDoc = pdf;
-    //     document.getElementById('page-count').textContent = pdf.numPages;
-    //     loadAnnotations(); // 从云端加载标注
-    // });
+    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+        pdfDoc = pdf;
+        document.getElementById('page-count').textContent = pdf.numPages;
+        loadAnnotations(); // 从云端加载标注
+    });
 
     // 获取并更新创建者选择的 PDF
-        async function updateCurrentPdf() {
-            try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_current_pdf/`, {
-                    method: 'GET',
-                    headers: {
-                        'X-CSRFToken': getCookie('csrftoken'),
-                        'Content-Type': 'application/json'
-                    }
-                });
-                const data = await response.json();
-                if (data.success && data.pdf) {
-                    const newPdfUrl = data.pdf.file_url;
-                    const newPdfName = data.pdf.file_name;
-                    if (newPdfUrl !== pdfUrl) {
-                        pdfUrl = newPdfUrl;
-                        document.getElementById('current-pdf').textContent = `当前PDF: ${newPdfName}`;
-                        try {
-                            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                            pdfDoc = pdf;
-                            document.getElementById('page-count').textContent = pdf.numPages;
-                            currentPage = 1;
-                            annotations = {};
-                            await loadAnnotations();
-                            renderPage(currentPage);
-                        } catch (err) {
-                            console.error('加载 PDF 失败:', err);
-                            document.getElementById('current-pdf').textContent = '加载 PDF 失败';
-                        }
-                    }
-                } else {
-                    pdfUrl = null;
-                    pdfDoc = null;
-                    document.getElementById('current-pdf').textContent = '未选择 PDF';
-                    canvas.width = 0;
-                    canvas.height = 0;
-                    overlay.width = 0;
-                    overlay.height = 0;
+     async function updateCurrentPdf() {
+        try {
+            const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_current_pdf/`, {
+                method: 'GET',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
                 }
-            } catch (err) {
-                console.error('获取当前 PDF 失败:', err);
+            });
+            const data = await response.json();
+
+            if (data.success && data.pdf) {
+                const newPdfUrl = `/login/IDE/lesson/group-${groupId}/group-learn/serve_pdf/${data.pdf.id}/`;
+                const newPdfName = data.pdf.file_name;
+
+                if (newPdfUrl !== pdfUrl) {
+                    pdfUrl = newPdfUrl;
+                    document.getElementById('current-pdf').textContent = `当前PDF: ${newPdfName}`;
+
+                    try {
+                        // 使用 PDF.js 加载 PDF
+                        const pdf = await pdfjsLib.getDocument({
+                            url: pdfUrl,
+                            withCredentials: true  // 确保携带认证信息
+                        }).promise;
+
+                        pdfDoc = pdf;
+                        document.getElementById('page-count').textContent = pdf.numPages;
+                        currentPage = 1;
+                        annotations = {};
+                        await loadAnnotations();
+                        renderPage(currentPage);
+                    } catch (err) {
+                        console.error('加载 PDF 失败:', err);
+                        document.getElementById('current-pdf').textContent = '加载 PDF 失败';
+                    }
+                }
+            } else {
+                // 没有当前 PDF 的情况
+                pdfUrl = null;
+                pdfDoc = null;
+                document.getElementById('current-pdf').textContent = '未选择 PDF';
+                canvas.width = 0;
+                canvas.height = 0;
+                overlay.width = 0;
+                overlay.height = 0;
             }
+        } catch (err) {
+            console.error('获取当前 PDF 失败:', err);
         }
+    }
 
     // PDF选择模态框逻辑
         const selectPdfBtn = document.getElementById('select-pdf-btn');
         const pdfModal = document.getElementById('pdf-modal');
         const pdfList = document.getElementById('pdf-list');
         const closeModalBtn = document.getElementById('close-modal');
-        const currentPdfSpan = document.getElementById('current-pdf');
         const groupId = "{{ group_id }}";
 
         {% if is_creator %}
         selectPdfBtn.addEventListener('click', async () => {
             try {
+                // 获取房间 PDF 列表
                 const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_room_pdfs/`, {
                     method: 'GET',
                     headers: {
@@ -745,15 +751,20 @@ ${data.stderr}`;
                     } else {
                         data.pdfs.forEach(pdf => {
                             const li = document.createElement('li');
-                            li.innerHTML = `<a href="#" data-url="${pdf.file_url}" data-name="${pdf.file_name}" data-id="${pdf.id}">${pdf.file_name} (上传于: ${pdf.uploaded_at})</a>`;
+                            li.innerHTML = `
+                                <a href="#" data-id="${pdf.id}">
+                                    ${pdf.file_name} (上传于: ${pdf.uploaded_at})
+                                </a>
+                            `;
                             pdfList.appendChild(li);
 
                             li.querySelector('a').addEventListener('click', async (e) => {
                                 e.preventDefault();
-                                const pdfId = e.target.dataset.id;
-                                
+                                const pdfId = pdf.id;
+
+                                // 保存当前选择的 PDF
                                 try {
-                                    const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/set_current_pdf/`, {
+                                    const saveResponse = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/set_current_pdf/`, {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
@@ -761,32 +772,20 @@ ${data.stderr}`;
                                         },
                                         body: JSON.stringify({ pdf_id: pdfId })
                                     });
-                                    
-                                    const data = await response.json();
-                                    if (data.success) {
-                                        alert(`已设置 ${data.pdf.file_name} 为当前展示文件`);
+                                    const saveResult = await saveResponse.json();
+
+                                    if (saveResult.success) {
                                         pdfModal.style.display = 'none';
+                                        // 自动刷新显示新 PDF
+                                        await updateCurrentPdf();
                                     } else {
-                                        alert('设置失败: ' + (data.error || '未知错误'));
+                                        console.error('保存当前 PDF 失败:', saveResult.error);
+                                        alert('设置失败: ' + saveResult.error);
                                     }
                                 } catch (err) {
-                                    console.error('设置PDF失败:', err);
-                                    alert('网络错误，请重试');
+                                    console.error('保存当前 PDF 失败:', err);
+                                    alert('保存失败，请重试');
                                 }
-
-                                // 加载选中的 PDF
-                                // try {
-                                //     const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                                //     pdfDoc = pdf;
-                                //     document.getElementById('page-count').textContent = pdf.numPages;
-                                //     currentPage = 1;
-                                //     annotations = {};
-                                //     await loadAnnotations();
-                                //     renderPage(currentPage);
-                                // } catch (err) {
-                                //     console.error('加载 PDF 失败:', err);
-                                //     alert('加载 PDF 失败');
-                                // }
                             });
                         });
                     }
@@ -805,120 +804,34 @@ ${data.stderr}`;
             pdfModal.style.display = 'none';
         });
 
-        // 加载初始PDF
-        // pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-        //     pdfDoc = pdf;
-        //     document.getElementById('page-count').textContent = pdf.numPages;
-        //     loadAnnotations();
-        // });
-
-        // // 初始化和定时更新 PDF
-        // document.addEventListener('DOMContentLoaded', () => {
-        //     updateCurrentPdf();
-        //     pdfInterval = setInterval(updateCurrentPdf, 3000);
-        // });
-
-        // 清理定时器
-        // window.addEventListener('beforeunload', () => {
-        //     if (pdfInterval) {
-        //         clearInterval(pdfInterval);
-        //         pdfInterval = null;
-        //     }
-        // })
-
-        let lastUpdateTime = null;
-        let pdfCheckInterval = null;
-
-        // 开始检查PDF更新
-        function startPdfCheck() {
-            if (pdfCheckInterval) clearInterval(pdfCheckInterval);
-            
-            pdfCheckInterval = setInterval(async () => {
-                try {
-                    const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_current_pdf/`);
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        const currentTime = data.pdf?.last_updated || null;
-                        
-                        // 首次加载或检测到更新
-                        if (lastUpdateTime !== currentTime) {
-                            lastUpdateTime = currentTime;
-                            
-                            if (data.pdf) {
-                                // 有新PDF或PDF更新
-                                console.log('检测到PDF更新:', data.pdf.file_name);
-                                await loadNewPdf(data.pdf.file_url);
-                            } else {
-                                // 无展示文件
-                                console.log('当前无展示文件');
-                                showNoFileMessage();
-                            }
-                        }
-                    }
-                } catch (error) {
-                    console.error('检查PDF更新失败:', error);
-                }
-            }, 3000); // 每3秒检查一次
-        }
-
-        // 加载新PDF
-        async function loadNewPdf(pdfUrl) {
-            try {
-                // 使用PDF.js加载PDF
-                const loadingTask = pdfjsLib.getDocument(pdfUrl);
-                const pdf = await loadingTask.promise;
-                
-                // 重置状态
-                pdfDoc = pdf;
-                currentPage = 1;
-                annotations = {};
-                
-                // 渲染第一页
-                renderPage(currentPage);
-                
-                // 更新页面信息
-                document.getElementById('page-count').textContent = pdf.numPages;
-                document.getElementById('current-pdf').textContent = `当前PDF: ${pdfUrl.split('/').pop()}`;
-                
-            } catch (err) {
-                console.error('PDF加载失败:', err);
-                document.getElementById('current-pdf').textContent = 'PDF加载失败';
-            }
-        }
-
-        // 显示无文件消息
-        function showNoFileMessage() {
-            document.getElementById('current-pdf').textContent = '暂无展示文件';
-            // 清空PDF显示区域
-            const canvas = document.getElementById('pdf-canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            canvas.width = 0;
-            canvas.height = 0;
-        }
-
-        // 初始化时启动检查
+        // 初始化和定时更新 PDF
         document.addEventListener('DOMContentLoaded', () => {
-            startPdfCheck();
+            updateCurrentPdf();
+            // 每3秒检查一次当前PDF是否有更新
+            pdfInterval = setInterval(updateCurrentPdf, 3000);
         });
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+        // 清理定时器
+        window.addEventListener('beforeunload', () => {
+            if (pdfInterval) clearInterval(pdfInterval);
+        });
+
+        // 获取 CSRF Token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
 </script>
-
 
 <script>
     const textarea = document.getElementById("note-editor");
