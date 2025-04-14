@@ -1,6 +1,0 @@
-from django.apps import AppConfig
-
-
-class LockButtonConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'lock_button'

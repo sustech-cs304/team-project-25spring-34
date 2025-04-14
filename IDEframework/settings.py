@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'register',
     'lesson',
     'self_learn',
-    'lock_button',
     'group_learn',
     'ai_assistant',
     'group_id',
