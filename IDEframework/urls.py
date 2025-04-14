@@ -21,7 +21,6 @@ from django.conf import settings
 from django.conf.urls.static import static
 from login import views as login_views
 from register import views as register_views
-from lock_button import views as lock_button_views
 from IDE import views as IDE_views
 from lesson import views as lesson_views
 from group_id import views as group_id_views
