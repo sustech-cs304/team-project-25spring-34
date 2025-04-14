@@ -160,27 +160,29 @@ def get_pdf(request, group_id, pdf_id):
 def get_current_pdf(request, group_id):
     try:
         room = ChatRoom.objects.get(id=group_id)
-        if not room.current_pdf:
+        cache_key = f"current_pdf_{group_id}"
+        pdf_id = django_cache.get(cache_key)
+
+        if pdf_id:
+            pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
             return JsonResponse({
                 'success': True,
-                'pdf': None,
-                'message': '暂无展示文件'
+                'pdf': {
+                    'id': pdf_file.id,
+                    'file_name': pdf_file.file_name,
+                    'file_url': request.build_absolute_uri(
+                        f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
+                    ),
+                    'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
+                }
             })
-        
-        return JsonResponse({
-            'success': True,
-            'pdf': {
-                'id': room.current_pdf.id,
-                'file_name': room.current_pdf.file_name,
-                'file_url': request.build_absolute_uri(
-                    f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{room.current_pdf.id}/"
-                ),
-                'uploaded_at': room.current_pdf.uploaded_at.strftime('%Y-%m-%d %H:%M'),
-                'last_updated': room.last_updated.strftime('%Y-%m-%d %H:%M:%S')
-            }
-        })
+        else:
+            return JsonResponse({'success': True, 'pdf': None})
+
     except ChatRoom.DoesNotExist:
         return JsonResponse({'success': False, 'error': '房间不存在'}, status=404)
+    except RoomFile.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'PDF 文件不存在'}, status=404)
     except Exception as e:
         logger.error(f"获取当前 PDF 失败: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -194,25 +196,21 @@ def set_current_pdf(request, group_id):
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
-                'error': '只有房间创建者可以设置展示文件'
+                'error': '只有房间创建者可以设置 PDF'
             }, status=403)
 
         data = json.loads(request.body)
         pdf_id = data.get('pdf_id')
-        
         if not pdf_id:
-            # 清除当前展示文件
-            room.current_pdf = None
-            room.save()
-            return JsonResponse({
-                'success': True,
-                'message': '已清除展示文件'
-            })
+            return JsonResponse({'success': False, 'error': '未提供 PDF ID'}, status=400)
 
+        # 验证 PDF 是否存在
         pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
-        room.current_pdf = pdf_file
-        room.save()  # 自动更新last_updated字段
-        
+
+        # 只缓存 pdf_id，不存整个文件
+        cache_key = f"current_pdf_{group_id}"
+        django_cache.set(cache_key, pdf_id, timeout=86400)  # 缓存 24 小时
+
         return JsonResponse({
             'success': True,
             'pdf': {
@@ -221,10 +219,10 @@ def set_current_pdf(request, group_id):
                 'file_url': request.build_absolute_uri(
                     f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
                 ),
-                'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M'),
-                'last_updated': room.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+                'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
             }
         })
+
     except ChatRoom.DoesNotExist:
         return JsonResponse({'success': False, 'error': '房间不存在'}, status=404)
     except RoomFile.DoesNotExist:
@@ -237,27 +235,47 @@ def set_current_pdf(request, group_id):
 @login_required
 @require_http_methods(["GET"])
 def serve_pdf(request, group_id, pdf_id):
-    try:
-        room = ChatRoom.objects.get(id=group_id)
-        pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
+    cache_key = f"pdf_data_{group_id}_{pdf_id}"
+    cached_data = django_cache.get(cache_key)
 
-        def file_iterator(data, chunk_size=8192):
-            for i in range(0, len(data), chunk_size):
-                yield data[i:i + chunk_size]
+    if cached_data:
+        # 从缓存获取文件数据
+        file_data = cached_data['file_data']
+        file_name = cached_data['file_name']
+    else:
+        try:
+            # 查询数据库
+            room = ChatRoom.objects.get(id=group_id)
+            pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
+            file_data = pdf_file.file_data
+            file_name = pdf_file.file_name
 
-        response = StreamingHttpResponse(
-            file_iterator(pdf_file.file_data),
-            content_type='application/pdf'
-        )
-        response['Content-Disposition'] = f'inline; filename="{pdf_file.file_name}"'
-        response['Content-Length'] = len(pdf_file.file_data)
-        return response
-    except RoomFile.DoesNotExist:
-        logger.error(f"PDF 文件 {pdf_id} 不存在")
-        return HttpResponse(status=404)
-    except ChatRoom.DoesNotExist:
-        logger.error(f"房间 {group_id} 不存在")
-        return HttpResponse(status=404)
-    except Exception as e:
-        logger.error(f"提供 PDF 文件失败: {str(e)}")
-        return HttpResponse(status=500)
+            # 存入缓存（适合不经常修改的文件）
+            django_cache.set(
+                cache_key,
+                {'file_data': file_data, 'file_name': file_name},
+                timeout=3600  # 缓存1小时
+            )
+        except RoomFile.DoesNotExist:
+            logger.error(f"PDF 文件 {pdf_id} 不存在")
+            return HttpResponse(status=404)
+        except ChatRoom.DoesNotExist:
+            logger.error(f"房间 {group_id} 不存在")
+            return HttpResponse(status=404)
+        except Exception as e:
+            logger.error(f"查询 PDF 文件失败: {str(e)}")
+            return HttpResponse(status=500)
+
+    # 返回 StreamingHttpResponse
+    def file_iterator(data, chunk_size=8192):
+        for i in range(0, len(data), chunk_size):
+            yield data[i:i + chunk_size]
+
+    response = StreamingHttpResponse(
+        file_iterator(file_data),
+        content_type='application/pdf'
+    )
+    response['Content-Disposition'] = f'inline; filename="{file_name}"'
+    response['Content-Length'] = len(file_data)
+    return response
+
