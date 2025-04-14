@@ -160,32 +160,27 @@ def get_pdf(request, group_id, pdf_id):
 def get_current_pdf(request, group_id):
     try:
         room = ChatRoom.objects.get(id=group_id)
-        cache_key = f"current_pdf_{group_id}"
-        pdf_data = django_cache.get(cache_key)
-
-        if pdf_data:
-            pdf_id = pdf_data.get('pdf_id')
-            pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
+        if not room.current_pdf:
             return JsonResponse({
                 'success': True,
-                'pdf': {
-                    'id': pdf_file.id,
-                    'file_name': pdf_file.file_name,
-                    'file_url': request.build_absolute_uri(
-                        f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
-                    ),
-                    'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
-                }
+                'pdf': None,
+                'message': '暂无展示文件'
             })
-        else:
-            return JsonResponse({
-                'success': True,
-                'pdf': None
-            })
+        
+        return JsonResponse({
+            'success': True,
+            'pdf': {
+                'id': room.current_pdf.id,
+                'file_name': room.current_pdf.file_name,
+                'file_url': request.build_absolute_uri(
+                    f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{room.current_pdf.id}/"
+                ),
+                'uploaded_at': room.current_pdf.uploaded_at.strftime('%Y-%m-%d %H:%M'),
+                'last_updated': room.last_updated.strftime('%Y-%m-%d %H:%M:%S')
+            }
+        })
     except ChatRoom.DoesNotExist:
         return JsonResponse({'success': False, 'error': '房间不存在'}, status=404)
-    except RoomFile.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'PDF 文件不存在'}, status=404)
     except Exception as e:
         logger.error(f"获取当前 PDF 失败: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -199,32 +194,25 @@ def set_current_pdf(request, group_id):
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
-                'error': '只有房间创建者可以设置 PDF'
+                'error': '只有房间创建者可以设置展示文件'
             }, status=403)
 
         data = json.loads(request.body)
         pdf_id = data.get('pdf_id')
+        
         if not pdf_id:
+            # 清除当前展示文件
+            room.current_pdf = None
+            room.save()
             return JsonResponse({
-                'success': False,
-                'error': '未提供 PDF ID'
-            }, status=400)
+                'success': True,
+                'message': '已清除展示文件'
+            })
 
         pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
-        cache_key = f"current_pdf_{group_id}"
-        try:
-            django_cache.set(cache_key, {
-                'pdf_id': pdf_file.id,
-                'file_name': pdf_file.file_name
-            }, timeout=3600)
-            logger.info(f"成功设置缓存: {cache_key}, PDF ID: {pdf_file.id}")
-        except Exception as cache_error:
-            logger.error(f"缓存设置失败: {str(cache_error)}")
-            return JsonResponse({
-                'success': False,
-                'error': '无法保存 PDF 选择，请稍后重试'
-            }, status=500)
-
+        room.current_pdf = pdf_file
+        room.save()  # 自动更新last_updated字段
+        
         return JsonResponse({
             'success': True,
             'pdf': {
@@ -233,7 +221,8 @@ def set_current_pdf(request, group_id):
                 'file_url': request.build_absolute_uri(
                     f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
                 ),
-                'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
+                'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M'),
+                'last_updated': room.last_updated.strftime('%Y-%m-%d %H:%M:%S')
             }
         })
     except ChatRoom.DoesNotExist:

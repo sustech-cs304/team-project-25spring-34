@@ -1,12 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-
 class ChatRoom(models.Model):
     name = models.CharField(max_length=100, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE)  # 创建该房间的人
     members = models.ManyToManyField(User, related_name='joined_rooms', blank=True)  # 新增成员字段
+    current_pdf = models.ForeignKey(
+        'group_id.RoomFile', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='current_rooms'
+    )
+    last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
