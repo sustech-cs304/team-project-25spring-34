@@ -178,6 +178,13 @@ from .models import RoomFile
 @login_required
 @csrf_exempt
 def upload_file(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何将文件全部存入数据库", and
+    adapt the framework but add extra logic and improve sql search speed.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
@@ -218,6 +225,13 @@ def upload_file(request, group_id):
     
 @login_required
 def get_files(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何从数据库读取文件", and
+    adapt the framework but add extra logic and improve sql search speed.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
@@ -241,6 +255,13 @@ from django.conf import settings
 @login_required
 @csrf_exempt
 def delete_file(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何从数据库删除文件", and
+    adapt the framework but add extra logic and improve sql search speed.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
@@ -263,6 +284,13 @@ from django.http import HttpResponse
 
 @login_required
 def download_file(request, group_id, file_name):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何实现下载文件", and
+    adapt the framework but add extra logic.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():

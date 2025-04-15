@@ -23,6 +23,13 @@ import logging
 logger = logging.getLogger(__name__)
 
 def index(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何显示信息", and
+    adapt some codes but add extra details.
+    '''
     if not request.user.is_authenticated:
         logger.warning("用户未登录，重定向到登录页面")
         return redirect(reverse("login"))

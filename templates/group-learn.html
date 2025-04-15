@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>Group-{{group_id}} Learn Page</title>
     <style>
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何写一个区分不同区域的模板html", and
+    * use the framework but modify CSS components and change the layout to fit our UI design.
+    */ 
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -338,7 +345,7 @@
                     <button id="save-btn" class="btn-save" disabled>保存</button>
                     <span id="lock-status" style="color: red;"></span>
                 </div>
-                <textarea id="code" style="width: 100%; height: 25%;" >{{ code }}</textarea>
+                <textarea id="code-textarea" style="width: 100%; height: 25%;" >{{ code }}</textarea>
                 <button onclick="runCode()">Run</button>
                 <div class="output" id="output"></div>
             </div>
@@ -391,12 +398,12 @@
     <script>
         function runCode() {
             /*
-     * AI-generated-content
-     * tool:Hunyuan
-     * version: latest
-     * usage: I used the prompt "读取txt并返回运行结果到前端", and
-     * use the framework it provides, but modify some of the details
-     */
+            * AI-generated-content
+            * tool:Hunyuan
+            * version: latest
+            * usage: I used the prompt "读取txt并返回运行结果到前端", and
+            * use the framework it provides, but modify some of the details
+            */
             const code = document.getElementById('code').value;
 
             // 显示加载状态
@@ -665,11 +672,11 @@ ${data.stderr}`;
         }
     }
 
-    pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
-        pdfDoc = pdf;
-        document.getElementById('page-count').textContent = pdf.numPages;
-        loadAnnotations(); // 从云端加载标注
-    });
+    // pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
+    //     pdfDoc = pdf;
+    //     document.getElementById('page-count').textContent = pdf.numPages;
+    //     loadAnnotations(); // 从云端加载标注
+    // });
 
     // 获取并更新创建者选择的 PDF
      async function updateCurrentPdf() {
@@ -760,6 +767,7 @@ ${data.stderr}`;
 
                             li.querySelector('a').addEventListener('click', async (e) => {
                                 e.preventDefault();
+                                pdfModal.style.display = 'none';
                                 const pdfId = pdf.id;
 
                                 // 保存当前选择的 PDF
@@ -775,7 +783,6 @@ ${data.stderr}`;
                                     const saveResult = await saveResponse.json();
 
                                     if (saveResult.success) {
-                                        pdfModal.style.display = 'none';
                                         // 自动刷新显示新 PDF
                                         await updateCurrentPdf();
                                     } else {
@@ -888,6 +895,13 @@ ${data.stderr}`;
 
     // 检查按钮状态
     function checkButtonState() {
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何根据状态值禁用按钮", and
+    * use the framework but modify the logic.
+    */ 
         fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_button_state/`)
             .then(response => response.json())
             .then(data => {
@@ -929,6 +943,13 @@ ${data.stderr}`;
 
     // 修改按钮点击事件
     reviseBtn.addEventListener('click', function() {
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何与前端交互修改按钮状态", and
+    * use the framework but modify the logic.
+    */ 
         fetch(`/login/IDE/lesson/group-${groupId}/group-learn/revise_button/`, {
             method: 'POST',
             headers: {
@@ -945,6 +966,13 @@ ${data.stderr}`;
 
     // 保存按钮点击事件
     saveBtn.addEventListener('click', function() {
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何与前端交互修改按钮状态", and
+    * use the framework but modify the logic.
+    */ 
         fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_button/`, {
             method: 'POST',
             headers: {
@@ -961,6 +989,13 @@ ${data.stderr}`;
 
     // 获取CSRF token的函数
     function getCookie(name) {
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何与前端交互修改按钮状态", and
+    * use the framework but modify the logic.
+    */ 
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');

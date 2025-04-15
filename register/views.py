@@ -6,6 +6,13 @@ def index(request):
     return render(request, 'register.html')
 
 def user_register(request):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何实现用户注册", and
+    directly use the method.
+    '''
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():

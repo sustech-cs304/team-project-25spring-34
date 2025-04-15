@@ -6,6 +6,13 @@
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Group-{{ room.name }}</title>
     <style>
+    /** 
+    * AI-generated-content 
+    * tool: DeepSeek 
+    * version: latest 
+    * usage: I use the prompt "如何写一个区分不同区域的模板html", and
+    * use the framework but modify CSS components and change the layout to fit our UI design.
+    */ 
         body {
             display: flex;
             flex-direction: column;
@@ -612,6 +619,13 @@
 
         // ================= 文件管理功能 =================
         document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            /** 
+            * AI-generated-content 
+            * tool: DeepSeek 
+            * version: latest 
+            * usage: I the prompt "前端发送上传文件请求", and
+            * adapt the generated code by modifying the URL and method.
+            */ 
             event.preventDefault();
             const fileInput = document.getElementById('fileInput');
             const file = fileInput.files[0];
@@ -646,6 +660,13 @@
         });
 
         async function loadFiles() {
+            /** 
+            * AI-generated-content 
+            * tool: DeepSeek 
+            * version: latest 
+            * usage: I the prompt "前端发送加载文件请求", and
+            * adapt the generated code by modifying the URL and method.
+            */           
             try {
                 const response = await fetch(`/login/IDE/lesson/group-${groupId}/get-files/`, {
                     method: 'GET',
@@ -705,6 +726,13 @@
         document.addEventListener('DOMContentLoaded', loadFiles);
 
         async function deleteFile(index) {
+            /** 
+            * AI-generated-content 
+            * tool: DeepSeek 
+            * version: latest 
+            * usage: I the prompt "前端发送加删除文件请求", and
+            * adapt the generated code by modifying the URL and method.
+            */ 
             const file = files[index];
             const fileName = file.name;
 
@@ -735,6 +763,13 @@
         }
 
         function previewFile(filename, index) {
+            /** 
+            * AI-generated-content 
+            * tool: DeepSeek 
+            * version: latest 
+            * usage: I the prompt "前端发送预览文件请求", and
+            * adapt the generated code by modifying the URL and method.
+            */ 
             const file = files[index];
             const previewUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(filename)}/?preview=true`;
 
