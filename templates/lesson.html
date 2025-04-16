@@ -415,10 +415,15 @@
                 <p>显示上传的PDF文件，点击相应文件可进入个人工作台界面开始学习</p>
                 <p>底部提供PDF上传功能</p>
             </div>
+
+            <div style="margin-top: 15px;">
+                <label>
+                    <input type="checkbox" id="dontShowAgain"> 
+                    不再显示此提示
+                </label>
+            </div>   
         </div>
     </div>
-    
-
     <script>
         
         function addTask() {
@@ -577,22 +582,25 @@
     });
 
     document.addEventListener('DOMContentLoaded', function() {
-    // 获取弹窗元素
-        const modal = document.getElementById('moduleModal');
-        
-        // 显示弹窗
-        modal.style.display = 'block';
-        
-        // 点击关闭按钮时隐藏弹窗
-        document.querySelector('.close').onclick = function() {
-            modal.style.display = 'none';
-        }
-        
-        // 点击弹窗外部时隐藏弹窗
-        window.onclick = function(event) {
-            if (event.target == modal) {
+        if (!localStorage.getItem('hasSeenModal')) {
+            const modal = document.getElementById('moduleModal');
+            modal.style.display = 'block';
+            
+            document.querySelector('.close').onclick = function() {
+                if (document.getElementById('dontShowAgain').checked) {
+                    localStorage.setItem('hasSeenModal', 'true'); // 勾选后不再显示
+                }
                 modal.style.display = 'none';
-            }
+            };
+            
+            window.onclick = function(event) {
+                if (event.target === modal) {
+                    if (document.getElementById('dontShowAgain').checked) {
+                        localStorage.setItem('hasSeenModal', 'true');
+                    }
+                    modal.style.display = 'none';
+                }
+            };
         }
     });
 </script>
