@@ -223,6 +223,8 @@ def auto_format_code_improved(code_str):
         formatted_code = fix_mismatched_quotes_in_comparisons(formatted_code)
         formatted_code = fix_dictionary_key_quotes(formatted_code)
         code = balance_code(formatted_code)
+        for char in ['·', '~', '`', '《', '》', '<', '>']:
+            code = code.replace(char, '')
         return code, "p"
 
     else:  # Java处理流程
@@ -250,6 +252,7 @@ def auto_format_code_improved(code_str):
         formatted_code = []
         control_keywords = {'if', 'for', 'while', 'do', 'switch', 'try', 'catch', 'else'}
         for line in formatted_lines:
+            line = re.sub(r'[\u4e00-\u9fff]', '', line)
             stripped = line.strip()
             if not stripped or stripped.endswith(('{', '}', ';')) \
                     or stripped.startswith(tuple(control_keywords)):
@@ -258,4 +261,8 @@ def auto_format_code_improved(code_str):
                 formatted_code.append(line.rstrip() + ';')
 
         code = '\n'.join(formatted_code)
+        code = code.replace('printin', 'println')
+        for char in ['·', '~', '`', '《', '》', '<', '>']:
+            code = code.replace(char, '')
+        code = re.sub(r'String\s*\w*\s*\]', 'String[]', code)
         return code, "j"

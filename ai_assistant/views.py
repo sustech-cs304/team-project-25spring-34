@@ -9,6 +9,7 @@ import asyncio
 import sys
 from playwright.async_api import async_playwright
 from IDEframework import settings
+import fitz  # PyMuPDF
 
 # pip install playwright
 # playwright install chromium  # 自动下载内置的 Chromium
@@ -21,8 +22,6 @@ if sys.platform == "win32":
 def embed_chat(request):
     return render(request, 'embed.html')
 
-
-import fitz  # PyMuPDF
 
 Mind_map = False
 Mind_map_tem = """
@@ -51,58 +50,6 @@ Mind_map_tem = """
 </html>
 """
 
-
-# ai start
-# def html_to_png(html_path: str, output_png_path: str):
-#     """将 HTML 文件转为 PNG 图片（智能裁剪）"""
-#     try:
-#         with sync_playwright() as p:
-#             print("1")
-#             browser = p.chromium.launch(headless=False)
-#             print("浏览器启动成功")
-#             page = browser.new_page()
-#
-#             # 设置更合理的视口
-#             page.set_viewport_size({"width": 1600, "height": 900})
-#
-#             print(f"加载本地文件: file://{html_path}")
-#             page.goto(f"file://{html_path}", timeout=30_000)
-#             print("页面加载完成")
-#
-#             # 等待核心元素渲染
-#             print("等待Mermaid图表渲染...")
-#             page.wait_for_selector(".mermaid svg", state="attached", timeout=15_000)
-#             page.wait_for_load_state("networkidle")
-#             page.wait_for_timeout(2000)
-#             print("元素渲染完成")
-#             # 获取元素边界框
-#             print("计算边界框...")
-#             bbox = page.locator(".mermaid svg").bounding_box()
-#             if not bbox or bbox['width'] == 0 or bbox['height'] == 0:
-#                 raise ValueError(f"无效的边界框数据: {bbox}")
-#
-#             # 动态计算裁剪区域（扩展 20px 边距）
-#             clip = {
-#                 "x": bbox["x"] - 20,
-#                 "y": bbox["y"] - 20,
-#                 "width": bbox["width"] + 40,
-#                 "height": bbox["height"] + 40
-#             }
-#             print(f"裁剪参数: {clip}")
-#
-#             # 截图并直接保存
-#             print("开始截图...")
-#             page.screenshot(
-#                 path=output_png_path,
-#                 clip=clip,
-#                 type="png",
-#                 timeout=30_000
-#             )
-#             print(f"截图保存成功: {output_png_path}")
-#             browser.close()
-#     except Exception as e:
-#         print(f"截图失败: {str(e)}")
-#         raise  # 重新抛出异常以在调用处捕获
 
 async def html_to_png(html_path: str, output_png_path: str):
     """将 HTML 文件转为 PNG 图片（智能裁剪）"""
@@ -141,8 +88,6 @@ async def html_to_png(html_path: str, output_png_path: str):
 
 
 # ai end
-
-
 def deepseek_api(request):
     global Mind_map
     if request.method == 'POST':

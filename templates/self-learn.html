@@ -332,6 +332,7 @@
         <h3>截屏功能</h3>
         <button onclick="selectArea()">Select Area</button>
         <button onclick="PPImage()">Read Area</button>
+        <button onclick="intelligent_PPImage()">Intelligent Read Area</button>
     </div>
 </div>
 
@@ -670,6 +671,37 @@
              //获取code区域
             const codeTextarea = document.getElementById('code');
             fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            // 如果需要，可以加上请求体
+            // body: JSON.stringify({ key: 'value' })
+        }).then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.json();
+        }).then(data => {
+            if (data.success){
+                 //add code to area
+                alert('Image to text conversion!');
+                codeTextarea.value = data.code;
+            }
+            else alert('Failed: ' + (data.error || 'Unknown error'));
+        }).catch(error => {
+            alert('Failed: ' + error.message);
+        });
+        } catch (e){
+            console.error("选区操作失败:", error);
+            print("error:", error)
+        }
+    }
+    
+    function intelligent_PPImage() {
+        try{
+             //获取code区域
+            const codeTextarea = document.getElementById('code');
+            fetch('/login/IDE/lesson/self-learn/intelligent_preprocess_image/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

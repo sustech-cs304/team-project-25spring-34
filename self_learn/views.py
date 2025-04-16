@@ -6,7 +6,6 @@ import pytesseract
 from pynput import mouse
 from django.conf import settings
 from utils.pdf_handler import process_pdf
-from django.shortcuts import render
 from django.http import JsonResponse
 from PIL import Image, ImageEnhance, ImageFilter
 from django.views.decorators.csrf import csrf_exempt
@@ -15,6 +14,7 @@ import subprocess
 from django.http import HttpResponse
 from django.shortcuts import render
 import json
+import requests
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'media')
 THUMBNAIL_DIR = os.path.join(UPLOAD_DIR, 'thumbnails')
@@ -284,6 +284,66 @@ def preprocess_image(request):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)
+
+
+def intelligent_preprocess_image(request):
+    global file_path
+    if request.method == 'POST':
+        try:
+            image_path = 'media/screenshot/improved_screenshot.png'
+            image = Image.open(image_path)
+            code = pytesseract.image_to_string(image, lang='eng+chi_sim', config="--oem 1 --psm 6")
+            formed_code, type = auto_format_code_improved(code)
+            standard_code = deepseek_intelligent_code_repair(formed_code)
+            if type == "p":
+                with open("media/screenshot/output_python.txt", "w", encoding="utf-8") as file:
+                    file.write(standard_code)
+                    file_path = "media/screenshot/output_python.txt"
+            if type == "j":
+                with open("media/screenshot/output_java.txt", "w", encoding="utf-8") as file:
+                    file.write(standard_code)
+                    file_path = "media/screenshot/output_java.txt"
+            print(standard_code)
+            return JsonResponse({
+                'code': standard_code,
+                'success': True
+            })
+        except Exception as e:
+            print(f"Error in intelligent_preprocess_image: {e}")  # 打印详细错误
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Preprocess image failed'}, status=500)
+
+
+def deepseek_intelligent_code_repair(code):
+    try:
+        prompt = "严格遵守以下原则并回答问题：\n一、修复代码格式、语法问题并严格保留代码内容\n二、并补全代码上下文使其能够正常编译\n三、你只需要返回修复后的代码，不需要再返回任何内容\n代码如下：\n"
+        full_prompt = prompt + code  # 仅文本提问
+
+        # 调用 DeepSeek
+        DEEPSEEK_API_KEY = "sk-a82d853f78ec4dfa9dc73debce4f68b6"
+        API_ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {DEEPSEEK_API_KEY}"
+        }
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [{"role": "user", "content": full_prompt}],
+            "temperature": 0.7
+        }
+
+        response = requests.post(API_ENDPOINT, json=payload, headers=headers)
+        response.raise_for_status()
+        code = response.json()["choices"][0]["message"]["content"]
+
+        lines = code.split('\n')
+        filtered_lines = lines[1:-1]
+        result = '\n'.join(filtered_lines)
+
+        return result
+    except Exception as e:
+        print(e)
 
 
 @csrf_exempt
