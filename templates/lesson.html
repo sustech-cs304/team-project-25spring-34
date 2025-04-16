@@ -226,6 +226,59 @@
             font-weight: bold;
             color: #333;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        
+        .modal-content {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 100%;
+            max-width: 800px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-height: 70vh; /* 限制高度为视口的70% */
+            overflow-y: auto;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .module-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .module-section h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
     </style>
 </head>
 <body>
@@ -332,6 +385,35 @@
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="moduleModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>IDE使用指南</h2>
+            
+            <div class="module-section">
+                <h3>导航栏</h3>
+                <p>点击self-learn进入个人工作台，对上传的pdf进行批注、记笔记、执行代码</p>
+            </div>
+            
+            <div class="module-section">
+                <h3>小组学习</h3>
+                <p>提供创建、加入和删除学习房间的功能，点击加入房间后进入小组协作学习页面</p>
+            </div>
+            
+            <div class="module-section">
+                <h3>任务管理</h3>
+                <p>分为三个状态：关注(focus)、即将(upcoming)、完成(completed)</p>
+                <p>可以添加、删除和移动任务</p>
+            </div>
+            
+            <div class="module-section">
+                <h3>课件内容</h3>
+                <p>显示上传的PDF文件，点击相应文件可进入个人工作台界面开始学习</p>
+                <p>底部提供PDF上传功能</p>
             </div>
         </div>
     </div>
@@ -493,7 +575,28 @@
             alert(errorData.error || 'PDF 上传失败！');
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // 获取弹窗元素
+        const modal = document.getElementById('moduleModal');
+        
+        // 显示弹窗
+        modal.style.display = 'block';
+        
+        // 点击关闭按钮时隐藏弹窗
+        document.querySelector('.close').onclick = function() {
+            modal.style.display = 'none';
+        }
+        
+        // 点击弹窗外部时隐藏弹窗
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    });
 </script>
+
 <script>
     
         // 创建任务项
