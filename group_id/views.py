@@ -106,8 +106,14 @@ import json
 @login_required
 @require_POST
 @csrf_exempt
-
 def validate_room(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "验证用户是否有权限访问指定的聊天室", and
+    adapt the corresponding html to fetch data and update regularly.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
