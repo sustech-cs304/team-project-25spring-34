@@ -143,6 +143,13 @@ def validate_room(request, group_id):
 @require_POST
 @csrf_exempt
 def update_topic(request, group_id):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "如何根据用户输入数据更改后端相应数据", and
+    adapt the corresponding html to fetch data and update regularly.
+    '''
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user != room.creator:
