@@ -5,7 +5,7 @@ def detect_language(code_str):
     检测代码是Python还是Java。
     基于关键字判断。
     """
-    java_keywords = ['public class', 'import java.', 'void main', 'System.out.println']
+    java_keywords = ['public class', 'import java.', 'void main', 'System.out.println', 'printin']
     for keyword in java_keywords:
         if keyword in code_str:
             return 'java'

@@ -202,6 +202,10 @@ def view_bookmarks(request):
     })
 
 
+# AI-generated-content
+# tool: ChatGPT
+# version: latest
+# usage：生成鼠标拖动时，将鼠标选择框住的位置截屏并保存的python代码架构？
 @csrf_exempt
 def select_area(request):
     if request.method == 'POST':
@@ -294,7 +298,7 @@ def intelligent_preprocess_image(request):
             image = Image.open(image_path)
             code = pytesseract.image_to_string(image, lang='eng+chi_sim', config="--oem 1 --psm 6")
             formed_code, type = auto_format_code_improved(code)
-            standard_code = deepseek_intelligent_code_repair(formed_code)
+            standard_code = deepseek_intelligent_code_repair(formed_code, type)
             if type == "p":
                 with open("media/screenshot/output_python.txt", "w", encoding="utf-8") as file:
                     file.write(standard_code)
@@ -315,9 +319,13 @@ def intelligent_preprocess_image(request):
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)
 
 
-def deepseek_intelligent_code_repair(code):
+def deepseek_intelligent_code_repair(code, type):
     try:
-        prompt = "严格遵守以下原则并回答问题：\n一、修复代码格式、语法问题并严格保留代码内容\n二、并补全代码上下文使其能够正常编译\n三、你只需要返回修复后的代码，不需要再返回任何内容\n代码如下：\n"
+        if type == "p":
+            prompt = "严格遵守以下原则并回答问题：\n一、修复python代码格式、语法问题并严格保留代码内容\n二、并补全代码上下文使其能够正常编译(包括psvm最外层的类)，能够正常运行（标准为看到输出）\n三、你只需要返回修复后的代码，不需要再返回任何内容\n代码如下：\n"
+        else:
+            prompt = "严格遵守以下原则并回答问题：\n一、修复java代码格式、语法问题并严格保留代码内容\n二、并补全代码上下文使其能够正常编译(包括psvm最外层的类)，能够正常运行（标准为看到输出）\n三、你只需要返回修复后的代码，不需要再返回任何内容\n代码如下：\n"
+
         full_prompt = prompt + code  # 仅文本提问
 
         # 调用 DeepSeek

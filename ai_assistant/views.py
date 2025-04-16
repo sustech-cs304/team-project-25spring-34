@@ -24,6 +24,7 @@ def embed_chat(request):
 
 
 Mind_map = False
+
 Mind_map_tem = """
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +51,10 @@ Mind_map_tem = """
 </html>
 """
 
-
+# AI-generated-content
+# tool: DeepSeek
+# version: latest
+# usage：如何使用playwright和chromium将html文件在合适的位置自动识别边界并保存
 async def html_to_png(html_path: str, output_png_path: str):
     """将 HTML 文件转为 PNG 图片（智能裁剪）"""
     async with async_playwright() as p:
@@ -165,7 +169,10 @@ def deepseek_api(request):
                 print('png_url:', png_path)
                 with open(html_path, 'w', encoding='utf-8') as f:
                     f.write(html_content)
-
+                # AI-generated-content
+                # tool: ChatGPT
+                # version: latest
+                # usage：如何调用html_to_png？需要异步吗？为什么？
                 # ai start
                 try:
                     asyncio.run(html_to_png(html_path, png_path))
