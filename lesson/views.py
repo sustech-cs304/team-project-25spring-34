@@ -15,6 +15,12 @@ from .models import ChatRoom
 
 @login_required
 def create_room(request):
+    '''
+    AI-generated-content 
+    tool: DeepSeek 
+    version: latest 
+    usage: I use the prompt "结合django数据库写法实现一个新房间的创建" and generate the corresponding json response.
+    '''
     if request.method == 'POST':
         # 直接创建房间（name先设为空或占位符）
         new_room = ChatRoom.objects.create(creator=request.user)
