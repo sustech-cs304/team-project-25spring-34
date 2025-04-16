@@ -136,6 +136,12 @@ def get_room_pdfs(request, group_id):
 @login_required
 @require_http_methods(["GET"])
 def get_pdf(request, group_id, pdf_id):
+    """
+    AI-generated-content
+    tool: deepseek
+    version: latest
+    usage: I used deepseek to prompt json response and handle ‘build_absolute_uri’ and ‘日期时间格式化操作’.
+    """
     try:
         room = ChatRoom.objects.get(id=group_id)
         pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
