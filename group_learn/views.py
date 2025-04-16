@@ -242,6 +242,12 @@ def set_current_pdf(request, group_id):
 @login_required
 @require_http_methods(["GET"])
 def serve_pdf(request, group_id, pdf_id):
+    """
+    AI-generated-content
+    tool:deepseek
+    version: latest
+    usage: I used deepseek to generate how to use cache to get and store data.
+    """
     cache_key = f"pdf_data_{group_id}_{pdf_id}"
     cached_data = django_cache.get(cache_key)
 
