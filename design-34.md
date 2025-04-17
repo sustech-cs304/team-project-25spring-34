@@ -3,7 +3,8 @@
 ## Diagrams
 
 ### App Relationships
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\a1.png" width="50%">
+<img width="461" alt="a1" src="https://github.com/user-attachments/assets/e39d893e-a72b-4b14-938f-d9b707efdaef" />
+
 
 - **架构选择**：
   采用面向对象架构（OOA）的核心目的是实现系统的高内聚低耦合。在IDE框架的学习场景中，课程（Lesson）作为核心业务对象具有多重关联关系，通过对象继承和多态特性可以灵活支持自我学习（Self Learn）和群组学习（Group Learn）两种模式。AI Assistant作为智能服务组件，通过接口注入方式与Lesson对象交互，保证了功能扩展的灵活性。
@@ -21,7 +22,8 @@
 ---
 
 ### Component Relationships
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\a2.png" width="50%">
+<img width="401" alt="a2" src="https://github.com/user-attachments/assets/cd7eb9bd-6665-41bc-bede-f15223df6397" />
+
 - **架构选择**：  
   该系统的架构主要融合了分层架构（LAYERED ARCHITECTURES）和调用返回架构（CALL AND RETURN ARCHITECTURES），并部分借鉴了数据流架构（DATA-FLOW ARCHITECTURES）的特点。
 
@@ -38,7 +40,8 @@
 ---
 
 ### Internal Relationships of Lesson App
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\a3.png" width="50%">
+<img width="484" alt="a3" src="https://github.com/user-attachments/assets/89b0b5ad-2f18-4ef4-bea9-c7ef51f84cbb" />
+
 - **架构选择**：  
   采用混合式架构，以面向对象架构（OOA）为主体，融入事件驱动架构（EDA）元素
 
@@ -55,7 +58,8 @@
 ---
 
 ### Internal Relationships of AI Assistant App
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\a4.png" width="50%">
+<img width="495" alt="a4" src="https://github.com/user-attachments/assets/06c8fb24-3c5f-465c-a7ee-43c1653359ee" />
+
 - **架构选择**：  
   采用DATA-FLOW ARCHITECTURES与LAYERED ARCHITECTURES的混合模式，核心设计目标是为AI助手的高并发、多模态处理需求提供灵活支持
 
@@ -74,20 +78,20 @@
 # UI Design
 
 ## Lesson
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\p1.png" width="50%">
+![p1](https://github.com/user-attachments/assets/85525f6a-b7c2-4abc-b7d1-8455d0be798b)
 - **AI助手**：日常对话、思维导图生成、设计问答题目
 - **个人任务栏**：编辑和展示个人当前任务
 - **小组管理**：小组展示、创建小组、加入小组、删除小组
 
 ## Self-Learn
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\p2.png" width="50%">
+![p2](https://github.com/user-attachments/assets/aa218311-b259-40a1-8c36-80a2472867ac)
 - **书签区**：代码书签、书页书签
 
 ## Group ID
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\p3.png" width="50%">
+![p3](https://github.com/user-attachments/assets/2edfeda7-bf92-4ab7-9fd0-a53dd3bba93e)
 - **学习主题**：组长可修改主题
 
 ## Group-Learn
-<img src="D:\学习\第六学期\软件工程\project\sprint1\UI_d\p4.png" width="50%">
+![p4](https://github.com/user-attachments/assets/60402404-6358-45ca-9438-997cca5aee66)
 
 - **共享课件**：组长可选择展示课件
