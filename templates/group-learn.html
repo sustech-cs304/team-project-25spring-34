@@ -345,7 +345,11 @@
                     <button id="save-btn" class="btn-save" disabled>保存</button>
                     <span id="lock-status" style="color: red;"></span>
                 </div>
-                <textarea id="code" style="width: 100%; height: 25%;" >{{ code }}</textarea>
+                <select id="language-select">
+                  <option value="python">Python</option>
+                  <option value="java">Java</option>
+                </select>
+                <div id="editor"></div>
                 <button onclick="runCode()">Run</button>
                 <div class="output" id="output"></div>
             </div>
@@ -373,17 +377,7 @@
             <button id="close-modal">关闭</button>
         </div>
     </div>
-
-{#    <div class="code-section">#}
-{#        <h3>代码实践</h3>#}
-{#        <textarea id="code">{{ code }}</textarea>#}
-{#        <button onclick="runCode()">Run</button>#}
-{#        <div class="output" id="output"></div>#}
-{#        <h3>截屏功能</h3>#}
-{#        <button onclick="selectArea()">Select Area</button>#}
-{#        <button onclick="PPImage()">Read Area</button>#}
-{#    </div>#}
-
+    
 <!-- PDF.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <!-- Markdown & KaTeX -->
@@ -394,7 +388,37 @@
         onload="renderMathInElement(document.body);" data-mathml="true"></script>
 <!-- 导出 PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+    
+    <!-- CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
 
+<!-- JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+<!-- Python 模式 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+<!-- Java 模式 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+
+    <script>
+        const editor = CodeMirror(document.getElementById('editor'), {
+          mode: 'python', // 默认语言
+          theme: 'dracula',
+          lineNumbers: true,
+          autoCloseBrackets: true, 
+            autofocus: true,
+            styleActiveLine: true,   // 高亮当前行
+            indentUnit: 4,           // 缩进单位大小
+            smartIndent: true,       // 智能缩进
+        });
+        
+        // 动态切换语言
+        document.getElementById('language-select').addEventListener('change', (e) => {
+          const language = e.target.value;
+          editor.setOption('mode', language === 'python' ? 'python' : 'text/x-java');
+        });
+</script>
+    
     <script>
         function runCode() {
             /*
@@ -404,7 +428,7 @@
             * usage: I used the prompt "读取txt并返回运行结果到前端", and
             * use the framework it provides, but modify some of the details
             */
-            const code = document.getElementById('code').value;
+            const code = editor.getValue();
 
             // 显示加载状态
             document.getElementById('output').innerText = 'Running...';
@@ -1045,8 +1069,6 @@ ${data.stderr}`;
 
     function PPImage() {
         try{
-             //获取code区域
-            const codeTextarea = document.getElementById('code');
             fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
             method: 'POST',
             headers: {
@@ -1062,7 +1084,7 @@ ${data.stderr}`;
             if (data.success){
                  //add code to area
                 alert('Image to text conversion!');
-                codeTextarea.value = data.code;
+                editor.setValue(data.code);
             }
             else alert('Failed: ' + (data.error || 'Unknown error'));
         }).catch(error => {

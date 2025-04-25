@@ -205,7 +205,18 @@
             border: 1px solid #ccc;
         }
     </style>
-    <!-- Markdown 渲染 -->
+    <!-- CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    
+    <!-- JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <!-- Python 模式 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/python/python.min.js"></script>
+    <!-- Java 模式 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/clike/clike.min.js"></script>
+    
+        <!-- Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <!-- KaTeX 数学公式支持 -->
@@ -326,7 +337,11 @@
 
     <div class="code-section">
         <h3>代码实践</h3>
-        <textarea id="code">{{ code }}</textarea>
+        <select id="language-select">
+          <option value="python">Python</option>
+          <option value="java">Java</option>
+        </select>
+        <div id="editor"></div>
         <button onclick="runCode()">Run</button>
         <div class="output" id="output"></div>
         <h3>截屏功能</h3>
@@ -668,8 +683,6 @@
 
     function PPImage() {
         try{
-             //获取code区域
-            const codeTextarea = document.getElementById('code');
             fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
             method: 'POST',
             headers: {
@@ -685,7 +698,7 @@
             if (data.success){
                  //add code to area
                 alert('Image to text conversion!');
-                codeTextarea.value = data.code;
+                editor.setValue(data.code);
             }
             else alert('Failed: ' + (data.error || 'Unknown error'));
         }).catch(error => {
@@ -699,8 +712,6 @@
     
     function intelligent_PPImage() {
         try{
-             //获取code区域
-            const codeTextarea = document.getElementById('code');
             fetch('/login/IDE/lesson/self-learn/intelligent_preprocess_image/', {
             method: 'POST',
             headers: {
@@ -716,7 +727,7 @@
             if (data.success){
                  //add code to area
                 alert('Image to text conversion!');
-                codeTextarea.value = data.code;
+                editor.setValue(data.code);
             }
             else alert('Failed: ' + (data.error || 'Unknown error'));
         }).catch(error => {
@@ -743,7 +754,27 @@
         return cookieValue;
     }
 </script>
+
 <script>
+        const editor = CodeMirror(document.getElementById('editor'), {
+          mode: 'python', // 默认语言
+          theme: 'dracula',
+          lineNumbers: true,
+          autoCloseBrackets: true, 
+            autofocus: true,
+            styleActiveLine: true,   // 高亮当前行
+            indentUnit: 4,           // 缩进单位大小
+            smartIndent: true,       // 智能缩进
+        });
+        
+        // 动态切换语言
+        document.getElementById('language-select').addEventListener('change', (e) => {
+          const language = e.target.value;
+          editor.setOption('mode', language === 'python' ? 'python' : 'text/x-java');
+        });
+</script>
+<script>
+  
         function runCode() {
             /*
             * AI-generated-content
@@ -752,7 +783,7 @@
             * usage: I used the prompt "读取txt并返回运行结果到前端", and
             * use the framework it provides, but modify some of the details
             */
-            const code = document.getElementById('code').value;
+            const code = editor.getValue();
 
             // 显示加载状态
             document.getElementById('output').innerText = 'Running...';

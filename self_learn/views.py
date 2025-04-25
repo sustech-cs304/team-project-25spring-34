@@ -37,39 +37,6 @@ def index(request):
     # 渲染主页面，并将代码传递到模板
     return render(request, 'self-learn.html', {'code': code})
 
-
-def determine_file_type(file_path):
-    """
-    根据文件路径确定文件类型。
-    如果文件名的 '.txt' 前面是 'java'，则返回 'java'，否则返回 'python'。
-
-    :param file_path: 文件的完整路径
-    :return: 文件类型 ('java' 或 'python')
-    """
-    """
-     * AI-generated-content
-     * tool:Hunyuan
-     * version: latest
-     * usage: I used the prompt "根据是否以java.txt结尾来确定文件类型", and
-     * directly copy the code from its response
-    """
-
-    # 获取文件名（不包括路径）
-    filename = os.path.basename(file_path)
-
-    # 检查是否以 '.txt' 结尾
-    if filename.endswith('.txt'):
-        # 分割文件名和扩展名
-        name_without_ext, ext = os.path.splitext(filename)
-
-        # 检查 '.txt' 前面的部分是否为 'java'
-        if name_without_ext.endswith('java'):
-            return 'java'
-
-    # 默认返回 'python'
-    return 'python'
-
-
 def extract_class_name(java_code):
     """
     从Java代码中提取公共类名.必须是public class xxx才能提取到.且提取第一个
@@ -110,14 +77,21 @@ def run_code(request):
         if not code:
             return JsonResponse({'error': 'No code provided'}, status=400)
 
-        file_type = determine_file_type(file_path)
+        formed_code, type = auto_format_code_improved(code)
+        file_type = type
         print("code type:", file_type)
 
-        # run之前保存代码
+        #创建临时文件
+        if file_type == "j":
+            file_path = r"media\screenshot\output_java.txt"
+        else:
+            file_path = r"media\screenshot\output_python.txt"
+
+        # run之前写入代码
         with open(file_path, 'w') as f:
             f.write(code)
 
-        if file_type == 'java':
+        if file_type == 'j':
             class_name = extract_class_name(code)
             print("class name:", class_name)
             temp_path = os.path.join('self_learn', 'code_test', class_name + ".java")

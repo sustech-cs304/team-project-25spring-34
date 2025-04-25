@@ -1,14 +1,1 @@
-class Animal:
-    def __init__(self, name):
-        self.name = name
-
-class Duck(Animal):
-    def __init__(self, name):
-        super(Duck, self).__init__(name)
-    
-    def quack(self):
-        print(self.name, ' Quack')
-
-if __name__ == '__main__':
-    duck = Duck('Donald')
-    duck.quack()
+print("hello")
