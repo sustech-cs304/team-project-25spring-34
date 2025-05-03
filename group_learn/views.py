@@ -135,7 +135,7 @@ def get_room_pdfs(request, group_id):
 @csrf_exempt
 @login_required
 @require_http_methods(["GET"])
-def get_pdf(request, group_id, pdf_id):
+def get_pdf(request, group_id, pdf_id, data_course):
     """
     AI-generated-content
     tool: deepseek
@@ -148,7 +148,7 @@ def get_pdf(request, group_id, pdf_id):
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
-                'error': '只有房间创建者可以获取 PDF 文件'
+                'error': '只有房间创建者可以获取PDF文件'
             }, status=403)
 
         return JsonResponse({
@@ -160,7 +160,7 @@ def get_pdf(request, group_id, pdf_id):
             'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
         })
     except RoomFile.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'PDF 文件不存在'}, status=404)
+        return JsonResponse({'success': False, 'error': 'PDF文件不存在'}, status=404)
     except ChatRoom.DoesNotExist:
         return JsonResponse({'success': False, 'error': '房间不存在'}, status=404)
     except Exception as e:
@@ -170,7 +170,7 @@ def get_pdf(request, group_id, pdf_id):
 @csrf_exempt
 @login_required
 @require_http_methods(["GET"])
-def get_current_pdf(request, group_id):
+def get_current_pdf(request, group_id, data_course):
     try:
         room = ChatRoom.objects.get(id=group_id)
         cache_key = f"current_pdf_{group_id}"
@@ -195,21 +195,21 @@ def get_current_pdf(request, group_id):
     except ChatRoom.DoesNotExist:
         return JsonResponse({'success': False, 'error': '房间不存在'}, status=404)
     except RoomFile.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'PDF 文件不存在'}, status=404)
+        return JsonResponse({'success': False, 'error': 'PDF文件不存在'}, status=404)
     except Exception as e:
-        logger.error(f"获取当前 PDF 失败: {str(e)}")
+        logger.error(f"获取当前PDF失败: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @csrf_exempt
 @login_required
 @require_http_methods(["POST"])
-def set_current_pdf(request, group_id):
+def set_current_pdf(request, group_id, data_course):
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
-                'error': '只有房间创建者可以设置 PDF'
+                'error': '只有房间创建者可以设置PDF'
             }, status=403)
 
         data = json.loads(request.body)
@@ -241,13 +241,13 @@ def set_current_pdf(request, group_id):
     except RoomFile.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'PDF 文件不存在'}, status=404)
     except Exception as e:
-        logger.error(f"设置当前 PDF 失败: {str(e)}")
+        logger.error(f"设置当前PDF失败: {str(e)}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @csrf_exempt
 @login_required
 @require_http_methods(["GET"])
-def serve_pdf(request, group_id, pdf_id):
+def serve_pdf(request, group_id, pdf_id, data_course):
     """
     AI-generated-content
     tool:deepseek

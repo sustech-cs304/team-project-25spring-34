@@ -31,7 +31,9 @@ urlpatterns = [
     path('', lambda request: redirect('login/')),
     path('login/IDE/', include([
         path('', IDE_views.index),
-        path('lesson/', include([
+        path('', include('IDE.urls')),
+        path('<str:data_course>/', include([  # lesson/
+            path('', IDE_views.course_view, name='course_view'),
             path('', include('lesson.urls')),
             path('self-learn/', include('self_learn.urls')),
             path('deepseek-chat/', include('ai_assistant.urls')),  # 新增聊天应用路由
