@@ -6,14 +6,16 @@
     <title>IDE</title>
     <!-- 使用Google Fonts引入更现代的字体 -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- 添加 jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-    /** 
-    * AI-generated-content 
-    * tool: DeepSeek 
-    * version: latest 
+    /**
+    * AI-generated-content
+    * tool: DeepSeek
+    * version: latest
     * usage: I use the prompt "如何写一个区分不同区域的模板html", and
     * use the framework but modify CSS components and change the layout to fit our UI design.
-    */ 
+    */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
@@ -82,6 +84,9 @@
             text-decoration: none;
             border-radius: 5px;
             transition: background-color 0.3s ease;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
         }
 
         .btn:hover {
@@ -100,18 +105,167 @@
             margin: 0;
             font-size: 0.9rem;
         }
+
+        /* 新增的按钮容器样式 */
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        /* 新增的输入行样式 */
+        .input-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .input-container input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+            width: 200px;
+        }
+
+        .input-container button {
+            padding: 10px 20px;
+            font-size: 1rem;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: green;
+            text-align: center;
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
+    {% csrf_token %}
     <h1>Welcome to the IDE</h1>
     <!-- <nav>
         <ul>
             <li><a href="/login/IDE/lesson">Go to Lesson</a></li>
         </ul>
     </nav> -->
-    <div class="main-content">
-        <p>This is a simple IDE interface. Start working now!</p>
-        <a href="/login/IDE/lesson" class="btn">Get Started</a>
+
+    <div class="button-container">
+        <!-- 动态课程按钮将在这里渲染 -->
+        <div class="full-width-btn">
+            <button class="btn" data-course="lesson">Get Started</button>
+        </div>
     </div>
+
+    <!-- 新增的输入行和确定按钮 -->
+    <div class="input-container">
+        <input type="text" id="newCourseInput" placeholder="输入新课程名称">
+        <button class="btn" id="addCourseBtn">确定</button>
+    </div>
+    <div id="message" class="error"></div>
+
+    <script>
+        // 获取 CSRF 令牌
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // 渲染课程按钮
+        function renderCourseButton(name, slug) {
+            const buttonContainer = $('.button-container');
+            const fullWidthBtn = $('.full-width-btn');
+            const button = $('<button>')
+                .addClass('btn')
+                .attr('data-course', slug)
+                .text(name)
+                .on('click', function() {
+                    window.location.href = `/login/IDE/${slug}/`;
+                });
+            buttonContainer[0].insertBefore(button[0], fullWidthBtn[0]);
+        }
+
+        // 加载所有课程
+        function loadCourses() {
+            $.ajax({
+                url: '/login/IDE/courses/',
+                type: 'GET',
+                success: function(response) {
+                    // 清空现有按钮（除了 Get Started）
+                    $('.button-container .btn').not('.full-width-btn .btn').remove();
+                    response.courses.forEach(course => {
+                        renderCourseButton(course.name, course.slug);
+                    });
+                },
+                error: function(xhr) {
+                    $('#message').text('加载课程失败：' + (xhr.responseJSON?.error || '未知错误'));
+                }
+            });
+        }
+
+        // 初始化时加载课程
+        $(document).ready(function() {
+            loadCourses();
+
+            // 每隔2秒自动更新课程列表
+            setInterval(loadCourses, 2000);
+
+            // 确定按钮事件
+            $('#addCourseBtn').click(function() {
+                const name = $('#newCourseInput').val().trim();
+                if (!name) {
+                    $('#message').text('请输入课程名称');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/login/IDE/add/',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ name: name }),
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    success: function(response) {
+                        console.log('Add course response:', response);
+                        if (response.status === 'ok') {
+                            renderCourseButton(response.name, response.slug);
+                            $('#newCourseInput').val('');
+                            $('#message').removeClass('error').addClass('success').text('课程添加成功！');
+                            loadCourses();
+                        }
+                    },
+                    error: function(xhr) {
+                        let errorMsg = '添加课程失败：';
+                        if (xhr.status === 403) {
+                            errorMsg += '请登录或确保您有管理员权限';
+                        } else if (xhr.status === 400) {
+                            errorMsg += xhr.responseJSON?.error || '无效输入';
+                        } else {
+                            errorMsg += xhr.responseJSON?.error || '未知错误';
+                        }
+                        $('#message').text(errorMsg);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -214,7 +214,7 @@
                 usage：帮我生成调用deepseek api的代码框架*/
     (function () {
         const CONFIG = {
-            API_URL: "{% url 'deepseek_api' %}",
+            API_URL: "{% url 'deepseek_api' data_course=data_course%}",
             CSRF_TOKEN: "{{ csrf_token }}",
             STORAGE_KEY: 'chatVisible'
         };

@@ -12,10 +12,10 @@ from lesson.models import ChatRoom, ChatMessage
 TOPIC_CACHE_PREFIX = "chat_room_topic_"
 
 
-def index(request, group_id):
-    return render(request, 'group-id.html', {'group_id': group_id})
+def index(request, group_id, data_course):
+    return render(request, 'group-id.html', {'group_id': group_id, 'data_course': data_course})
 
-def group_id(request):
+def group_id(request, data_course):
     if request.method == 'POST':
         group_id = request.POST.get('group_id')
         return redirect(f'/login/IDE/lesson/group-{group_id}')
@@ -24,7 +24,7 @@ def group_id(request):
 
 @login_required
 @csrf_exempt
-def get_members(request, group_id):
+def get_members(request, group_id, data_course):
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
@@ -41,7 +41,8 @@ def get_members(request, group_id):
         return JsonResponse({
             'status': 'success',
             'members': members_data,
-            'room_name': room.name
+            'room_name': room.name,
+            'data_course': data_course
         })
     except ChatRoom.DoesNotExist:
         return JsonResponse({
@@ -53,7 +54,7 @@ def get_members(request, group_id):
 @login_required
 @require_POST
 @csrf_exempt
-def leave_room(request, group_id):
+def leave_room(request, group_id, data_course):
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user in room.members.all():
@@ -75,7 +76,7 @@ def leave_room(request, group_id):
 @login_required
 @require_POST
 @csrf_exempt
-def get_learning_topics(request, group_id):
+def get_learning_topics(request, group_id, data_course):
     try:
         room = ChatRoom.objects.get(id=group_id)
         if request.user not in room.members.all():
@@ -89,14 +90,14 @@ def get_learning_topics(request, group_id):
             # 'topics': group_topics.get(group_id or "暂无主题"),
             'topics': cache.get(f"{TOPIC_CACHE_PREFIX}{group_id}", "暂无主题"),
             'is_leader': request.user == room.creator,
-            'room_name': room.name
+            'room_name': room.name,
+            'data_course': data_course
         })
     except ChatRoom.DoesNotExist:
         return JsonResponse({
             'status': 'error',
             'message': '房间不存在'
         }, status=404)
-
 
 
 from django.core.cache import cache
@@ -106,7 +107,7 @@ import json
 @login_required
 @require_POST
 @csrf_exempt
-def validate_room(request, group_id):
+def validate_room(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -130,7 +131,8 @@ def validate_room(request, group_id):
             'room_name': room.name,
             'group_id': room.id,
             'leader': request.user == room.creator,
-            'topics': topics
+            'topics': topics,
+            'data_course': data_course
         })
     except ChatRoom.DoesNotExist:
         return JsonResponse({
@@ -142,7 +144,7 @@ def validate_room(request, group_id):
 @login_required
 @require_POST
 @csrf_exempt
-def update_topic(request, group_id):
+def update_topic(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -190,7 +192,7 @@ from .models import RoomFile
 
 @login_required
 @csrf_exempt
-def upload_file(request, group_id):
+def upload_file(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -237,7 +239,7 @@ def upload_file(request, group_id):
         return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
     
 @login_required
-def get_files(request, group_id):
+def get_files(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -267,7 +269,7 @@ import os
 from django.conf import settings
 @login_required
 @csrf_exempt
-def delete_file(request, group_id):
+def delete_file(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -296,7 +298,7 @@ def delete_file(request, group_id):
 from django.http import HttpResponse
 
 @login_required
-def download_file(request, group_id, file_name):
+def download_file(request, group_id, file_name, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 

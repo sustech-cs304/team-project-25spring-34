@@ -288,7 +288,8 @@
     <nav>
         <ul>
             <li><a href="/login/IDE">Go Back</a></li>
-            <li><a href="/login/IDE/lesson/self-learn">Self-Learn</a></li>
+<!--            <li><a href="/login/IDE/lesson/self-learn">Self-Learn</a></li>-->
+            <li><a href="/login/IDE/{{ data_course }}/self-learn/">Self-Learn</a></li>
         </ul>
     </nav>
     <div class="main-content">
@@ -300,14 +301,14 @@
                 <div id="message" class="messages"></div>
 
                 <div class="room-form">
-{#                    <h4>创建房间</h4>#}
-{#                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">#}
-{#                        {% csrf_token %}#}
-{#                        <input type="text" name="room_name" placeholder="输入房间名称" required>#}
-{#                        <button type="submit">创建房间</button>#}
-{#                    </form>#}
+<!--{#                    <h4>创建房间</h4>#}-->
+<!--{#                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">#}-->
+<!--{#                        {% csrf_token %}#}-->
+<!--{#                        <input type="text" name="room_name" placeholder="输入房间名称" required>#}-->
+<!--{#                        <button type="submit">创建房间</button>#}-->
+<!--{#                    </form>#}-->
                     <h4>创建房间</h4>
-                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">
+                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' data_course=data_course%}">
                         {% csrf_token %}
                         <button type="submit">创建新房间</button>
                     </form>
@@ -315,7 +316,7 @@
 
                 <div class="room-form">
                     <h4>加入房间</h4>
-                    <form id="join-room-form" method="POST" action="{% url 'lesson:join_room' %}">
+                    <form id="join-room-form" method="POST" action="{% url 'lesson:join_room' data_course=data_course%}">
                         {% csrf_token %}
                         <input type="text" name="room_name" placeholder="输入房间名称" required>
                         <button type="submit">加入房间</button>
@@ -378,7 +379,7 @@
                     <!-- 修改 PDF 上传按钮 -->
                     <div class="pdf-upload-btn" style="margin-top: 20px;">
                         <h4>上传PDF</h4>
-                        <form id="pdf-upload-form" method="POST" enctype="multipart/form-data" action="/login/IDE/lesson/self-learn/upload_pdf/">
+                        <form id="pdf-upload-form" method="POST" enctype="multipart/form-data" action="/login/IDE/{{ data_course }}/self-learn/upload_pdf/">
                             {% csrf_token %}
                             <input type="file" name="pdf" accept=".pdf" required>
                             <button type="submit">上传PDF</button>
@@ -452,7 +453,7 @@
             e.preventDefault();
             const formData = new FormData(this);
 
-            fetch("{% url 'lesson:create_room' %}", {
+            fetch("{% url 'lesson:create_room' data_course=data_course%}", {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -465,7 +466,7 @@
                     document.getElementById('message').innerHTML =
                         `<div class="success">房间创建成功！房间号: ${data.room_id}</div>`;
                     // 自动跳转到新创建的房间
-                    window.location.href = `/login/IDE/lesson/group-${data.room_id}`;
+                    window.location.href = `/login/IDE/{{ data_course }}/group-${data.room_id}`;
                 } else {
                     document.getElementById('message').innerHTML =
                         `<div class="error">${data.message}</div>`;
@@ -481,7 +482,7 @@
             e.preventDefault();
             const formData = new FormData(this);
 
-            fetch("{% url 'lesson:join_room' %}", {
+            fetch("{% url 'lesson:join_room' data_course=data_course%}", {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -491,7 +492,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    window.location.href = `/login/IDE/lesson/group-${data.room_name}`;
+                    window.location.href = `/login/IDE/{{ data_course }}/group-${data.room_name}`;
                 } else {
                     document.getElementById('message').innerHTML = `<div class="error">${data.message}</div>`;
                 }
@@ -507,7 +508,7 @@
             const formData = new FormData(this);
             const roomName = formData.get('room_name');
 
-            const deleteUrl = `/login/IDE/lesson/delete-room/group-${roomName}/`;
+            const deleteUrl = `/login/IDE/{{ data_course }}/delete-room/group-${roomName}/`;  // delete-room
 
             fetch(deleteUrl, {
                 method: 'POST',
@@ -529,7 +530,7 @@
         });
 
         async function loadPdfGallery() {
-            const response = await fetch('/login/IDE/lesson/self-learn/get_pdf_list/');
+            const response = await fetch('/login/IDE/{{ data_course }}/self-learn/get_pdf_list/');
             const data = await response.json();
             const pdfGallery = document.getElementById('pdf-gallery');
 
@@ -550,7 +551,7 @@
 
                 // 双击事件：跳转到 self-learn 界面
                 pdfItem.ondblclick = () => {
-                    const url = `/login/IDE/lesson/self-learn/pdf/viewer/?pdf_name=${encodeURIComponent(pdf)}`;
+                    const url = `/login/IDE/{{ data_course }}/self-learn/pdf/viewer/?pdf_name=${encodeURIComponent(pdf)}`;
                     window.location.href = url;
                 };
 
@@ -566,7 +567,7 @@
         e.preventDefault(); // 阻止默认表单提交行为
 
         const formData = new FormData(this);
-        const response = await fetch('/login/IDE/lesson/self-learn/upload_pdf/', {
+        const response = await fetch('/login/IDE/{{ data_course }}/self-learn/upload_pdf/', {
             method: 'POST',
             body: formData,
         });

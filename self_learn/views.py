@@ -32,12 +32,26 @@ if not os.path.exists(BOOKMARKS_FILE):
 file_path = ''
 
 
-def index(request):
+def index(request, data_course):
     code = ''
     # 渲染主页面，并将代码传递到模板
-    return render(request, 'self-learn.html', {'code': code})
+    return render(request, 'self-learn.html', {'code': code, 'data_course': data_course})
 
-def extract_class_name(java_code):
+def get_bookmarks_file(data_course):
+    """获取当前课程的专属书签文件路径"""
+    course_dir = os.path.join(UPLOAD_DIR, 'bookmarks', data_course)
+    os.makedirs(course_dir, exist_ok=True)
+    return os.path.join(course_dir, 'bookmarks.json')
+
+def ensure_bookmarks_file(data_course):
+    """确保书签文件存在"""
+    bookmarks_file = get_bookmarks_file(data_course)
+    if not os.path.exists(bookmarks_file):
+        with open(bookmarks_file, 'w') as f:
+            json.dump({}, f)
+    return bookmarks_file
+
+def extract_class_name(java_code, data_course):
     """
     从Java代码中提取公共类名.必须是public class xxx才能提取到.且提取第一个
     """
@@ -53,16 +67,15 @@ def extract_class_name(java_code):
         return match.group(1)
     return None
 
-
-def lesson(request):
+def lesson(request, data_course):
     return render(request, 'lesson.html')
 
 
-def hello(request):
+def hello(request, data_course):
     return HttpResponse("Hello world ! ")
 
 
-def run_code(request):
+def run_code(request, data_course):
     """
      * AI-generated-content
      * tool:Hunyuan
@@ -71,9 +84,7 @@ def run_code(request):
      * use the framework it provides, but modify some of the details
     """
     if request.method == 'POST':
-        # 获取前端传递的代码
         code = request.POST.get('code', '')
-
         if not code:
             return JsonResponse({'error': 'No code provided'}, status=400)
 
@@ -81,25 +92,22 @@ def run_code(request):
         file_type = type
         print("code type:", file_type)
 
-        #创建临时文件
         if file_type == "j":
             file_path = r"media\screenshot\output_java.txt"
         else:
             file_path = r"media\screenshot\output_python.txt"
 
-        # run之前写入代码
         with open(file_path, 'w') as f:
             f.write(code)
 
         if file_type == 'j':
-            class_name = extract_class_name(code)
+            class_name = extract_class_name(code, data_course)
             print("class name:", class_name)
             temp_path = os.path.join('self_learn', 'code_test', class_name + ".java")
 
             with open(temp_path, 'w') as f:
                 f.write(code)
-            #
-            # 编译 Java 代码
+
             compile_result = subprocess.run(
                 ['javac', temp_path],
                 capture_output=True,
@@ -107,7 +115,6 @@ def run_code(request):
                 timeout=5
             )
 
-            # 处理编译错误
             if compile_result.returncode != 0:
                 print("compile error:", compile_result)
                 return JsonResponse({
@@ -115,7 +122,6 @@ def run_code(request):
                     'stderr': compile_result.stderr
                 }, status=400)
 
-            # 执行 Java 程序
             run_result = subprocess.run(
                 ['java', '-cp', os.path.dirname(temp_path), class_name],
                 capture_output=True,
@@ -131,30 +137,24 @@ def run_code(request):
                 'stdout': run_result.stdout,
                 'stderr': run_result.stderr,
             })
-
         else:
             try:
-                # 执行代码并捕获输出
                 result = subprocess.run(
                     ['python', file_path],
                     capture_output=True,
                     text=True,
-                    timeout=5  # 设置超时时间为5秒
+                    timeout=5
                 )
-
-                # 返回执行结果
                 return JsonResponse({
-                    'stdout': result.stdout,  # 标准输出
-                    'stderr': result.stderr,  # 错误输出
+                    'stdout': result.stdout,
+                    'stderr': result.stderr,
                 })
-
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
-
     return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 
-def upload_pdf(request):
+def upload_pdf(request, data_course):
     """上传 PDF 并转换为图片"""
     if request.method == "POST" and request.FILES.get("pdf"):
         pdf_file = request.FILES["pdf"]
@@ -163,7 +163,7 @@ def upload_pdf(request):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
-def view_bookmarks(request):
+def view_bookmarks(request, data_course):
     """展示 PDF 转换后的页面"""
     pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
     img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
@@ -181,7 +181,7 @@ def view_bookmarks(request):
 # version: latest
 # usage：生成鼠标拖动时，将鼠标选择框住的位置截屏并保存的python代码架构？
 @csrf_exempt
-def select_area(request):
+def select_area(request, data_course):
     if request.method == 'POST':
         try:
             time.sleep(0.5)
@@ -236,7 +236,7 @@ def select_area(request):
     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
-def preprocess_image(request):
+def preprocess_image(request, data_course):
     global file_path
     if request.method == 'POST':
         try:
@@ -264,7 +264,7 @@ def preprocess_image(request):
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)
 
 
-def intelligent_preprocess_image(request):
+def intelligent_preprocess_image(request, data_course):
     global file_path
     if request.method == 'POST':
         try:
@@ -272,7 +272,7 @@ def intelligent_preprocess_image(request):
             image = Image.open(image_path)
             code = pytesseract.image_to_string(image, lang='eng+chi_sim', config="--oem 1 --psm 6")
             formed_code, type = auto_format_code_improved(code)
-            standard_code = deepseek_intelligent_code_repair(formed_code, type)
+            standard_code = deepseek_intelligent_code_repair(formed_code, type, data_course)
             if type == "p":
                 with open("media/screenshot/output_python.txt", "w", encoding="utf-8") as file:
                     file.write(standard_code)
@@ -293,7 +293,7 @@ def intelligent_preprocess_image(request):
         return JsonResponse({'error': 'Preprocess image failed'}, status=500)
 
 
-def deepseek_intelligent_code_repair(code, type):
+def deepseek_intelligent_code_repair(code, type, data_course):
     try:
         if type == "p":
             prompt = "严格遵守以下原则并回答问题：\n一、修复python代码格式、语法问题并严格保留代码内容\n二、并补全代码上下文使其能够正常编译(包括psvm最外层的类)，能够正常运行（标准为看到输出）\n三、你只需要返回修复后的代码，不需要再返回任何内容\n代码如下：\n"
@@ -329,7 +329,7 @@ def deepseek_intelligent_code_repair(code, type):
 
 
 @csrf_exempt
-def get_pdf_list(request):
+def get_pdf_list(request, data_course):
     """获取 media/pdfs 目录中的 PDF 文件列表"""
     pdf_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
     pdfs = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')] if os.path.exists(pdf_dir) else []
@@ -342,20 +342,24 @@ def get_pdf_list(request):
 #      * usage: I used Copilot to fix syntax errors and standardize code.
 #      */
 @csrf_exempt
-def get_bookmarks(request):
+def get_bookmarks(request, data_course):
     """获取指定 PDF 的书签"""
     pdf_name = request.GET.get('pdf_name')
-    bookmarks = load_bookmarks()
+    bookmarks_file = ensure_bookmarks_file(data_course)
+
+    with open(bookmarks_file, 'r') as f:
+        bookmarks = json.load(f)
 
     if pdf_name not in bookmarks:
-        bookmarks[pdf_name] = []  # 初始化空书签列表
-        save_bookmarks(bookmarks)
+        bookmarks[pdf_name] = []
+        with open(bookmarks_file, 'w') as f:
+            json.dump(bookmarks, f)
 
     return JsonResponse(bookmarks.get(pdf_name, []), safe=False)
 
 
 @csrf_exempt
-def add_bookmark(request):
+def add_bookmark(request, data_course):
     """添加书签"""
     data = json.loads(request.body)
     pdf_name = data.get('pdf_name')
@@ -366,43 +370,53 @@ def add_bookmark(request):
     if not (pdf_name and description and category and isinstance(page, int) and page > 0):
         return JsonResponse({'error': '缺少必要参数或参数无效'}, status=400)
 
-    bookmarks = load_bookmarks()
+    bookmarks_file = ensure_bookmarks_file(data_course)
+    with open(bookmarks_file, 'r') as f:
+        bookmarks = json.load(f)
+
     if pdf_name not in bookmarks:
         bookmarks[pdf_name] = []
 
     bookmarks[pdf_name].append({
         'description': description,
         'category': category,
-        'page': page
+        'page': page,
+        'course': data_course  # 添加课程标识
     })
-    save_bookmarks(bookmarks)
+
+    with open(bookmarks_file, 'w') as f:
+        json.dump(bookmarks, f)
     return JsonResponse({'success': True})
 
 
 @csrf_exempt
-def delete_bookmark(request):
+def delete_bookmark(request, data_course):
     """删除书签"""
     data = json.loads(request.body)
     pdf_name = data.get('pdf_name')
     index = data.get('index')
 
-    bookmarks = load_bookmarks()
+    bookmarks_file = ensure_bookmarks_file(data_course)
+    with open(bookmarks_file, 'r') as f:
+        bookmarks = json.load(f)
+
     if pdf_name in bookmarks and 0 <= index < len(bookmarks[pdf_name]):
         bookmarks[pdf_name].pop(index)
-        save_bookmarks(bookmarks)
+        with open(bookmarks_file, 'w') as f:
+            json.dump(bookmarks, f)
         return JsonResponse({'success': True})
 
     return JsonResponse({'error': '书签不存在'}, status=404)
 
 
-def load_bookmarks():
+def load_bookmarks(data_course):
     """加载书签文件"""
     print(f"加载书签文件: {BOOKMARKS_FILE}")  # 调试日志
     with open(BOOKMARKS_FILE, 'r') as f:
         return json.load(f)
 
 
-def save_bookmarks(bookmarks):
+def save_bookmarks(bookmarks, data_course):
     """保存书签到文件"""
     print(f"保存书签到文件: {BOOKMARKS_FILE}")  # 调试日志
     with open(BOOKMARKS_FILE, 'w') as f:

@@ -295,8 +295,8 @@
     <nav>
         <ul>
             <li><a href="#" id="exitBtn">Exit Group</a></li>
-            <li><a href="/login/IDE/lesson" id="goBackBtn">Go Back</a></li>
-            <li><a href="/login/IDE/lesson/group-{{ group_id }}/group-learn">Group-Learn</a></li>
+            <li><a href="/login/IDE/{{ data_course }}" id="goBackBtn">Go Back</a></li>
+            <li><a href="/login/IDE/{{ data_course }}/group-{{ group_id }}/group-learn">Group-Learn</a></li>
         </ul>
     </nav>
     <div class="container">
@@ -358,7 +358,7 @@
         // 验证房间有效性
         async function validateRoom() {
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/validate-room/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/validate-room/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -402,12 +402,12 @@
 
                 } else {
                     alert(data.message || "房间验证失败");
-                    window.location.href = '/login/IDE/lesson';
+                    window.location.href = '/login/IDE/{{ data_course }}';
                 }
             } catch (error) {
                 console.error("房间验证错误:", error);
                 alert(`验证房间时发生错误: ${error.message}`);
-                window.location.href = '/login/IDE/lesson';
+                window.location.href = '/login/IDE/{{ data_course }}';
             }
         }
 
@@ -432,7 +432,7 @@
             }
 
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/update-topic/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/update-topic/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -465,7 +465,7 @@
 
             const list = document.getElementById('membersList');
 
-            fetch(`/login/IDE/lesson/group-${groupId}/get-members/`, {
+            fetch(`/login/IDE/{{ data_course }}/group-${groupId}/get-members/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -479,7 +479,7 @@
                         clearInterval(membersInterval);
                         return response.json().then(data => {
                             alert(data.message || '访问房间失败');
-                            window.location.href = '/login/IDE/lesson';
+                            window.location.href = '/login/IDE/{{ data_course }}';
                         });
                     }
                     throw new Error('Network response was not ok');
@@ -504,7 +504,7 @@
         function updateTopicDisplay() {
             if (!isValidRoom || isLeaving) return;
 
-            fetch(`/login/IDE/lesson/group-${groupId}/validate-room/`, {
+            fetch(`/login/IDE/{{ data_course }}/group-${groupId}/validate-room/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -551,7 +551,7 @@
             }
 
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/update-topic/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/update-topic/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -636,7 +636,7 @@
                 formData.append('file', file);
 
                 try {
-                    const response = await fetch(`/login/IDE/lesson/group-${groupId}/upload-file/`, {
+                    const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/upload-file/`, {
                         method: 'POST',
                         headers: {
                             'X-CSRFToken': getCSRFToken()
@@ -669,7 +669,7 @@
             * adapt the generated code by modifying the URL and method.
             */           
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/get-files/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/get-files/`, {
                     method: 'GET',
                     headers: {
                         'X-CSRFToken': getCSRFToken()
@@ -693,7 +693,7 @@
                     data.files.forEach((file, index) => {
                         const li = document.createElement('li');
                         const displayName = file.name;
-                        const downloadUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
+                        const downloadUrl = `/login/IDE/{{ data_course }}/group-${groupId}/download-file/${encodeURIComponent(file.name)}/`;
 
                         li.innerHTML = `
                             <a href="${downloadUrl}" download="${displayName}">
@@ -738,7 +738,7 @@
             const fileName = file.name;
 
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/delete-file/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/delete-file/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -772,7 +772,7 @@
             * adapt the generated code by modifying the URL and method.
             */ 
             const file = files[index];
-            const previewUrl = `/login/IDE/lesson/group-${groupId}/download-file/${encodeURIComponent(filename)}/?preview=true`;
+            const previewUrl = `/login/IDE/{{ data_course }}/group-${groupId}/download-file/${encodeURIComponent(filename)}/?preview=true`;
 
             if (filename.toLowerCase().endsWith('.pdf')) {
                 window.open(previewUrl, '_blank');
@@ -788,7 +788,7 @@
             if (isLeaving || !isValidRoom) return false;
             isLeaving = true;
             try {
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/leave-room/`, {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/leave-room/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -874,7 +874,7 @@
                         console.log('退出小组结果:', leftSuccessfully);
                         if (leftSuccessfully) {
                             console.log('跳转到课程页面');
-                            window.location.href = '/login/IDE/lesson';
+                            window.location.href = '/login/IDE/{{ data_course }}';
                         } else {
                             console.log('退出小组失败，未跳转');
                         }
@@ -891,19 +891,19 @@
 
                 document.getElementById('saveTopicBtn').addEventListener('click', saveTopic);
 
-                {#window.addEventListener('beforeunload', function(e) {#}
-                {#    if (!isLeaving && isValidRoom) {#}
-                {#        const data = new Blob([JSON.stringify({#}
-                {#            username: currentUser,#}
-                {#            csrfmiddlewaretoken: getCSRFToken()#}
-                {#        })], { type: 'application/json' });#}
-                {##}
-                {#        navigator.sendBeacon(#}
-                {#            `/login/IDE/lesson/group-${groupId}/leave-room/`,#}
-                {#            data#}
-                {#        );#}
-                {#    }#}
-                {#);#}
+                // {#window.addEventListener('beforeunload', function(e) {#}
+                // {#    if (!isLeaving && isValidRoom) {#}
+                // {#        const data = new Blob([JSON.stringify({#}
+                // {#            username: currentUser,#}
+                // {#            csrfmiddlewaretoken: getCSRFToken()#}
+                // {#        })], { type: 'application/json' });#}
+                // {##}
+                // {#        navigator.sendBeacon(#}
+                // {#            `/login/IDE/lesson/group-${groupId}/leave-room/`,#}
+                // {#            data#}
+                // {#        );#}
+                // {#    }#}
+                // {#);#}
             }
         });
     </script>

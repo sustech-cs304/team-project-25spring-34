@@ -236,7 +236,7 @@
 
 <nav>
     <ul>
-        <li><a href="/login/IDE/lesson">返回课程</a></li>
+        <li><a href="/login/IDE/{{ data_course }}">返回课程</a></li>
         <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">
             <h4>书签导航</h4>
             <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>
@@ -248,36 +248,36 @@
         <!-- 删除 PDF 上传相关功能 -->
     </ul>
 </nav>
-{#<nav>#}
-{#    <ul>#}
-{#        <li><a href="/login/IDE/lesson">返回课程</a></li>#}
-{#        <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">#}
-{#            <h4>书签导航</h4>#}
-{#            <select id="pdf-selector" style="margin-left: 10px;">#}
-{#                <option value="">选择 PDF</option>#}
-{#            </select>#}
-{#            <button id="view-bookmarks-btn" style="margin-left: 10px;">查看书签</button>#}
-{#            <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>#}
-{#            <button id="delete-bookmark-btn" style="margin-left: 10px;">删除书签</button>#}
-{#            <!-- 新增书签下拉框 -->#}
-{#            <select id="bookmark-dropdown" style="margin-left: 10px; display: none;">#}
-{#                <option value="">选择书签</option>#}
-{#            </select>#}
-{#        </div>#}
-{##}
-{#        <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">#}
-{#            <h4>上传PDF</h4>#}
-{#            <form id="pdf-upload-form" method="POST" enctype="multipart/form-data"#}
-{#                  action="/login/IDE/lesson/self-learn/upload_pdf/">#}
-{#                {% csrf_token %}#}
-{#                <input type="file" name="pdf" accept=".pdf" required>#}
-{#                <button type="submit">上传PDF</button>#}
-{#            </form>#}
-{#        </div>#}
-{##}
-{##}
-{#    </ul>#}
-{#</nav>#}
+<!--{#<nav>#}-->
+<!--{#    <ul>#}-->
+<!--{#        <li><a href="/login/IDE/lesson">返回课程</a></li>#}-->
+<!--{#        <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">#}-->
+<!--{#            <h4>书签导航</h4>#}-->
+<!--{#            <select id="pdf-selector" style="margin-left: 10px;">#}-->
+<!--{#                <option value="">选择 PDF</option>#}-->
+<!--{#            </select>#}-->
+<!--{#            <button id="view-bookmarks-btn" style="margin-left: 10px;">查看书签</button>#}-->
+<!--{#            <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>#}-->
+<!--{#            <button id="delete-bookmark-btn" style="margin-left: 10px;">删除书签</button>#}-->
+<!--{#            &lt;!&ndash; 新增书签下拉框 &ndash;&gt;#}-->
+<!--{#            <select id="bookmark-dropdown" style="margin-left: 10px; display: none;">#}-->
+<!--{#                <option value="">选择书签</option>#}-->
+<!--{#            </select>#}-->
+<!--{#        </div>#}-->
+<!--{##}-->
+<!--{#        <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">#}-->
+<!--{#            <h4>上传PDF</h4>#}-->
+<!--{#            <form id="pdf-upload-form" method="POST" enctype="multipart/form-data"#}-->
+<!--{#                  action="/login/IDE/lesson/self-learn/upload_pdf/">#}-->
+<!--{#                {% csrf_token %}#}-->
+<!--{#                <input type="file" name="pdf" accept=".pdf" required>#}-->
+<!--{#                <button type="submit">上传PDF</button>#}-->
+<!--{#            </form>#}-->
+<!--{#        </div>#}-->
+<!--{##}-->
+<!--{##}-->
+<!--{#    </ul>#}-->
+<!--{#</nav>#}-->
 
 <div class="container">
     <div class="pdf-section">
@@ -351,39 +351,39 @@
     </div>
 </div>
 
-{#<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>#}
+<!--{#<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>#}-->
 
-{#<script>#}
-    
-    {#const urlParams = new URLSearchParams(window.location.search);#}
-    {#const pdfName = urlParams.get('pdf_name') || 'sample.pdf'; // 获取 URL 参数中的 pdf_name，默认为 sample.pdf#}
-    {#const pdfUrl = `/media/pdfs/${pdfName}`; // 动态设置 PDF 路径#}
-    {#const storageKey = pdfUrl + '.annotations';#}
-    {##}
-    {#// PDF.js 初始化#}
-    {#const pdfjsLib = window['pdfjs-dist/build/pdf'];#}
-    {#pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';#}
-    {##}
-    {#// Canvas 和绘图参数#}
-    {#let pdfDoc = null, currentPage = 1, scale = 1.0;#}
-    {#let dpiScale = window.devicePixelRatio || 1;#}
-    {##}
-    {#const canvas = document.getElementById('pdf-canvas');#}
-    {#const ctx = canvas.getContext('2d');#}
-    {#const overlay = document.getElementById('overlay');#}
-    {#const overlayCtx = overlay.getContext('2d');#}
-    {##}
-    {#const tool = document.getElementById('tool');#}
-    {#const color = document.getElementById('color');#}
-    {#const size = document.getElementById('size');#}
-    {##}
-    {#let annotations = {};#}
-    {#let drawing = false;#}
-    {#let currentPath = [];#}
+<!--{#<script>#}-->
+<!--    -->
+<!--    {#const urlParams = new URLSearchParams(window.location.search);#}-->
+<!--    {#const pdfName = urlParams.get('pdf_name') || 'sample.pdf'; // 获取 URL 参数中的 pdf_name，默认为 sample.pdf#}-->
+<!--    {#const pdfUrl = `/media/pdfs/${pdfName}`; // 动态设置 PDF 路径#}-->
+<!--    {#const storageKey = pdfUrl + '.annotations';#}-->
+<!--    {##}-->
+<!--    {#// PDF.js 初始化#}-->
+<!--    {#const pdfjsLib = window['pdfjs-dist/build/pdf'];#}-->
+<!--    {#pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';#}-->
+<!--    {##}-->
+<!--    {#// Canvas 和绘图参数#}-->
+<!--    {#let pdfDoc = null, currentPage = 1, scale = 1.0;#}-->
+<!--    {#let dpiScale = window.devicePixelRatio || 1;#}-->
+<!--    {##}-->
+<!--    {#const canvas = document.getElementById('pdf-canvas');#}-->
+<!--    {#const ctx = canvas.getContext('2d');#}-->
+<!--    {#const overlay = document.getElementById('overlay');#}-->
+<!--    {#const overlayCtx = overlay.getContext('2d');#}-->
+<!--    {##}-->
+<!--    {#const tool = document.getElementById('tool');#}-->
+<!--    {#const color = document.getElementById('color');#}-->
+<!--    {#const size = document.getElementById('size');#}-->
+<!--    {##}-->
+<!--    {#let annotations = {};#}-->
+<!--    {#let drawing = false;#}-->
+<!--    {#let currentPath = [];#}-->
 
-    {#const pdfSelector = document.getElementById('pdf-selector');#}
-    {#const viewBookmarksBtn = document.getElementById('view-bookmarks-btn');#}
-{#</script>#}
+<!--    {#const pdfSelector = document.getElementById('pdf-selector');#}-->
+<!--    {#const viewBookmarksBtn = document.getElementById('view-bookmarks-btn');#}-->
+<!--{#</script>#}-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 
 <script>
@@ -660,7 +660,7 @@
 
         try {
             isSelect = true;
-            const response = await fetch('/login/IDE/lesson/self-learn/select_area/', {
+            const response = await fetch('/login/IDE/{{ data_course }}/self-learn/select_area/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -683,7 +683,7 @@
 
     function PPImage() {
         try{
-            fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/preprocess_image/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -712,7 +712,7 @@
     
     function intelligent_PPImage() {
         try{
-            fetch('/login/IDE/lesson/self-learn/intelligent_preprocess_image/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/intelligent_preprocess_image/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -789,7 +789,7 @@
             document.getElementById('output').innerText = 'Running...';
 
             // 发送 POST 请求到后端
-            fetch('/login/IDE/lesson/self-learn/run/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/run/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -824,7 +824,7 @@ ${data.stderr}`;
 
     // 加载书签
     async function loadBookmarks() {
-        const response = await fetch(`/login/IDE/lesson/self-learn/get_bookmarks/?pdf_name=${pdfName}`);
+        const response = await fetch(`/login/IDE/{{ data_course }}/self-learn/get_bookmarks/?pdf_name=${pdfName}`);
         const bookmarks = await response.json();
 
         bookmarkDropdown.innerHTML = '<option value="">选择书签</option>';
@@ -843,7 +843,7 @@ ${data.stderr}`;
         const selectedIndex = bookmarkDropdown.value;
         if (selectedIndex === "") return;
 
-        fetch(`/login/IDE/lesson/self-learn/get_bookmarks/?pdf_name=${pdfName}`)
+        fetch(`/login/IDE/{{ data_course }}/self-learn/get_bookmarks/?pdf_name=${pdfName}`)
             .then(response => response.json())
             .then(bookmarks => {
                 const selectedBookmark = bookmarks[selectedIndex];
@@ -948,7 +948,7 @@ ${data.stderr}`;
             console.log('Category:', category);
             console.log('Page:', page);
 
-            await fetch('/login/IDE/lesson/self-learn/add_bookmark/', {
+            await fetch('/login/IDE/{{ data_course }}/self-learn/add_bookmark/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ pdf_name: pdfName, description, category, page })
@@ -974,7 +974,7 @@ ${data.stderr}`;
             return;
         }
 
-        await fetch('/login/IDE/lesson/self-learn/delete_bookmark/', {
+        await fetch('/login/IDE/{{ data_course }}/self-learn/delete_bookmark/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pdf_name: pdfName, index: parseInt(selectedIndex) })

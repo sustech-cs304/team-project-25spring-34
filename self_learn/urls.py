@@ -2,12 +2,12 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from django.http import HttpResponse  # ✅ 添加 HttpResponse 以便测试
+from django.http import HttpResponse
 
 from .views import (index, select_area, preprocess_image,
                     upload_pdf, view_bookmarks, run_code,
                     get_pdf_list, get_bookmarks, add_bookmark,
-                    delete_bookmark, intelligent_preprocess_image)  # ✅ 直接导入 views.py
+                    delete_bookmark, intelligent_preprocess_image)
 
 
 urlpatterns = [
