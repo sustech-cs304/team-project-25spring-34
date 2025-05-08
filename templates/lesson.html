@@ -301,16 +301,11 @@
                 <div id="message" class="messages"></div>
 
                 <div class="room-form">
-<!--{#                    <h4>创建房间</h4>#}-->
-<!--{#                    <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' %}">#}-->
-<!--{#                        {% csrf_token %}#}-->
-<!--{#                        <input type="text" name="room_name" placeholder="输入房间名称" required>#}-->
-<!--{#                        <button type="submit">创建房间</button>#}-->
-<!--{#                    </form>#}-->
                     <h4>创建房间</h4>
                     <form id="create-room-form" method="POST" action="{% url 'lesson:create_room' data_course=data_course%}">
                         {% csrf_token %}
-                        <button type="submit">创建新房间</button>
+                        <input type="text" name="room_name" placeholder="输入房间名称（可包含字母和数字）" required>
+                        <button type="submit">创建房间</button>
                     </form>
                 </div>
 
@@ -447,7 +442,16 @@
             }
         }
 
-       
+        // 房间名字验证
+        document.getElementById('create-room-form').addEventListener('submit', function(e) {
+            const roomName = this.querySelector('input[name="room_name"]').value;
+            if (!/^[a-zA-Z0-9_-]+$/.test(roomName)) {
+                document.getElementById('message').innerHTML = 
+                    '<div class="error">房间名称只能包含字母、数字、下划线和连字符</div>';
+                e.preventDefault();
+                return;
+            }
+        });
 
         document.getElementById('create-room-form').addEventListener('submit', function (e) {
             e.preventDefault();
@@ -462,11 +466,11 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log("Server response:", '/login/IDE/{{ data_course }}/group-' + encodeURIComponent(data.room_id));
                 if (data.status === 'success') {
                     document.getElementById('message').innerHTML =
-                        `<div class="success">房间创建成功！房间号: ${data.room_id}</div>`;
-                    // 自动跳转到新创建的房间
-                    window.location.href = `/login/IDE/{{ data_course }}/group-${data.room_id}`;
+                        `<div class="success">房间创建成功！房间号: {{ room_name }}</div>`;
+                        window.location.href = '/login/IDE/{{ data_course }/group-' + encodeURIComponent(data.room_id);
                 } else {
                     document.getElementById('message').innerHTML =
                         `<div class="error">${data.message}</div>`;

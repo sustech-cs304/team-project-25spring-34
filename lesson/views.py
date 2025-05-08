@@ -14,7 +14,7 @@ from django.http import HttpResponse, JsonResponse
 from .models import ChatRoom
 
 @login_required
-def create_room(request):
+def create_room(request, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -22,23 +22,31 @@ def create_room(request):
     usage: I use the prompt "结合django数据库写法实现一个新房间的创建" and generate the corresponding json response.
     '''
     if request.method == 'POST':
+        room_name = request.POST.get('room_name')
+
+        if ChatRoom.objects.filter(name=room_name).exists():
+            return JsonResponse({
+                'status': 'error',
+                'message': '房间名称已存在，请使用其他名称'
+            }, status=400)
+        
         # 直接创建房间（name先设为空或占位符）
         new_room = ChatRoom.objects.create(creator=request.user)
 
         # 将name更新为id值
-        new_room.name = str(new_room.id)  # 如果name需要字符串类型
+        new_room.name = str(room_name)  # 如果name需要字符串类型
         new_room.save()
 
         new_room.members.add(request.user)
         return JsonResponse({
             'status': 'success',
-            'room_id': new_room.id,
+            'room_id': new_room.name,
             'message': '房间创建成功'
         })
         # return HttpResponse(f'group "{new_room.name}" 创建成功！', status=201)
     return redirect('index')
 
-def join_room(request):
+def join_room(request, data_course):
     if request.method == 'POST':
         room_name = request.POST.get('room_name')
         print(room_name)
@@ -51,7 +59,7 @@ def join_room(request):
             return JsonResponse({'status': 'error', 'message': 'group不存在，请检查房间号！'}, status=404)
     return JsonResponse({'status': 'error', 'message': '无效请求'}, status=400)
 
-def delete_room(request, room_name):
+def delete_room(request, room_name, data_course):
     try:
         room = ChatRoom.objects.get(name=room_name)
         print(room.creator)

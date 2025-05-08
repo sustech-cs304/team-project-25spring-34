@@ -26,7 +26,7 @@ def group_id(request, data_course):
 @csrf_exempt
 def get_members(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({
                 'status': 'error',
@@ -56,7 +56,7 @@ def get_members(request, group_id, data_course):
 @csrf_exempt
 def leave_room(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user in room.members.all():
             room.members.remove(request.user)
             return JsonResponse({
@@ -78,7 +78,7 @@ def leave_room(request, group_id, data_course):
 @csrf_exempt
 def get_learning_topics(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({
                 'status': 'error',
@@ -116,7 +116,7 @@ def validate_room(request, group_id, data_course):
     adapt the corresponding html to fetch data and update regularly.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({
                 'is_valid': False,
@@ -153,7 +153,7 @@ def update_topic(request, group_id, data_course):
     adapt the corresponding html to fetch data and update regularly.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user != room.creator:
             return JsonResponse({
                 'status': 'error',
@@ -201,7 +201,7 @@ def upload_file(request, group_id, data_course):
     adapt the framework but add extra logic and improve sql search speed.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({'status': 'error', 'message': '无权上传文件'}, status=403)
 
@@ -248,7 +248,7 @@ def get_files(request, group_id, data_course):
     adapt the framework but add extra logic and improve sql search speed.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({'status': 'error', 'message': '无权访问文件'}, status=403)
 
@@ -278,7 +278,7 @@ def delete_file(request, group_id, data_course):
     adapt the framework but add extra logic and improve sql search speed.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({'status': 'error', 'message': '无权删除文件'}, status=403)
 
@@ -307,7 +307,7 @@ def download_file(request, group_id, file_name, data_course):
     adapt the framework but add extra logic.
     '''
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user not in room.members.all():
             return JsonResponse({'status': 'error', 'message': '无权下载文件'}, status=403)
 

@@ -22,7 +22,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-def index(request, group_id):
+def index(request, group_id, data_course):
     '''
     AI-generated-content 
     tool: DeepSeek 
@@ -34,7 +34,7 @@ def index(request, group_id):
         logger.warning("用户未登录，重定向到登录页面")
         return redirect(reverse("login"))
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         is_creator = request.user == room.creator
         pdf_files = RoomFile.objects.filter(room=room, file_name__iendswith='.pdf')
 
@@ -107,7 +107,7 @@ def get_annotations(request, group_id):
 @require_http_methods(["GET"])
 def get_room_pdfs(request, group_id):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         pdf_files = RoomFile.objects.filter(room=room, file_name__iendswith='.pdf').select_related('room')
 
         pdf_list = [
@@ -143,7 +143,7 @@ def get_pdf(request, group_id, pdf_id, data_course):
     usage: I used deepseek to prompt json response and handle ‘build_absolute_uri’ and ‘日期时间格式化操作’.
     """
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
         if request.user != room.creator:
             return JsonResponse({
@@ -172,7 +172,7 @@ def get_pdf(request, group_id, pdf_id, data_course):
 @require_http_methods(["GET"])
 def get_current_pdf(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         cache_key = f"current_pdf_{group_id}"
         pdf_id = django_cache.get(cache_key)
 
@@ -205,7 +205,7 @@ def get_current_pdf(request, group_id, data_course):
 @require_http_methods(["POST"])
 def set_current_pdf(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(id=group_id)
+        room = ChatRoom.objects.get(name=group_id)
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
@@ -264,7 +264,7 @@ def serve_pdf(request, group_id, pdf_id, data_course):
     else:
         try:
             # 查询数据库
-            room = ChatRoom.objects.get(id=group_id)
+            room = ChatRoom.objects.get(name=group_id)
             pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
             file_data = pdf_file.file_data
             file_name = pdf_file.file_name
