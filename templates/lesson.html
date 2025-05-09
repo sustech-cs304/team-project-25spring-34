@@ -101,11 +101,13 @@
             flex-direction: column;
             gap: 10px;
         }
-        .bookmarks {
+        .roomlist {
             background-color: #ecf0f1;
             padding: 10px;
             border-radius: 5px;
-            height: 50px;
+            height: 150px; /* 固定高度 */
+            overflow-y: auto; /* 添加垂直滚动 */
+            margin-bottom: 10px; /* 与下方内容间隔 */
         }
         .courseware-content {
             background-color: #ecf0f1;
@@ -279,6 +281,39 @@
             border-bottom: 1px solid #eee;
             padding-bottom: 5px;
         }
+        /* 简洁房间列表样式 */
+        .compact-room-list {
+            margin-top: 10px;
+            max-height: calc(100% - 30px); /* 减去标题高度 */
+            overflow-y: auto;
+        }
+        .room-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-content: flex-start; /* 顶部对齐 */
+            min-height: 20px; /* 最小高度 */
+        }
+        .room-tag {
+            padding: 5px 10px;
+            background-color: #e0e0e0;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .room-tag:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        .room-tag.my-room {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .room-tag.joined-room {
+            background-color: #f39c12;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -363,8 +398,11 @@
         </div>
         <div class="content">
             <div class="courseware-section">
-                <div class="bookmarks">
-                    <h3>书签</h3>
+                <div class="roomlist">
+                    <h3>房间列表</h3>
+                    <div id="room-list-container" class="compact-room-list">
+                        <div id="room-list" class="room-tags"></div>
+                    </div>
                 </div>
                 <div class="courseware-content">
                     <h3>课件内容</h3>
@@ -532,6 +570,57 @@
                 console.error('Error:', error);
             });
         });
+
+        async function loadRoomList() {
+            try {
+                const response = await fetch('/login/IDE/{{ data_course }}/get-room/');
+                const data = await response.json();
+                console.log('房间列表:', data);
+                
+                if(data.status === 'success') {
+                    renderCompactRoomList(data.rooms);
+                } else {
+                    console.error('Error:', data.message);
+                }
+            } catch (error) {
+                console.error('获取房间列表失败:', error);
+            }
+        }
+
+        function renderCompactRoomList(rooms) {
+            const roomList = document.getElementById('room-list');
+            roomList.innerHTML = '';
+            
+            if(rooms.length === 0) {
+                roomList.innerHTML = '<div class="no-rooms">暂无房间</div>';
+                return;
+            }
+            
+            rooms.forEach(room => {
+                const tag = document.createElement('div');
+                tag.className = 'room-tag';
+                tag.textContent = room.name;
+                
+                // 添加状态类
+                if(room.is_creator) {
+                    tag.classList.add('my-room');
+                    tag.title = "我创建的房间";
+                } else if(room.is_member) {
+                    tag.classList.add('joined-room');
+                    tag.title = "已加入的房间";
+                }
+                
+                // 点击事件 - 填充到加入房间表单
+                tag.addEventListener('click', () => {
+                    document.querySelector('#join-room-form input[name="room_name"]').value = room.name;
+                });
+                
+                roomList.appendChild(tag);
+            });
+        }
+
+        // 页面加载时获取房间列表
+        document.addEventListener('DOMContentLoaded', loadRoomList);
 
         async function loadPdfGallery() {
             const response = await fetch('/login/IDE/{{ data_course }}/self-learn/get_pdf_list/');

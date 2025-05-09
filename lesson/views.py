@@ -72,6 +72,48 @@ def delete_room(request, room_name, data_course):
             return JsonResponse({'status': 'error', 'message': '您无权删除此房间！'}, status=403)
     except ChatRoom.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': '房间不存在！'}, status=404)
+    
+@login_required
+def get_room_list(request, data_course):
+    """
+    获取所有房间列表（高性能版本）
+    """
+    try:
+        current_user = request.user
+        current_user_id = current_user.id  # 提前获取避免重复查询
+        
+        # 一次性获取所有需要的数据（使用select_related和prefetch_related优化）
+        rooms = ChatRoom.objects.select_related('creator') \
+                      .prefetch_related('members') \
+                      .order_by('-created_at') \
+                      .only('name', 'creator_id', 'created_at')  # 只查询必要字段
+        
+        # 预加载当前用户加入的所有房间ID（避免N+1查询）
+        user_joined_room_ids = set(
+            ChatRoom.objects.filter(members=current_user)
+                          .values_list('id', flat=True)
+        )
+        
+        # 使用批量处理构建响应数据
+        room_list = []
+        for room in rooms:
+            room_list.append({
+                'name': room.name,
+                'is_creator': room.creator_id == current_user_id,
+                'is_member': room.id in user_joined_room_ids,
+                'created_at': room.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'rooms': room_list
+        }, status=200)
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': '获取房间列表失败'
+        }, status=500)
 
 
 
