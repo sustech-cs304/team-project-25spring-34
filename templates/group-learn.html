@@ -343,7 +343,7 @@
                 <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                     <button id="revise-btn" class="btn-revise">修改</button>
                     <button id="save-btn" class="btn-save" disabled>保存</button>
-                    <span id="lock-status" style="color: red;"></span>
+                    <span id="lock-status" style="color: red;">编辑状态</span>
                 </div>
                 <select id="language-select">
                   <option value="python">Python</option>
@@ -914,7 +914,7 @@ ${data.stderr}`;
     // 新增的按钮状态管理脚本
     const reviseBtn = document.getElementById('revise-btn');
     const saveBtn = document.getElementById('save-btn');
-    const codeTextarea = document.getElementById('code');
+    //const codeTextarea = document.getElementById('code');
     const lockStatus = document.getElementById('lock-status');
 
     // 检查按钮状态
@@ -938,14 +938,16 @@ ${data.stderr}`;
                         // 当前用户是锁定者
                         reviseBtn.disabled = true;
                         saveBtn.disabled = false;
-                        codeTextarea.disabled = false;
+                        //codeTextarea.disabled = false;
+                        editor.setOption('readOnly', false); 
                         lockStatus.textContent = '您正在编辑';
                         lockStatus.style.color = 'green';
                     } else {
                         // 其他用户被锁定
                         reviseBtn.disabled = true;
                         saveBtn.disabled = true;
-                        codeTextarea.disabled = true;
+                        //codeTextarea.disabled = true;
+                        editor.setOption('readOnly', true);  // 禁止编辑
                         lockStatus.textContent = `${lastUser}正在编辑`;
                         lockStatus.style.color = 'red';
                     }
@@ -953,7 +955,8 @@ ${data.stderr}`;
                     // 未被锁定
                     reviseBtn.disabled = false;
                     saveBtn.disabled = true;
-                    codeTextarea.disabled = true;
+                    //codeTextarea.disabled = true;
+                    editor.setOption('readOnly', true);  // 禁止编辑
                     lockStatus.textContent = '可编辑';
                     lockStatus.style.color = 'green';
                 }
