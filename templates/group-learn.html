@@ -910,6 +910,7 @@ ${data.stderr}`;
 </script>
 
 <script>
+    let lastKnownCode = '';
 
     // 新增的按钮状态管理脚本
     const reviseBtn = document.getElementById('revise-btn');
@@ -932,6 +933,12 @@ ${data.stderr}`;
                 const isLocked = data.is_locked;
                 const lastUser = data.last_user;
                 const currentUser = data.username;
+                const currentCode = data.code;
+                
+                if (currentCode !== lastKnownCode && data.last_user !== data.username) {
+                    editor.setValue(currentCode);  // 更新编辑器内容
+                    lastKnownCode = currentCode;  // 更新已知代码版本
+                }
 
                 if (isLocked) {
                     if (currentUser === lastUser) {
@@ -1000,16 +1007,23 @@ ${data.stderr}`;
     * usage: I use the prompt "如何与前端交互修改按钮状态", and
     * use the framework but modify the logic.
     */ 
+    const currentCode = editor.getValue();  // 获取当前编辑器代码
+        
         fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_button/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({})
+            body: JSON.stringify({
+                 code: currentCode  // 发送当前代码内容
+            })
         })
         .then(response => response.json())
         .then(data => {
+             if (data.code) {
+            lastKnownCode = data.code;  // 更新本地记录的代码版本
+        }
             checkButtonState(); // 更新按钮状态
         });
     });
