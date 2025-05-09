@@ -52,10 +52,6 @@ def delete_pdf(request, data_course):
             if os.path.exists(pdf_path):
                 os.remove(pdf_path)
 
-                # 删除缩略图（如果存在）
-                thumb_path = os.path.join(settings.MEDIA_ROOT, "pdf_images", pdf_name.replace(".pdf", "_page_1.jpg"))
-                if os.path.exists(thumb_path):
-                    os.remove(thumb_path)
 
                 return JsonResponse({"status": "success"})
             else:
