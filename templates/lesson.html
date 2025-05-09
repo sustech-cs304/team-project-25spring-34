@@ -627,6 +627,8 @@
             const data = await response.json();
             const pdfGallery = document.getElementById('pdf-gallery');
 
+            pdfGallery.innerHTML = ''; // 清空之前的内容
+
             data.pdfs.forEach(pdf => {
                 const pdfName = pdf.split('.pdf')[0]; // 去掉扩展名
                 const encodedPdfName = encodeURIComponent(pdfName); // 编码文件名

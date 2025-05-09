@@ -155,12 +155,40 @@ def run_code(request, data_course):
 
 
 def upload_pdf(request, data_course):
-    """上传 PDF 并转换为图片"""
+    """上传 PDF 并根据课程和用户名分类存储"""
     if request.method == "POST" and request.FILES.get("pdf"):
         pdf_file = request.FILES["pdf"]
+        if not pdf_file.name.endswith('.pdf'):
+            return JsonResponse({"error": "仅支持 PDF 文件"}, status=400)
+        
         bookmarks = process_pdf(pdf_file)  # ✅ 调用 process_pdf 处理 PDF
-        return JsonResponse({"message": "PDF uploaded successfully", "bookmarks": bookmarks})
-    return JsonResponse({"error": "Invalid request"}, status=400)
+
+        # 动态生成存储路径
+        user_course_dir = os.path.join(settings.MEDIA_ROOT, data_course, request.user.username)
+        os.makedirs(user_course_dir, exist_ok=True)
+
+        # 保存文件
+        file_path = os.path.join(user_course_dir, pdf_file.name)
+        with open(file_path, 'wb+') as destination:
+            for chunk in pdf_file.chunks():
+                destination.write(chunk)
+
+        return JsonResponse({"message": "PDF 上传成功！"}, status=200)
+
+    return JsonResponse({"error": "无效请求"}, status=400)
+
+def view_bookmarks(request, data_course):
+    """展示 PDF 转换后的页面"""
+    pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
+    img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
+    img_files = sorted(f for f in os.listdir(img_folder) if f.endswith(".jpg"))
+    bookmarks = {i + 1: f"/media/pdf_images/{img}" for i, img in enumerate(img_files)}
+
+    return render(request, "self-learn.html", {
+        "pdf_name": pdf_name,
+        "bookmarks": bookmarks
+    })
+
 
 
 def view_bookmarks(request, data_course):
@@ -330,11 +358,14 @@ def deepseek_intelligent_code_repair(code, type, data_course):
 
 @csrf_exempt
 def get_pdf_list(request, data_course):
-    """获取 media/pdfs 目录中的 PDF 文件列表"""
-    pdf_dir = os.path.join(settings.MEDIA_ROOT, 'pdfs')
-    pdfs = [f for f in os.listdir(pdf_dir) if f.endswith('.pdf')] if os.path.exists(pdf_dir) else []
-    return JsonResponse({'pdfs': pdfs})
+    """获取当前课程和用户名下的 PDF 文件列表"""
+    user_course_dir = os.path.join(settings.MEDIA_ROOT, data_course, request.user.username)
+    if not os.path.exists(user_course_dir):
+        return JsonResponse({"pdfs": []}, status=200)
 
+    # 获取文件列表
+    pdf_files = [f for f in os.listdir(user_course_dir) if f.endswith('.pdf')]
+    return JsonResponse({"pdfs": pdf_files}, status=200)
 #  /*
 #      * AI-generated-content
 #      * tool: GitHub Copilot
