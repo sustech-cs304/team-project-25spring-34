@@ -418,6 +418,13 @@
                             <button type="submit">上传PDF</button>
                         </form>
                     </div>
+
+                    <div style="margin-top: 20px;">
+                        <h4>删除PDF</h4>
+                        <select id="delete-pdf-select" style="padding: 5px; border-radius: 3px;"></select>
+                        <button onclick="deleteSelectedPdf()" style="padding: 5px 10px; margin-left: 10px;">删除所选PDF</button>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -621,6 +628,59 @@
 
         // 页面加载时获取房间列表
         document.addEventListener('DOMContentLoaded', loadRoomList);
+
+
+
+
+        async function populateDeletePdfDropdown() {
+    const response = await fetch('/login/IDE/{{ data_course }}/self-learn/get_pdf_list/');
+    const data = await response.json();
+    const select = document.getElementById('delete-pdf-select');
+
+    select.innerHTML = ''; // 清空旧选项
+
+    data.pdfs.forEach(pdf => {
+        const option = document.createElement('option');
+        option.value = pdf;
+        option.textContent = pdf;
+        select.appendChild(option);
+    });
+}
+
+        // 删除选中的 PDF
+        async function deleteSelectedPdf() {
+            const select = document.getElementById('delete-pdf-select');
+            const pdfName = select.value;
+
+            if (!pdfName) {
+                alert("请选择一个 PDF 文件");
+                return;
+            }
+
+            const confirmed = confirm(`确定删除 ${pdfName} 吗？`);
+            if (!confirmed) return;
+
+            const response = await fetch('/login/IDE/{{ data_course }}/self-learn/delete_pdf/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ pdf_name: pdfName })
+            });
+
+            if (response.ok) {
+                alert("删除成功");
+                await loadPdfGallery();           // 刷新展示
+                await populateDeletePdfDropdown(); // 刷新下拉列表
+            } else {
+                alert("删除失败");
+            }
+        }
+
+// 页面加载时自动填充
+document.addEventListener('DOMContentLoaded', populateDeletePdfDropdown);
+
 
         async function loadPdfGallery() {
             const response = await fetch('/login/IDE/{{ data_course }}/self-learn/get_pdf_list/');

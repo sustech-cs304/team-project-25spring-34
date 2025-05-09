@@ -32,6 +32,41 @@ if not os.path.exists(BOOKMARKS_FILE):
 file_path = ''
 
 
+
+@csrf_exempt
+def delete_pdf(request, data_course):
+    """删除 PDF 文件"""
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            pdf_name = data.get("pdf_name")
+            username = request.user.username
+
+            if not pdf_name:
+                return JsonResponse({"error": "缺少 pdf_name"}, status=400)
+
+            # 构造 PDF 文件路径
+            user_course_dir = os.path.join(settings.MEDIA_ROOT, data_course, username)
+            pdf_path = os.path.join(user_course_dir, pdf_name)
+
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+
+                # 删除缩略图（如果存在）
+                thumb_path = os.path.join(settings.MEDIA_ROOT, "pdf_images", pdf_name.replace(".pdf", "_page_1.jpg"))
+                if os.path.exists(thumb_path):
+                    os.remove(thumb_path)
+
+                return JsonResponse({"status": "success"})
+            else:
+                return JsonResponse({"error": "文件不存在"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "无效请求"}, status=400)
+
+
+
 def index(request, data_course):
     code = ''
     # 渲染主页面，并将代码传递到模板

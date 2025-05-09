@@ -6,7 +6,7 @@ from django.http import HttpResponse
 
 from .views import (index, select_area, preprocess_image,
                     upload_pdf, view_bookmarks, run_code,
-                    get_pdf_list, get_bookmarks, add_bookmark,
+                    get_pdf_list, get_bookmarks, add_bookmark,delete_pdf,
                     delete_bookmark, intelligent_preprocess_image)
 
 
@@ -18,6 +18,8 @@ urlpatterns = [
     path("pdf/viewer/", view_bookmarks, name="viewer"),
     path('run/', run_code, name='run_code'), # 执行代码的接口
     path('upload_pdf/', upload_pdf, name='upload_pdf'),
+    path('delete_pdf/', delete_pdf, name='delete_pdf')
+
 ]
 
 urlpatterns += [
