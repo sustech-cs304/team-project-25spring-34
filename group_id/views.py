@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
 from lesson.models import ChatRoom, ChatMessage
+from group_id.models import RoomFile, Task
 
 # group_topics = dict()
 # 使用Django缓存代替内存字典
@@ -327,3 +328,92 @@ def download_file(request, group_id, file_name, data_course):
         return response
     except ChatRoom.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+    
+@login_required
+def get_tasks(request, group_id, data_course):
+    try:
+        room = ChatRoom.objects.get(name=group_id)
+        tasks = room.tasks.all().order_by('-created_at')
+        task_list = [{
+            'id': task.id,
+            'text': task.text,
+            'completed': task.completed,
+            'category': task.category
+        } for task in tasks]
+        return JsonResponse({'status': 'success', 'tasks': task_list})
+    except ChatRoom.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+
+@csrf_exempt
+@login_required
+def add_task(request, group_id, data_course):
+    if request.method == 'POST':
+        try:
+            room = ChatRoom.objects.get(name=group_id)
+            data = json.loads(request.body)
+            task_text = data.get('text', '').strip()
+            category = data.get('category', 'normal')
+
+            if not task_text:
+                return JsonResponse({'status': 'error', 'message': '任务内容不能为空'}, status=400)
+
+            task = Task.objects.create(room=room, text=task_text, category=category)
+            return JsonResponse({'status': 'success', 'task_id': task.id})
+        except ChatRoom.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '房间不存在'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        
+@csrf_exempt
+@login_required
+def toggle_task(request, group_id, data_course):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            task_id = data.get('task_id')
+            task = Task.objects.get(id=task_id, room__name=group_id)
+            task.completed = not task.completed
+            task.save()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        
+@csrf_exempt
+@login_required
+def update_task(request, group_id, data_course):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            task_id = data.get('task_id')
+            new_text = data.get('text', '').strip()
+            new_category = data.get('category')
+
+            if not new_text:
+                return JsonResponse({'status': 'error', 'message': '任务内容不能为空'}, status=400)
+
+            task = Task.objects.get(id=task_id, room__name=group_id)
+            task.text = new_text
+            task.category = new_category
+            task.save()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+        
+@csrf_exempt
+@login_required
+def delete_task(request, group_id, data_course):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            task_id = data.get('task_id')
+            task = Task.objects.get(id=task_id, room__name=group_id)
+            task.delete()
+            return JsonResponse({'status': 'success'})
+        except Task.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': '任务不存在'}, status=404)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

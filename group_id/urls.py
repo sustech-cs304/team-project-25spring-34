@@ -16,4 +16,9 @@ urlpatterns = [
     path('get-files/', views.get_files, name='get_files'),
     path('delete-file/', views.delete_file, name='delete_file'),
     path('download-file/<str:file_name>/', views.download_file, name='download_file'),
+    path('get-tasks/', views.get_tasks, name='get_tasks'),
+    path('add-task/', views.add_task, name='add_task'),
+    path('toggle-task/', views.toggle_task, name='toggle_task'),
+    path('delete-task/', views.delete_task, name='delete_task'),
+    path('update-task/', views.update_task, name='update_task'),
 ]

@@ -286,6 +286,245 @@
         .edit-topic-btn:hover {
             background-color: #2980b9;
         }
+        /* 任务栏样式 */
+        .task-controls {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .newTaskInput {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px 0 0 4px;
+            outline: none;
+        }
+        .addTaskBtn {
+            padding: 8px 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+        }
+        .addTaskBtn:hover {
+            background-color: #45a049;
+        }
+        .task-filters {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 5px;
+            margin: 0 2px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .filter-btn.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .task-list li {
+            padding: 12px 15px;  /* 增加内边距 */
+            margin-bottom: 8px;  /* 增加间距 */
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;  /* 添加边框 */
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);  /* 添加轻微阴影 */
+        }
+        .task-list li:hover {
+            background-color: #e9ecef;
+        }
+        .task-checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);  /* 放大复选框 */
+            cursor: pointer;
+        }
+        .task-text {
+            flex: 1;
+            padding: 0 10px;
+            color: #333;  /* 深色文字 */
+            font-size: 14px;
+            word-break: break-word;  /* 长文本换行 */
+        }
+        .task-done {
+            text-decoration: line-through;
+            color: #6c757d;
+        }
+        .task-category {
+            font-size: 0.75em;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .task-actions {
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .task-list li:hover .task-actions {
+            opacity: 1;
+        }
+
+        .task-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 2px 5px;
+            font-size: 0.8em;
+        }
+
+        .edit-btn {
+            color: #3498db;
+        }
+
+        .delete-btn {
+            color: #e74c3c;
+        }
+        .task-category.urgent {
+            background-color: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        .task-category.normal {
+            background-color: #fff8e1;
+            color: #f57f17;
+            border: 1px solid #ffcc80;
+        }
+
+        .task-category.low {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+        /* 任务编辑对话框样式 */
+        .task-edit-dialog {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            width: 350px;
+            border: 1px solid #e0e0e0;
+            animation: fadeIn 0.3s ease;
+        }
+
+        /* 背景遮罩层 */
+        .task-edit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            backdrop-filter: blur(3px);
+        }
+
+        /* 对话框标题 */
+        .task-edit-dialog h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* 输入框样式 */
+        .task-edit-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .task-edit-input:focus {
+            border-color: #4CAF50;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+
+        /* 选择框样式 */
+        .task-edit-select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: white;
+            font-size: 14px;
+        }
+
+        /* 按钮容器 */
+        .task-edit-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        /* 按钮基础样式 */
+        .task-edit-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        /* 确认按钮 */
+        .task-edit-confirm {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .task-edit-confirm:hover {
+            background-color: #45a049;
+        }
+
+        /* 取消按钮 */
+        .task-edit-cancel {
+            background-color: #f5f5f5;
+            color: #555;
+        }
+
+        .task-edit-cancel:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -55%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
     </style>
 </head>
 <body>
@@ -313,8 +552,21 @@
                 </div>
             </div>
             <div class="sidebar-bottom">
-                <h2>待定</h2>
+            <h2>小组任务</h2>
+            <div class="task-controls">
+                <input type="text" id="newTaskInput" class="newTaskInput" placeholder="添加新任务...">
+                <!-- 种类选择器将通过 JavaScript 动态添加 -->
+                <button id="addTaskBtn" class="addTaskBtn">+</button>
             </div>
+            <div class="task-filters">
+                <button class="filter-btn active" data-filter="all">全部</button>
+                <button class="filter-btn" data-filter="todo">待办</button>
+                <button class="filter-btn" data-filter="done">已完成</button>
+            </div>
+            <ul class="task-list" id="taskList">
+                <li class="loading">加载任务中...</li>
+            </ul>
+        </div>
         </div>
         <div class="main-content">
             <div class="teammates">
@@ -855,6 +1107,7 @@
             await validateRoom();
 
             if (isValidRoom) {
+                initTaskFunctions();  // 初始化任务功能
                 // 初始化成员列表（立即加载+每3秒刷新）
                 updateMembersList();
                 membersInterval = setInterval(updateMembersList, 3000);
@@ -906,6 +1159,348 @@
                 // {#);#}
             }
         });
+
+        // ================= 任务管理功能 =================
+        let tasks = [];
+
+        // 初始化任务功能
+        function initTaskFunctions() {
+            document.getElementById('addTaskBtn').addEventListener('click', addNewTask);
+            document.getElementById('newTaskInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addNewTask();
+                }
+            });
+            
+            // 筛选按钮事件
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    filterTasks(this.dataset.filter);
+                });
+            });
+            
+            // 加载初始任务
+            loadTasks();
+
+            // 添加种类选择下拉菜单
+            const categorySelect = document.createElement('select');
+            categorySelect.id = 'taskCategorySelect';
+            categorySelect.innerHTML = `
+                <option value="urgent">紧急</option>
+                <option value="normal" selected>普通</option>
+                <option value="low">低优先级</option>
+            `;
+            
+            // 将选择器插入到添加任务区域
+            const taskControls = document.querySelector('.task-controls');
+            taskControls.insertBefore(categorySelect, document.getElementById('addTaskBtn'));
+        }
+
+        // 加载任务
+        async function loadTasks() {
+            try {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/get-tasks/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    tasks = data.tasks;
+                    renderTasks();
+                } else {
+                    throw new Error(data.message || '加载任务失败');
+                }
+            } catch (error) {
+                console.error('加载任务错误:', error);
+                document.getElementById('taskList').innerHTML = '<li>加载任务失败</li>';
+            }
+        }
+
+        // 渲染任务列表
+        function renderTasks(filter = 'all') {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<li>暂无任务</li>';
+                return;
+            }
+
+            const filteredTasks = tasks.filter(task => {
+                if (filter === 'all') return true;
+                if (filter === 'todo') return !task.completed;
+                if (filter === 'done') return task.completed;
+                return true;
+            });
+
+            filteredTasks.forEach(task => {
+                const li = document.createElement('li');
+                
+                // 复选框
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.className = 'task-checkbox';
+                checkbox.checked = task.completed;
+                checkbox.addEventListener('change', () => toggleTaskStatus(task.id));
+                li.appendChild(checkbox);
+                
+                // 任务文本
+                const textSpan = document.createElement('span');
+                textSpan.className = 'task-text' + (task.completed ? ' task-done' : '');
+                textSpan.textContent = task.text;
+                li.appendChild(textSpan);
+                
+                // 任务类别
+                if (task.category) {
+                    const categorySpan = document.createElement('span');
+                    categorySpan.className = 'task-category ' + task.category;
+                    categorySpan.textContent = 
+                        task.category === 'urgent' ? '紧急' : 
+                        task.category === 'normal' ? '普通' : '低优先级';
+                    li.appendChild(categorySpan);
+                }
+                
+                // 操作按钮
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'task-actions';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.innerHTML = '✏️';
+                editBtn.title = '编辑';
+                editBtn.addEventListener('click', () => editTask(task.id));
+                actionsDiv.appendChild(editBtn);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.innerHTML = '🗑️';
+                deleteBtn.title = '删除';
+                deleteBtn.addEventListener('click', () => deleteTask(task.id));
+                actionsDiv.appendChild(deleteBtn);
+                
+                li.appendChild(actionsDiv);
+                taskList.appendChild(li);
+            });
+        }
+
+        // 添加新任务
+        async function addNewTask() {
+            const input = document.getElementById('newTaskInput');
+            const taskText = input.value.trim();
+            const categorySelect = document.getElementById('taskCategorySelect');
+            const taskCategory = categorySelect.value;
+            
+            if (!taskText) return;
+            
+            try {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/add-task/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        text: taskText,
+                        category: taskCategory
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    input.value = '';
+                    showMessage('任务添加成功', 'success');
+                    loadTasks(); // 重新加载任务列表
+                } else {
+                    throw new Error(data.message || '添加任务失败');
+                }
+            } catch (error) {
+                console.error('添加任务错误:', error);
+                showMessage('添加任务失败: ' + error.message, 'error');
+            }
+        }
+
+        // 切换任务状态
+        async function toggleTaskStatus(taskId) {
+            try {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/toggle-task/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        task_id: taskId
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    loadTasks(); // 重新加载任务列表
+                } else {
+                    throw new Error(data.message || '更新任务状态失败');
+                }
+            } catch (error) {
+                console.error('更新任务状态错误:', error);
+                showMessage('更新任务状态失败: ' + error.message, 'error');
+            }
+        }
+
+        // 编辑任务
+        async function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            // 创建遮罩层
+            const overlay = document.createElement('div');
+            overlay.className = 'task-edit-overlay';
+            
+            // 创建对话框
+            const dialog = document.createElement('div');
+            dialog.className = 'task-edit-dialog';
+            dialog.innerHTML = `
+                <h3>编辑任务</h3>
+                <label for="task-edit-text">任务内容</label>
+                <input type="text" id="task-edit-text" class="task-edit-input" value="${escapeHtml(task.text)}">
+                
+                <label for="task-edit-category">优先级</label>
+                <select id="task-edit-category" class="task-edit-select">
+                    <option value="urgent" ${task.category === 'urgent' ? 'selected' : ''}>紧急</option>
+                    <option value="normal" ${task.category === 'normal' ? 'selected' : ''}>普通</option>
+                    <option value="low" ${task.category === 'low' ? 'selected' : ''}>低优先级</option>
+                </select>
+                
+                <div class="task-edit-buttons">
+                    <button class="task-edit-btn task-edit-cancel">取消</button>
+                    <button class="task-edit-btn task-edit-confirm">确认</button>
+                </div>
+            `;
+
+            // 添加到DOM
+            document.body.appendChild(overlay);
+            document.body.appendChild(dialog);
+
+            // 获取对话框元素
+            const textInput = dialog.querySelector('#task-edit-text');
+            const categorySelect = dialog.querySelector('#task-edit-category');
+            const confirmBtn = dialog.querySelector('.task-edit-confirm');
+            const cancelBtn = dialog.querySelector('.task-edit-cancel');
+
+            // 确认按钮事件
+            confirmBtn.onclick = async () => {
+                const newText = textInput.value.trim();
+                const newCategory = categorySelect.value;
+                
+                if (!newText) {
+                    alert('任务内容不能为空');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/update-task/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        body: JSON.stringify({
+                            task_id: taskId,
+                            text: newText,
+                            category: newCategory
+                        }),
+                        credentials: 'include'
+                    });
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        closeDialog();
+                        loadTasks();
+                    } else {
+                        throw new Error(data.message || '更新失败');
+                    }
+                } catch (error) {
+                    console.error('更新任务错误:', error);
+                    alert('更新失败: ' + error.message);
+                }
+            };
+
+            // 取消按钮事件
+            cancelBtn.onclick = closeDialog;
+            
+            // 点击遮罩层关闭
+            overlay.onclick = closeDialog;
+            
+            // 回车键提交
+            textInput.onkeydown = (e) => {
+                if (e.key === 'Enter') confirmBtn.click();
+            };
+
+            // 关闭对话框函数
+            function closeDialog() {
+                document.body.removeChild(overlay);
+                document.body.removeChild(dialog);
+            }
+
+            // 自动聚焦输入框
+            textInput.focus();
+            textInput.select();
+        }
+
+        // 辅助函数：防止XSS攻击
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // 删除任务
+        async function deleteTask(taskId) {
+            if (!confirm('确定要删除这个任务吗？')) return;
+            
+            try {
+                const response = await fetch(`/login/IDE/{{ data_course }}/group-${groupId}/delete-task/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        task_id: taskId
+                    }),
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showMessage('任务已删除', 'success');
+                    loadTasks(); // 重新加载任务列表
+                } else {
+                    throw new Error(data.message || '删除任务失败');
+                }
+            } catch (error) {
+                console.error('删除任务错误:', error);
+                showMessage('删除任务失败: ' + error.message, 'error');
+            }
+        }
+
+        // 筛选任务
+        function filterTasks(filter) {
+            renderTasks(filter);
+        }
     </script>
 </body>
 </html>
