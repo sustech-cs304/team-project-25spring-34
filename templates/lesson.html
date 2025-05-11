@@ -515,7 +515,7 @@
                 if (data.status === 'success') {
                     document.getElementById('message').innerHTML =
                         `<div class="success">房间创建成功！房间号: {{ room_name }}</div>`;
-                        window.location.href = '/login/IDE/{{ data_course }/group-' + encodeURIComponent(data.room_id);
+                        window.location.href = '/login/IDE/{{ data_course }}/group-' + encodeURIComponent(data.room_id);
                 } else {
                     document.getElementById('message').innerHTML =
                         `<div class="error">${data.message}</div>`;
