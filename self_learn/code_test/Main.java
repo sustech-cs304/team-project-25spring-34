@@ -1,10 +1,22 @@
 public class Main {
     public static void main(String[] args) {
-        for (int count = 1; count <= 10; count++) { // loop 10 times
-            if (count == 5) // if count is 5
-                continue; // skip remaining code in loop
-            System.out.printf("%d ", count);
-            System.out.println("\nUsed continue to skip printing 5");
+        char studentGrade = 'B'; // 示例值，可以根据需要修改
+        
+        switch (studentGrade) {
+            case 'A':
+                System.out.println("90 - 100");
+                break;
+            case 'B':
+                System.out.println("80 - 89");
+                break;
+            case 'C':
+                System.out.println("70 - 79");
+                break;
+            case 'D':
+                System.out.println("60 - 69");
+                break;
+            default:
+                System.out.println("score < 60");
         }
     }
 }

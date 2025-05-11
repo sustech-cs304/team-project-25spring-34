@@ -65,6 +65,7 @@ def delete_pdf(request, data_course):
 
 def index(request, data_course):
     code = ''
+    print("接收到的 data_course =", data_course)
     # 渲染主页面，并将代码传递到模板
     return render(request, 'self-learn.html', {'code': code, 'data_course': data_course})
 
@@ -119,8 +120,7 @@ def run_code(request, data_course):
         if not code:
             return JsonResponse({'error': 'No code provided'}, status=400)
 
-        formed_code, type = auto_format_code_improved(code)
-        file_type = type
+        _, file_type = auto_format_code_improved(code)
         print("code type:", file_type)
 
         if file_type == "j":
@@ -191,7 +191,7 @@ def upload_pdf(request, data_course):
         pdf_file = request.FILES["pdf"]
         if not pdf_file.name.endswith('.pdf'):
             return JsonResponse({"error": "仅支持 PDF 文件"}, status=400)
-        
+
         bookmarks = process_pdf(pdf_file)  # ✅ 调用 process_pdf 处理 PDF
 
         # 动态生成存储路径
@@ -217,82 +217,127 @@ def view_bookmarks(request, data_course):
 
     return render(request, "self-learn.html", {
         "pdf_name": pdf_name,
-        "bookmarks": bookmarks
+        "bookmarks": bookmarks,
+        "data_course": data_course,
     })
 
 
 
-def view_bookmarks(request, data_course):
-    """展示 PDF 转换后的页面"""
-    pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
-    img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
-    img_files = sorted(f for f in os.listdir(img_folder) if f.endswith(".jpg"))
-    bookmarks = {i + 1: f"/media/pdf_images/{img}" for i, img in enumerate(img_files)}
+# def view_bookmarks(request, data_course):
+#     """展示 PDF 转换后的页面"""
+#     pdf_name = request.GET.get('pdf_name', 'sample.pdf')  # 默认加载 sample.pdf
+#     img_folder = os.path.join(settings.MEDIA_ROOT, "pdf_images")  # ✅ 使用 settings.MEDIA_ROOT
+#     img_files = sorted(f for f in os.listdir(img_folder) if f.endswith(".jpg"))
+#     bookmarks = {i + 1: f"/media/pdf_images/{img}" for i, img in enumerate(img_files)}
+#
+#     return render(request, "self-learn.html", {
+#         "pdf_name": pdf_name,
+#         "bookmarks": bookmarks
+#     })
 
-    return render(request, "self-learn.html", {
-        "pdf_name": pdf_name,
-        "bookmarks": bookmarks
-    })
+@csrf_exempt
+def mouse_event(request):
+    if request.method == 'POST':
+        try:
+            payload = json.loads(request.body)
+            x = payload.get('x')
+            y = payload.get('y')
+            # 这里你可以打印、存库、或做任何处理
+            print(f"客户端点击坐标：x={x}, y={y}")
+            return JsonResponse({'status': 'ok', 'received': {'x': x, 'y': y}})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'msg': str(e)}, status=400)
 
+    return JsonResponse({'status': 'error', 'msg': '仅支持 POST'}, status=405)
 
 # AI-generated-content
 # tool: ChatGPT
 # version: latest
 # usage：生成鼠标拖动时，将鼠标选择框住的位置截屏并保存的python代码架构？
-@csrf_exempt
 def select_area(request, data_course):
-    if request.method == 'POST':
-        try:
-            time.sleep(0.5)
-            print('请拖动鼠标选择截屏区域...')
-            coordinates = {'start': (-1, -1), 'end': (-1, -1)}
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
 
-            def on_click(x, y, button, pressed):
-                if pressed:
-                    coordinates['start'] = (x, y)
-                else:
-                    coordinates['end'] = (x, y)
-                    return False
+    img_file = request.FILES.get('screenshot')
+    if not img_file:
+        return JsonResponse({'error': 'No image uploaded'}, status=400)
 
-            with mouse.Listener(on_click=on_click) as listener:
-                listener.join()  # 阻塞等待鼠标操作
+    try:
+        # 打开上传来的截图
+        image = Image.open(img_file)
+        # 解析坐标
+        x0,y0 = map(int, [request.POST['start_x'], request.POST['start_y']])
+        x1,y1 = map(int, [request.POST['end_x'],   request.POST['end_y']])
+        # 裁剪
+        region = image.crop((x0, y0, x1, y1))
+        # 转灰度、增强、锐化
+        region = region.convert('L')
+        region = ImageEnhance.Contrast(region).enhance(2.0)
+        region = region.filter(ImageFilter.SHARPEN)
 
-            if coordinates['start'] != (-1, -1) and coordinates['end'] != (-1, -1):
-                start_x, start_y = coordinates['start']
-                end_x, end_y = coordinates['end']
-                print(f"start_x: {start_x}, start_y: {start_y}, end_x: {end_x}, end_y: {end_y}")
+        # 存到 MEDIA_ROOT
+        save_dir = os.path.join(settings.MEDIA_ROOT, 'screenshot')
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, 'improved_screenshot.png')
+        region.save(save_path)
 
-                # 使用MEDIA_ROOT构建路径 ✅
-                screenshot_dir = os.path.join(settings.MEDIA_ROOT, 'screenshot')
-                os.makedirs(screenshot_dir, exist_ok=True)  # 自动创建目录
+        return JsonResponse({'success': True, 'path': save_path})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
-                # 截图保存路径
-                screenshot_path = os.path.join(screenshot_dir, 'screenshot.png')
-                improved_path = os.path.join(screenshot_dir, 'improved_screenshot.png')
-
-                screenshot = pyautogui.screenshot(region=(start_x, start_y, end_x - start_x, end_y - start_y))
-                screenshot.save(screenshot_path)
-                print('Screenshot saved as screenshot.png')
-
-                image = Image.open(screenshot_path)
-                image = image.convert('L')  # 转换为灰度图
-                image = ImageEnhance.Contrast(image).enhance(2.0)  # 增加对比度
-                image = image.filter(ImageFilter.SHARPEN)  # 锐化
-                image.save(improved_path)
-                print('Improved screenshot saved as improved_screenshot.png')
-
-                return JsonResponse({
-                    'start_x': start_x,
-                    'start_y': start_y,
-                    'end_x': end_x,
-                    'end_y': end_y,
-                    'success': True
-                })
-            else:
-                return JsonResponse({'error': 'Mouse selection failed'}, status=500)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-    return JsonResponse({'error': 'Invalid request method'}, status=400)
+# def select_area(request):
+#     if request.method == 'POST':
+#         try:
+#             time.sleep(0.5)
+#             print('请拖动鼠标选择截屏区域...')
+#             coordinates = {'start': (-1, -1), 'end': (-1, -1)}
+#
+#             def on_click(x, y, button, pressed):
+#                 if pressed:
+#                     coordinates['start'] = (x, y)
+#                 else:
+#                     coordinates['end'] = (x, y)
+#                     return False
+#
+#             with mouse.Listener(on_click=on_click) as listener:
+#                 listener.join()  # 阻塞等待鼠标操作
+#
+#             if coordinates['start'] != (-1, -1) and coordinates['end'] != (-1, -1):
+#                 start_x, start_y = coordinates['start']
+#                 end_x, end_y = coordinates['end']
+#                 print(f"start_x: {start_x}, start_y: {start_y}, end_x: {end_x}, end_y: {end_y}")
+#
+#                 # 使用MEDIA_ROOT构建路径 ✅
+#                 screenshot_dir = os.path.join(settings.MEDIA_ROOT, 'screenshot')
+#                 os.makedirs(screenshot_dir, exist_ok=True)  # 自动创建目录
+#
+#                 # 截图保存路径
+#                 screenshot_path = os.path.join(screenshot_dir, 'screenshot.png')
+#                 improved_path = os.path.join(screenshot_dir, 'improved_screenshot.png')
+#
+#                 screenshot = pyautogui.screenshot(region=(start_x, start_y, end_x - start_x, end_y - start_y))
+#                 screenshot.save(screenshot_path)
+#                 print('Screenshot saved as screenshot.png')
+#
+#                 image = Image.open(screenshot_path)
+#                 image = image.convert('L')  # 转换为灰度图
+#                 image = ImageEnhance.Contrast(image).enhance(2.0)  # 增加对比度
+#                 image = image.filter(ImageFilter.SHARPEN)  # 锐化
+#                 image.save(improved_path)
+#                 print('Improved screenshot saved as improved_screenshot.png')
+#
+#                 return JsonResponse({
+#                     'start_x': start_x,
+#                     'start_y': start_y,
+#                     'end_x': end_x,
+#                     'end_y': end_y,
+#                     'success': True
+#                 })
+#             else:
+#                 return JsonResponse({'error': 'Mouse selection failed'}, status=500)
+#         except Exception as e:
+#             return JsonResponse({'error': str(e)}, status=500)
+#     return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 
 def preprocess_image(request, data_course):
@@ -428,6 +473,7 @@ def add_bookmark(request, data_course):
     description = data.get('description', '').strip()
     category = data.get('category', '').strip()
     page = data.get('page')
+    codeText = data.get('codeText')
 
     if not (pdf_name and description and category and isinstance(page, int) and page > 0):
         return JsonResponse({'error': '缺少必要参数或参数无效'}, status=400)
@@ -443,6 +489,7 @@ def add_bookmark(request, data_course):
         'description': description,
         'category': category,
         'page': page,
+        'codeText': codeText,
         'course': data_course  # 添加课程标识
     })
 

@@ -5,19 +5,23 @@ def detect_language(code_str):
     检测代码是Python还是Java。
     基于关键字判断。
     """
+    # print("detect_language=", code_str)
     java_keywords = ['public class', 'import java.', 'void main', 'System.out.println', 'printin']
     for keyword in java_keywords:
         if keyword in code_str:
+            print("java")
             return 'java'
 
     python_keywords = ['def ', 'import sys', 'print(', 'elif ', 'except ']
     for keyword in python_keywords:
         if keyword in code_str:
+            print("python")
             return 'python'
 
     # 检查大括号数量作为备用判断
     if code_str.count('{') + code_str.count('}') > 0:
         return 'java'
+    print("python")
     return 'python'  # 默认Python
 
 def detect_indent_unit(lines):

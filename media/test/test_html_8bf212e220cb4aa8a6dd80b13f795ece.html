@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Software Testing Quiz</title>
+    <style>
+        .question {margin-bottom: 20px;}
+        .score {color: green; font-weight: bold;}
+        .explanation {color: #666; display: none;}
+        .correct {background-color: #e6ffe6;}
+        .wrong {background-color: #ffe6e6;}
+    </style>
+</head>
+<body>
+    <h2>Software Testing Knowledge Quiz</h2>
+
+    <!-- Fill in the Blanks -->
+    <div class="question">
+        <h3>填空题</h3>
+        <p>1. Google's approach where developers write their own tests is called <input type="text" size="15" id="blank1">.</p>
+        <p>2. The testing technique that examines internal program structure is called <input type="text" size="15" id="blank2"> testing.</p>
+        <p>3. The metric that shows how much of an application's code has tests is called <input type="text" size="15" id="blank3">.</p>
+    </div>
+
+    <!-- Multiple Choice -->
+    <div class="question">
+        <h3>选择题</h3>
+        <div>
+            <p>1. Which of these was NOT a problem Google faced with GWS before implementing automated testing?</p>
+            <input type="radio" name="q1" value="A"> A. Releases were becoming buggier<br>
+            <input type="radio" name="q1" value="B"> B. Productivity had slowed dramatically<br>
+            <input type="radio" name="q1" value="C"> C. Team members had little confidence when making changes<br>
+            <input type="radio" name="q1" value="D"> D. The server hardware kept failing
+        </div>
+        
+        <div>
+            <p>2. Which testing level focuses on verifying interactions between components?</p>
+            <input type="radio" name="q2" value="A"> A. Unit testing<br>
+            <input type="radio" name="q2" value="B"> B. Integration testing<br>
+            <input type="radio" name="q2" value="C"> C. System testing<br>
+            <input type="radio" name="q2" value="D"> D. Acceptance testing
+        </div>
+        
+        <div>
+            <p>3. What percentage of branches need to be executed for 100% branch coverage?</p>
+            <input type="radio" name="q3" value="A"> A. 50%<br>
+            <input type="radio" name="q3" value="B"> B. 75%<br>
+            <input type="radio" name="q3" value="C"> C. 90%<br>
+            <input type="radio" name="q3" value="D"> D. 100%
+        </div>
+        
+        <div>
+            <p>4. Which testing technique divides input data into equivalence classes?</p>
+            <input type="radio" name="q4" value="A"> A. Boundary value analysis<br>
+            <input type="radio" name="q4" value="B"> B. Equivalence partitioning<br>
+            <input type="radio" name="q4" value="C"> C. Random testing<br>
+            <input type="radio" name="q4" value="D"> D. Exhaustive testing
+        </div>
+        
+        <div>
+            <p>5. Which type of testing is typically performed by business users?</p>
+            <input type="radio" name="q5" value="A"> A. Unit testing<br>
+            <input type="radio" name="q5" value="B"> B. Integration testing<br>
+            <input type="radio" name="q5" value="C"> C. User acceptance testing<br>
+            <input type="radio" name="q5" value="D"> D. Performance testing
+        </div>
+    </div>
+
+    <button onclick="checkAnswers()">提交答案</button>
+    <div id="score"></div>
+
+    <!-- Answers and Explanations -->
+    <div id="answers" style="display:none;">
+        <h3>答案解析</h3>
+        <p>1. 答案：Developer Driven Testing (DDT)<br>
+           解析：Google instituted a policy of developer-driven automated testing where developers write their own tests.</p>
+        <p>2. 答案：White-box<br>
+           解析：White-box testing examines the internal structure and implementation of the software.</p>
+        <p>3. 答案：Code coverage<br>
+           解析：Code coverage measures how much of the source code is executed during testing.</p>
+        <p>4. 答案：D. The server hardware kept failing<br>
+           解析：The problems with GWS were related to software quality and development process, not hardware failures.</p>
+        <p>5. 答案：B. Integration testing<br>
+           解析：Integration testing verifies the interactions between components through their interfaces.</p>
+        <p>6. 答案：D. 100%<br>
+           解析：100% branch coverage requires all possible branches to be executed at least once.</p>
+        <p>7. 答案：B. Equivalence partitioning<br>
+           解析：Equivalence partitioning divides input data into classes where test cases can be considered equivalent.</p>
+        <p>8. 答案：C. User acceptance testing<br>
+           解析：UAT is performed by business users to verify the system meets their needs.</p>
+    </div>
+
+    <script>
+        function checkAnswers() {
+            let score = 0;
+            
+            // Check填空
+            if (document.getElementById('blank1').value.toLowerCase() === 'developer driven testing' || 
+                document.getElementById('blank1').value.toLowerCase() === 'ddt') {
+                score += 1;
+                document.getElementById('blank1').parentNode.classList.add('correct');
+            } else {
+                document.getElementById('blank1').parentNode.classList.add('wrong');
+            }
+            
+            if (document.getElementById('blank2').value.toLowerCase() === 'white-box' || 
+                document.getElementById('blank2').value.toLowerCase() === 'white box') {
+                score += 1;
+                document.getElementById('blank2').parentNode.classList.add('correct');
+            } else {
+                document.getElementById('blank2').parentNode.classList.add('wrong');
+            }
+            
+            if (document.getElementById('blank3').value.toLowerCase() === 'code coverage') {
+                score += 1;
+                document.getElementById('blank3').parentNode.classList.add('correct');
+            } else {
+                document.getElementById('blank3').parentNode.classList.add('wrong');
+            }
+            
+            // Check选择
+            const correctAnswers = {
+                q1: 'D',
+                q2: 'B',
+                q3: 'D',
+                q4: 'B',
+                q5: 'C'
+            };
+            
+            for (let q in correctAnswers) {
+                const selected = document.querySelector(`input[name="${q}"]:checked`);
+                if (selected && selected.value === correctAnswers[q]) {
+                    score += 2;
+                    selected.parentNode.classList.add('correct');
+                } else if (selected) {
+                    selected.parentNode.classList.add('wrong');
+                }
+            }
+            
+            // Show results
+            document.getElementById('score').innerHTML = `得分: <span class="score">${score}</span>/13`;
+            document.getElementById('answers').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
