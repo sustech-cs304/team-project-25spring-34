@@ -6,6 +6,9 @@ from django.http import JsonResponse
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.decorators import login_required
 
+from IDE.models import Course
+
+
 def index(request):
     return render(request, 'lesson.html')
 
@@ -13,65 +16,110 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from .models import ChatRoom
 
+
 @login_required
 def create_room(request, data_course):
     '''
-    AI-generated-content 
-    tool: DeepSeek 
-    version: latest 
-    usage: I use the prompt "结合django数据库写法实现一个新房间的创建" and generate the corresponding json response.
+        AI-generated-content
+        tool: DeepSeek
+        version: latest
+        usage: I use the prompt "结合django数据库写法实现一个新房间的创建" and generate the corresponding json response.
     '''
     if request.method == 'POST':
         room_name = request.POST.get('room_name')
+        course = Course.objects.get(slug=data_course)
 
-        if ChatRoom.objects.filter(name=room_name).exists():
+        # 检查 name 和 course 组合是否已存在
+        if ChatRoom.objects.filter(name=room_name, course=course).exists():
             return JsonResponse({
                 'status': 'error',
-                'message': '房间名称已存在，请使用其他名称'
+                'message': f'课程 "{data_course}" 下已存在聊天室 "{room_name}"'
             }, status=400)
-        
-        # 直接创建房间（name先设为空或占位符）
-        new_room = ChatRoom.objects.create(creator=request.user)
 
-        # 将name更新为id值
-        new_room.name = str(room_name)  # 如果name需要字符串类型
-        new_room.save()
+        # 创建新房间
+        new_room = ChatRoom.objects.create(
+            name=room_name,
+            creator=request.user,
+            course=course
+        )
 
+        # 添加创建者为成员
         new_room.members.add(request.user)
+
         return JsonResponse({
             'status': 'success',
             'room_id': new_room.name,
+            'course': data_course,
             'message': '房间创建成功'
         })
-        # return HttpResponse(f'group "{new_room.name}" 创建成功！', status=201)
+
     return redirect('index')
 
+
+@login_required
 def join_room(request, data_course):
     if request.method == 'POST':
         room_name = request.POST.get('room_name')
-        print(room_name)
-        room = ChatRoom.objects.get(name=room_name)
-        print(room)
-        if ChatRoom.objects.filter(name=room_name).exists():
+        try:
+            course = Course.objects.get(slug=data_course)
+            room = ChatRoom.objects.get(name=room_name, course=course)
+            # 检查用户是否已经是成员
+            if request.user in room.members.all():
+                return JsonResponse({
+                    'status': 'error',
+                    'message': '您已经是该房间的成员'
+                }, status=400)
             room.members.add(request.user)
-            return JsonResponse({'status': 'success', 'room_name': room_name}, status=200)
-        else:
-            return JsonResponse({'status': 'error', 'message': 'group不存在，请检查房间号！'}, status=404)
-    return JsonResponse({'status': 'error', 'message': '无效请求'}, status=400)
+            return JsonResponse({
+                'status': 'success',
+                'room_name': room_name,
+                'course': data_course,
+                'message': '成功加入房间'
+            }, status=200)
+        except Course.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': '指定课程不存在'
+            }, status=404)
+        except ChatRoom.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': '房间不存在，请检查房间号！'
+            }, status=404)
+    return JsonResponse({
+        'status': 'error',
+        'message': '无效请求'
+    }, status=400)
 
+
+@login_required
 def delete_room(request, room_name, data_course):
     try:
-        room = ChatRoom.objects.get(name=room_name)
-        print(room.creator)
+        course = Course.objects.get(slug=data_course)
+        room = ChatRoom.objects.get(name=room_name, course=course)
         if room.creator == request.user:
             # 当前用户是创建者，可以删除房间
             room.delete()
-            return JsonResponse({'status': 'success', 'message': '房间删除成功！'}, status=200)
+            return JsonResponse({
+                'status': 'success',
+                'message': '房间删除成功！'
+            }, status=200)
         else:
             # 当前用户不是创建者，无权删除
-            return JsonResponse({'status': 'error', 'message': '您无权删除此房间！'}, status=403)
+            return JsonResponse({
+                'status': 'error',
+                'message': '您无权删除此房间！'
+            }, status=403)
+    except Course.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': '指定课程不存在'
+        }, status=404)
     except ChatRoom.DoesNotExist:
-        return JsonResponse({'status': 'error', 'message': '房间不存在！'}, status=404)
+        return JsonResponse({
+            'status': 'error',
+            'message': '房间不存在！'
+        }, status=404)
     
 @login_required
 def get_room_list(request, data_course):
