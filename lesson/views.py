@@ -63,13 +63,10 @@ def join_room(request, data_course):
         try:
             course = Course.objects.get(slug=data_course)
             room = ChatRoom.objects.get(name=room_name, course=course)
-            # 检查用户是否已经是成员
-            if request.user in room.members.all():
-                return JsonResponse({
-                    'status': 'error',
-                    'message': '您已经是该房间的成员'
-                }, status=400)
-            room.members.add(request.user)
+
+            if request.user not in room.members.all():
+                room.members.add(request.user)
+                
             return JsonResponse({
                 'status': 'success',
                 'room_name': room_name,
@@ -124,24 +121,28 @@ def delete_room(request, room_name, data_course):
 @login_required
 def get_room_list(request, data_course):
     """
-    获取所有房间列表（高性能版本）
+    获取当前课程下的所有房间列表（高性能版本）
     """
     try:
         current_user = request.user
         current_user_id = current_user.id  # 提前获取避免重复查询
-        
+
+        # 获取当前课程
+        course = Course.objects.get(slug=data_course)
+
         # 一次性获取所有需要的数据（使用select_related和prefetch_related优化）
-        rooms = ChatRoom.objects.select_related('creator') \
+        rooms = ChatRoom.objects.filter(course=course) \
+                      .select_related('creator') \
                       .prefetch_related('members') \
                       .order_by('-created_at') \
                       .only('name', 'creator_id', 'created_at')  # 只查询必要字段
-        
+
         # 预加载当前用户加入的所有房间ID（避免N+1查询）
         user_joined_room_ids = set(
-            ChatRoom.objects.filter(members=current_user)
-                          .values_list('id', flat=True)
+            ChatRoom.objects.filter(members=current_user, course=course)
+                            .values_list('id', flat=True)
         )
-        
+
         # 使用批量处理构建响应数据
         room_list = []
         for room in rooms:
@@ -151,12 +152,17 @@ def get_room_list(request, data_course):
                 'is_member': room.id in user_joined_room_ids,
                 'created_at': room.created_at.strftime('%Y-%m-%d %H:%M')
             })
-        
+
         return JsonResponse({
             'status': 'success',
             'rooms': room_list
         }, status=200)
-        
+
+    except Course.DoesNotExist:
+        return JsonResponse({
+            'status': 'error',
+            'message': '指定课程不存在'
+        }, status=404)
     except Exception as e:
         return JsonResponse({
             'status': 'error',

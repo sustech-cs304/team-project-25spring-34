@@ -34,7 +34,7 @@ def index(request, group_id, data_course):
         logger.warning("用户未登录，重定向到登录页面")
         return redirect(reverse("login"))
     try:
-        room = ChatRoom.objects.get(name=group_id)
+        room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
         is_creator = request.user == room.creator
         pdf_files = RoomFile.objects.filter(room=room, file_name__iendswith='.pdf')
 
@@ -48,7 +48,8 @@ def index(request, group_id, data_course):
             "room": room,
             "pdf_files": pdf_files,
             "is_creator": is_creator,
-            "code": ""  # 提供默认值，防止模板渲染错误
+            "code": "",  # 提供默认值，防止模板渲染错误
+            "data_course": data_course,
         })
     except ChatRoom.DoesNotExist:
         logger.error(f"房间 {group_id} 不存在")
@@ -105,9 +106,9 @@ def get_annotations(request, group_id):
 @csrf_exempt
 @login_required
 @require_http_methods(["GET"])
-def get_room_pdfs(request, group_id):
+def get_room_pdfs(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(name=group_id)
+        room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
         pdf_files = RoomFile.objects.filter(room=room, file_name__iendswith='.pdf').select_related('room')
 
         pdf_list = [
@@ -115,7 +116,7 @@ def get_room_pdfs(request, group_id):
                 'id': pdf.id,
                 'file_name': pdf.file_name,
                 'file_url': request.build_absolute_uri(
-                    f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf.id}/"
+                    f"/login/IDE/{data_course}/group-{group_id}/group-learn/serve_pdf/{pdf.id}/"
                 ),
                 'uploaded_at': pdf.uploaded_at.strftime('%Y-%m-%d %H:%M')
             }
@@ -143,7 +144,7 @@ def get_pdf(request, group_id, pdf_id, data_course):
     usage: I used deepseek to prompt json response and handle ‘build_absolute_uri’ and ‘日期时间格式化操作’.
     """
     try:
-        room = ChatRoom.objects.get(name=group_id)
+        room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
         pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
         if request.user != room.creator:
             return JsonResponse({
@@ -155,7 +156,7 @@ def get_pdf(request, group_id, pdf_id, data_course):
             'success': True,
             'file_name': pdf_file.file_name,
             'file_url': request.build_absolute_uri(
-                f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
+                f"/login/IDE/{data_course}/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
             ),
             'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
         })
@@ -172,7 +173,7 @@ def get_pdf(request, group_id, pdf_id, data_course):
 @require_http_methods(["GET"])
 def get_current_pdf(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(name=group_id)
+        room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
         cache_key = f"current_pdf_{group_id}"
         pdf_id = django_cache.get(cache_key)
 
@@ -184,7 +185,7 @@ def get_current_pdf(request, group_id, data_course):
                     'id': pdf_file.id,
                     'file_name': pdf_file.file_name,
                     'file_url': request.build_absolute_uri(
-                        f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
+                        f"/login/IDE/{data_course}/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
                     ),
                     'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
                 }
@@ -205,7 +206,7 @@ def get_current_pdf(request, group_id, data_course):
 @require_http_methods(["POST"])
 def set_current_pdf(request, group_id, data_course):
     try:
-        room = ChatRoom.objects.get(name=group_id)
+        room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
         if request.user != room.creator:
             return JsonResponse({
                 'success': False,
@@ -230,7 +231,7 @@ def set_current_pdf(request, group_id, data_course):
                 'id': pdf_file.id,
                 'file_name': pdf_file.file_name,
                 'file_url': request.build_absolute_uri(
-                    f"/login/IDE/lesson/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
+                    f"/login/IDE/{data_course}/group-{group_id}/group-learn/serve_pdf/{pdf_file.id}/"
                 ),
                 'uploaded_at': pdf_file.uploaded_at.strftime('%Y-%m-%d %H:%M')
             }
@@ -264,7 +265,7 @@ def serve_pdf(request, group_id, pdf_id, data_course):
     else:
         try:
             # 查询数据库
-            room = ChatRoom.objects.get(name=group_id)
+            room = ChatRoom.objects.get(name=group_id, course__slug=data_course)
             pdf_file = RoomFile.objects.get(id=pdf_id, room=room)
             file_data = pdf_file.file_data
             file_name = pdf_file.file_name

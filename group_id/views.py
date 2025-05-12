@@ -19,7 +19,7 @@ def index(request, group_id, data_course):
 def group_id(request, data_course):
     if request.method == 'POST':
         group_id = request.POST.get('group_id')
-        return redirect(f'/login/IDE/lesson/group-{group_id}')
+        return redirect(f'/login/IDE/{data_course}/group-{group_id}')
     return render(request, 'group-id.html')
 
 

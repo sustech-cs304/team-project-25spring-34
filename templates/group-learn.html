@@ -259,7 +259,7 @@
     </header>
     <nav>
         <ul>
-            <li><a href="/login/IDE/lesson/group-{{ group_id }}">Go Back</a></li>
+            <li><a href="/login/IDE/{{ data_course }}/group-{{ group_id }}">Go Back</a></li>
         </ul>
         <div class="bookmark-bar">
             <a href="#ppt-bookmark">PPT Bookmark</a>
@@ -434,7 +434,7 @@
             document.getElementById('output').innerText = 'Running...';
 
             // 发送 POST 请求到后端
-            fetch('/login/IDE/lesson/self-learn/run/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/run/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -663,7 +663,7 @@ ${data.stderr}`;
     }
 
     async function saveAnnotations() {
-        const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
+        const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -685,7 +685,7 @@ ${data.stderr}`;
 
     async function loadAnnotations() {
 
-        const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_annotations/?pdf_url=${encodeURIComponent(pdfUrl)}`); // 添加 groupId 到路径
+        const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/get_annotations/?pdf_url=${encodeURIComponent(pdfUrl)}`); // 添加 groupId 到路径
         const result = await response.json();
 
         if (result.success) {
@@ -705,7 +705,7 @@ ${data.stderr}`;
     // 获取并更新创建者选择的 PDF
      async function updateCurrentPdf() {
         try {
-            const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_current_pdf/`, {
+            const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/get_current_pdf/`, {
                 method: 'GET',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
@@ -715,7 +715,7 @@ ${data.stderr}`;
             const data = await response.json();
 
             if (data.success && data.pdf) {
-                const newPdfUrl = `/login/IDE/lesson/group-${groupId}/group-learn/serve_pdf/${data.pdf.id}/`;
+                const newPdfUrl = `/login/IDE/${data_course}/group-${groupId}/group-learn/serve_pdf/${data.pdf.id}/`;
                 const newPdfName = data.pdf.file_name;
 
                 if (newPdfUrl !== pdfUrl) {
@@ -761,12 +761,13 @@ ${data.stderr}`;
         const pdfList = document.getElementById('pdf-list');
         const closeModalBtn = document.getElementById('close-modal');
         const groupId = "{{ group_id }}";
+        const data_course = "{{ data_course }}";
 
         {% if is_creator %}
         selectPdfBtn.addEventListener('click', async () => {
             try {
                 // 获取房间 PDF 列表
-                const response = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_room_pdfs/`, {
+                const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/get_room_pdfs/`, {
                     method: 'GET',
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken'),
@@ -796,7 +797,7 @@ ${data.stderr}`;
 
                                 // 保存当前选择的 PDF
                                 try {
-                                    const saveResponse = await fetch(`/login/IDE/lesson/group-${groupId}/group-learn/set_current_pdf/`, {
+                                    const saveResponse = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/set_current_pdf/`, {
                                         method: 'POST',
                                         headers: {
                                             'Content-Type': 'application/json',
@@ -927,7 +928,7 @@ ${data.stderr}`;
     * usage: I use the prompt "如何根据状态值禁用按钮", and
     * use the framework but modify the logic.
     */ 
-        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/get_button_state/`)
+        fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/get_button_state/`)
             .then(response => response.json())
             .then(data => {
                 const isLocked = data.is_locked;
@@ -984,7 +985,7 @@ ${data.stderr}`;
     * usage: I use the prompt "如何与前端交互修改按钮状态", and
     * use the framework but modify the logic.
     */ 
-        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/revise_button/`, {
+        fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/revise_button/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -1009,7 +1010,7 @@ ${data.stderr}`;
     */ 
     const currentCode = editor.getValue();  // 获取当前编辑器代码
         
-        fetch(`/login/IDE/lesson/group-${groupId}/group-learn/save_button/`, {
+        fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_button/`, {
             method: 'POST',
             headers: {
                 'X-CSRFToken': getCookie('csrftoken'),
@@ -1063,7 +1064,7 @@ ${data.stderr}`;
 
         try {
             isSelect = true;
-            const response = await fetch('/login/IDE/lesson/self-learn/select_area/', {
+            const response = await fetch('/login/IDE/{{ data_course }}/self-learn/select_area/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1086,7 +1087,7 @@ ${data.stderr}`;
 
     function PPImage() {
         try{
-            fetch('/login/IDE/lesson/self-learn/preprocess_image/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/preprocess_image/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
