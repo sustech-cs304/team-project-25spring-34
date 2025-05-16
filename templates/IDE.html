@@ -1,175 +1,232 @@
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IDE</title>
-    <!-- 使用Google Fonts引入更现代的字体 -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+    <!-- 使用更现代的字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <!-- 添加 jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-    /**
-    * AI-generated-content
-    * tool: DeepSeek
-    * version: latest
-    * usage: I use the prompt "如何写一个区分不同区域的模板html", and
-    * use the framework but modify CSS components and change the layout to fit our UI design.
-    */
+        :root {
+            --primary: #60a5fa; /* 浅蓝色 */
+            --primary-hover: #3b82f6;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #334155;
+            --text-light: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            --radius: 8px;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            background-image: url('{% static "images/img-IDE.png" %}');
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-attachment: fixed;
+            color: var(--text);
+            line-height: 1.6;
             padding: 0;
-            background-color: #f4f7f6;
-            color: #333;
-        }
-
-        h1 {
-            text-align: center;
-            font-size: 2.5rem;
-            font-weight: 500;
-            color: #2c3e50;
-            margin-top: 20px;
-        }
-
-        nav {
-            background-color: #2c3e50;
-            padding: 10px 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        nav ul {
-            list-style: none;
             margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
 
-        nav ul li {
-            margin: 0 15px;
+        /* 简约的蓝色装饰元素 */
+        .decorator {
+            position: absolute;
+            opacity: 0.1;
+            z-index: -1;
         }
 
-        nav ul li a {
-            color: #ecf0f1;
-            text-decoration: none;
-            font-size: 1.1rem;
-            transition: color 0.3s ease;
+        .decorator.circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--primary) 0%, transparent 70%);
+            top: -150px;
+            right: -150px;
         }
 
-        nav ul li a:hover {
-            color: #3498db;
+        .decorator.square {
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(45deg, var(--primary), transparent);
+            transform: rotate(45deg);
+            bottom: -100px;
+            left: -100px;
         }
 
-        .main-content {
+        /* 内容容器 */
+        .content-wrapper {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius);
+            padding: 2rem;
             max-width: 800px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
+            margin: 2rem auto;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        .main-content p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #555;
+        h1 {
+            font-weight: 600;
+            font-size: 2rem;
+            color: var(--text);
+            text-align: center;
+            margin: 2rem 0 1.5rem;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .full-width-btn {
+            width: 100%;
         }
 
         .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: #3498db;
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-            margin: 5px;
-            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
             border: none;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .btn:hover {
-            background-color: #2980b9;
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
         }
 
-        footer {
-            text-align: center;
-            padding: 20px;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            margin-top: 40px;
+        .btn:active {
+            transform: translateY(0);
         }
 
-        footer p {
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        /* 新增的按钮容器样式 */
-        .button-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        /* 新增的输入行样式 */
         .input-container {
             display: flex;
-            justify-content: center;
-            margin: 20px 0;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 500px;
+            margin: 2rem auto 0 auto;
+            padding: 0;
         }
 
         .input-container input {
-            padding: 10px;
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
             font-size: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-right: 10px;
-            width: 200px;
+            transition: var(--transition);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: rgba(255, 255, 255, 0.9);
         }
 
-        .input-container button {
-            padding: 10px 20px;
-            font-size: 1rem;
+        .input-container input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2), 0 2px 4px rgba(0, 0, 0, 0.05);
+            background-color: white;
+        }
+
+        #message {
+            text-align: center;
+            margin: 1rem auto;
+            max-width: 500px;
+            padding: 0;
+            font-size: 0.875rem;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 0.5rem;
+            border-radius: var(--radius);
         }
 
         .error {
-            color: red;
-            text-align: center;
-            margin: 10px 0;
+            color: #ef4444;
         }
 
         .success {
-            color: green;
-            text-align: center;
-            margin: 10px 0;
+            color: #10b981;
+        }
+
+        .course-button-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        /* 响应式调整 */
+        @media (min-width: 640px) {
+            .button-container {
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .btn {
+                width: auto;
+                min-width: 200px;
+            }
+
+            .content-wrapper {
+                margin: 3rem auto;
+                padding: 2.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    {% csrf_token %}
-    <h1>Welcome to the IDE</h1>
-    <!-- <nav>
-        <ul>
-            <li><a href="/login/IDE/lesson">Go to Lesson</a></li>
-        </ul>
-    </nav> -->
+    <!-- 简约的蓝色装饰元素 -->
+    <div class="decorator circle"></div>
+    <div class="decorator square"></div>
+    
+    <div class="content-wrapper">
+        {% csrf_token %}
+        <h1>Welcome to the IDE</h1>
 
-    <div class="button-container">
-        <!-- 动态课程按钮将在这里渲染 -->
-        <div class="full-width-btn">
-            <button class="btn" data-course="lesson">Get Started</button>
+        <div class="button-container">
+            <!-- 动态课程按钮将在这里渲染 -->
+            <div class="full-width-btn">
+                <button class="btn" data-course="lesson">Get Started</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 新增的输入行和确定按钮 -->
-    <div class="input-container">
-        <input type="text" id="newCourseInput" placeholder="输入新课程名称">
-        <button class="btn" id="addCourseBtn">确定</button>
+        <!-- 新增的输入行和确定按钮 -->
+        <div class="input-container">
+            <input type="text" id="newCourseInput" placeholder="输入新课程名称">
+            <button class="btn" id="addCourseBtn">确定</button>
+        </div>
+        <div id="message" class="error"></div>
     </div>
-    <div id="message" class="error"></div>
 
     <script>
         // 获取 CSRF 令牌
@@ -192,6 +249,11 @@
         function renderCourseButton(name, slug) {
             const buttonContainer = $('.button-container');
             const fullWidthBtn = $('.full-width-btn');
+
+            // 创建课程按钮的容器
+            const buttonDiv = $('<div>').addClass('course-button-container');
+
+            // 课程按钮
             const button = $('<button>')
                 .addClass('btn')
                 .attr('data-course', slug)
@@ -199,7 +261,61 @@
                 .on('click', function() {
                     window.location.href = `/login/IDE/${slug}/`;
                 });
-            buttonContainer[0].insertBefore(button[0], fullWidthBtn[0]);
+
+            buttonDiv.append(button);
+
+            // 为 admin 用户添加删除按钮
+            const isAdmin = '{{ username }}' === 'admin';
+            if (isAdmin) {
+                const deleteButton = $('<button>')
+                    .addClass('btn')
+                    .css({
+                        'background-color': '#ef4444',
+                        'padding': '0.5rem',
+                        'min-width': 'auto',
+                        'width': 'auto'
+                    })
+                    .text('删除')
+                    .on('click', function(e) {
+                        e.stopPropagation();
+                        if (confirm(`确定要删除课程"${name}"吗？此操作不可撤销。`)) {
+                            deleteCourse(slug);
+                        }
+                    });
+                buttonDiv.append(deleteButton);
+            }
+
+            buttonContainer[0].insertBefore(buttonDiv[0], fullWidthBtn[0]);
+        }
+
+        // 删除课程
+        function deleteCourse(slug) {
+            $.ajax({
+                url: '/login/IDE/delete/',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ slug: slug }),
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                success: function(response) {
+                    if (response.status === 'ok') {
+                        $('#message').removeClass('error').addClass('success').text('课程删除成功！');
+                        loadCourses();
+                    }
+                },
+                error: function(xhr) {
+                    let errorMsg = '删除课程失败：';
+                    if (xhr.status === 403) {
+                        errorMsg += '权限不足，仅管理员可删除课程';
+                    } else if (xhr.status === 404) {
+                        errorMsg += '课程不存在';
+                    } else {
+                        errorMsg += xhr.responseJSON?.error || '未知错误';
+                    }
+                    $('#message').text(errorMsg).addClass('error').removeClass('success');
+                }
+            });
         }
 
         // 加载所有课程
@@ -210,6 +326,7 @@
                 success: function(response) {
                     // 清空现有按钮（除了 Get Started）
                     $('.button-container .btn').not('.full-width-btn .btn').remove();
+                    $('.course-button-container').remove();
                     response.courses.forEach(course => {
                         renderCourseButton(course.name, course.slug);
                     });
@@ -231,7 +348,7 @@
             $('#addCourseBtn').click(function() {
                 const name = $('#newCourseInput').val().trim();
                 if (!name) {
-                    $('#message').text('请输入课程名称');
+                    $('#message').text('请输入课程名称').addClass('error').removeClass('success');
                     return;
                 }
 
@@ -244,7 +361,6 @@
                         'X-CSRFToken': getCookie('csrftoken')
                     },
                     success: function(response) {
-                        console.log('Add course response:', response);
                         if (response.status === 'ok') {
                             renderCourseButton(response.name, response.slug);
                             $('#newCourseInput').val('');
@@ -261,7 +377,7 @@
                         } else {
                             errorMsg += xhr.responseJSON?.error || '未知错误';
                         }
-                        $('#message').text(errorMsg);
+                        $('#message').text(errorMsg).addClass('error').removeClass('success');
                     }
                 });
             });
