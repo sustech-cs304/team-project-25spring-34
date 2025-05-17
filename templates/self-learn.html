@@ -519,7 +519,7 @@
      * usage: I used Copilot to fix syntax errors and standardize code.
      */
      const urlParams = new URLSearchParams(window.location.search);
-    const pdfName = urlParams.get('pdf_name') || 'sample.pdf'; // 获取 URL 参数中的 pdf_name，默认为 sample.pdf
+    const pdfName = urlParams.get('pdf_name') || 'EG.pdf'; // 获取 URL 参数中的 pdf_name，默认为 sample.pdf
     const pdfUrl = `/media/pdfs/${pdfName}`; // 动态设置 PDF 路径
     const storageKey = pdfUrl + '.annotations';
 
