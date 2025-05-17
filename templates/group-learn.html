@@ -600,7 +600,12 @@ ${data.stderr}`;
         overlayCtx.globalAlpha = 1.0;
     }
 
-    overlay.addEventListener('mousedown', e => {
+    overlay.addEventListener('mousedown', async e => {
+        const lock = await getEditLockStatus();
+    if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
+        alert('请先点击“修改”按钮获取编辑权限后再进行标注！');
+        return;
+    }
         if (tool.value === 'eraser') {
             if (annotations[currentPage]?.length > 0) annotations[currentPage].pop();
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
@@ -620,7 +625,11 @@ ${data.stderr}`;
         drawPath({ points: currentPath, tool: tool.value, color: color.value, size: parseInt(size.value) });
     });
 
-    overlay.addEventListener('mouseup', () => {
+    overlay.addEventListener('mouseup', async () => {
+        const lock = await getEditLockStatus();
+    if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
+        return;
+    }
         if (!drawing || tool.value === 'none') return;
         drawing = false;
         if (!annotations[currentPage]) annotations[currentPage] = [];
@@ -662,26 +671,44 @@ ${data.stderr}`;
         renderPage(currentPage);
     }
 
-    async function saveAnnotations() {
-        const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCookie('csrftoken')
-            },
-            body: JSON.stringify({
-                pdf_url: pdfUrl,
-                annotations: annotations
-            })
-        });
+    // 新增：获取锁状态和当前用户
+async function getEditLockStatus() {
+    const resp = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/get_button_state/`);
+    const data = await resp.json();
+    return {
+        isLocked: data.is_locked,
+        lastUser: data.last_user,
+        currentUser: data.username
+    };
+}
 
-        const result = await response.json();
-        if (result.success) {
-            alert('标注已保存到云端 ✅');
-        } else {
-            alert('保存失败 ❌');
-        }
+// 修改：保存标注前加锁判断
+async function saveAnnotations() {
+    const lock = await getEditLockStatus();
+    if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
+        alert('请先点击“修改”按钮获取编辑权限后再保存标注！');
+        return;
     }
+
+    const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            pdf_url: pdfUrl,
+            annotations: annotations
+        })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        alert('标注已保存到云端 ✅');
+    } else {
+        alert('保存失败 ❌');
+    }
+}
 
     async function loadAnnotations() {
 
