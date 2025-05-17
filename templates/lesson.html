@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
     /** 
     * AI-generated-content 
@@ -69,12 +70,36 @@
             gap: 15px;
         }
         .status-section {
-            background-color: #6f7478;
-            padding: 10px;
-            border-radius: 5px;
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #e1e4e8;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .status-section h3 {
-            margin-top: 0;
+            margin: 0 0 10px 0;
+            color: #24292e;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-section h3::before {
+            font-family: "Font Awesome 5 Free";
+            font-weight: 900;
+        }
+        .status-section h3[data-status="focus"]::before {
+            content: "🎯";
+            color: #28a745;
+        }
+        .status-section h3[data-status="upcoming"]::before {
+            content: "📅";
+            color: #0366d6;
+        }
+        .status-section h3[data-status="completed"]::before {
+            content: "✅";
+            color: #6f42c1;
         }
         .task-list {
             list-style-type: none;
@@ -82,12 +107,187 @@
             margin: 0;
         }
         .task-list li {
-            white-space: normal; /* 允许文本换行 */
-            word-wrap: break-word; /* 在单词内换行 */
-            background-color: #727980;
-            padding: 5px;
-            margin-bottom: 5px;
-            border-radius: 3px;
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: move;
+            transition: all 0.2s ease;
+        }
+        .task-list li:hover {
+            background-color: #f1f8ff;
+            border-color: #0366d6;
+        }
+        .task-list li .task-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .task-list li .task-title {
+            font-weight: 500;
+            color: #24292e;
+        }
+        .task-list li .task-meta {
+            display: flex;
+            gap: 8px;
+            font-size: 12px;
+            color: #586069;
+        }
+        .task-tag {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .task-tag.high {
+            background-color: #ffdce0;
+            color: #cb2431;
+        }
+        .task-tag.medium {
+            background-color: #fff3c2;
+            color: #b08800;
+        }
+        .task-tag.low {
+            background-color: #e1f0ff;
+            color: #0366d6;
+        }
+        .task-progress {
+            height: 4px;
+            background-color: #eee;
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .task-progress-bar {
+            height: 100%;
+            background-color: #28a745;
+            transition: width 0.3s ease;
+        }
+        .task-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .task-actions button {
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border: 1px solid #e1e4e8;
+            border-radius: 4px;
+            background-color: #fafbfc;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .task-actions button i {
+            font-size: 12px;
+        }
+        .task-actions button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background-color: #24292e;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+        .task-actions button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        .task-actions button.edit {
+            color: #0366d6;
+            border-color: #0366d6;
+        }
+        .task-actions button.edit:hover {
+            background-color: #0366d6;
+            color: white;
+        }
+        .task-actions button.move {
+            color: #28a745;
+            border-color: #28a745;
+        }
+        .task-actions button.move:hover {
+            background-color: #28a745;
+            color: white;
+        }
+        .task-actions button.progress {
+            color: #6f42c1;
+            border-color: #6f42c1;
+        }
+        .task-actions button.progress:hover {
+            background-color: #6f42c1;
+            color: white;
+        }
+        .task-actions button.delete {
+            color: #cb2431;
+            border-color: #cb2431;
+        }
+        .task-actions button.delete:hover {
+            background-color: #cb2431;
+            color: white;
+        }
+        .add-task-container {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .add-task-container .form-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .add-task-container select,
+        .add-task-container input[type="text"] {
+            padding: 6px 8px;
+            border: 1px solid #e1e4e8;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .add-task-container input[type="text"] {
+            flex: 1;
+        }
+        .add-task-container button {
+            padding: 8px 16px;
+            background-color: #2ea44f;
+            color: white;
+            border: 1px solid rgba(27,31,35,0.15);
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .add-task-container button i {
+            font-size: 16px;
+        }
+        .add-task-container button:hover {
+            background-color: #2c974b;
+            transform: translateY(-1px);
         }
         .group-section {
             margin-bottom: 20px;
@@ -314,6 +514,108 @@
             background-color: #f39c12;
             color: white;
         }
+        .task-edit-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+        }
+
+        .task-edit-modal.show {
+            display: block;
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .modal-backdrop.show {
+            display: block;
+        }
+
+        .task-edit-modal button {
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .task-edit-modal button i {
+            font-size: 16px;
+        }
+
+        .task-edit-modal button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 8px;
+            background-color: #24292e;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+
+        .task-edit-modal button:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .task-edit-modal button.save {
+            background-color: #2ea44f;
+            color: white;
+            border: none;
+            margin-right: 10px;
+        }
+
+        .task-edit-modal button.save:hover {
+            background-color: #2c974b;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(46, 164, 79, 0.2);
+        }
+
+        .task-edit-modal button.cancel {
+            background-color: #fafbfc;
+            color: #24292e;
+            border: 1px solid #e1e4e8;
+        }
+
+        .task-edit-modal button.cancel:hover {
+            background-color: #f3f4f6;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-edit-modal .button-group {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -367,30 +669,39 @@
                 <!-- 添加任务的输入框 -->
         <h2>任务栏</h2>    
         <div class="add-task-container">
-            <select id="task-section">
-                <option value="focus-list">关注</option>
-                <option value="upcoming-list">即将</option>
-                <option value="completed-list">完成</option>
-            </select>
-            <input type="text" id="new-task-input" placeholder="添加任务">
-            <button onclick="addTask()">添加</button>
+            <div class="form-row">
+                <input type="text" id="new-task-input" placeholder="添加任务">
+            </div>
+            <div class="form-row">
+                <select id="task-priority">
+                    <option value="high">🔴 高优先级</option>
+                    <option value="medium">🟡 中优先级</option>
+                    <option value="low">🔵 低优先级</option>
+                </select>
+                <select id="task-section">
+                    <option value="focus-list">🎯 关注</option>
+                    <option value="upcoming-list">📅 即将</option>
+                    <option value="completed-list">✅ 完成</option>
+                </select>
+            </div>
+             <button onclick="addTask()"><i class="fas fa-plus"></i> 添加任务</button>
         </div>    
             
             
         <div class="status-bar">
             <!-- 关注 -->
             <div class="status-section">
-                <h3>关注focus</h3>
+                <h3 data-status="focus">关注 focus</h3>
                 <ul class="task-list" id="focus-list"></ul>
             </div>
             <!-- 即将 -->
             <div class="status-section">
-                <h3>即将upcoming</h3>
+                <h3 data-status="upcoming">即将 upcoming</h3>
                 <ul class="task-list" id="upcoming-list"></ul>
             </div>
             <!-- 完成 -->
             <div class="status-section">
-                <h3>完成completed</h3>
+                <h3 data-status="completed">完成 completed</h3>
                 <ul class="task-list" id="completed-list"></ul>
             </div>
         </div>
@@ -468,22 +779,15 @@
     <script>
         
         function addTask() {
-            /*
-             * AI-generated-content
-             * tool:Hunyuan
-             * version: latest
-             * usage: I used the prompt "将任务添加到对应list中", and
-             * use the framework it provides, but modify some of the details
-             */
-             const section = document.getElementById('task-section').value;
-             const input = document.getElementById('new-task-input');
-
-            const taskText = input.value.trim();
+            const taskText = document.getElementById('new-task-input').value.trim();
+            const priority = document.getElementById('task-priority').value;
+            const section = document.getElementById('task-section').value;
+            
             if (taskText) {
                 const list = document.getElementById(section);
-                 const li = createTaskItem(taskText);
-                 list.appendChild(li);
-                input.value = '';
+                const li = createTaskItem(taskText, priority);
+                list.appendChild(li);
+                document.getElementById('new-task-input').value = '';
             }
         }
 
@@ -771,28 +1075,115 @@ document.addEventListener('DOMContentLoaded', populateDeletePdfDropdown);
      * usage: I used the prompt "创建任务项，可以移动到其他状态和删除", and
      * use the framework it provides, but modify some of the details
         */
-        function createTaskItem(taskText) {
+        function createTaskItem(taskText, priority) {
             const li = document.createElement('li');
-            li.className = 'task-list li'; // 添加样式类
-            li.textContent = taskText;
-
-            // 删除按钮
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = '删除';
-            deleteButton.onclick = () => deleteTask(li);
-
+            li.setAttribute('draggable', 'true');
+            
+            // 创建任务内容容器
+            const taskContent = document.createElement('div');
+            taskContent.className = 'task-content';
+            
+            // 任务标题
+            const taskTitle = document.createElement('div');
+            taskTitle.className = 'task-title';
+            taskTitle.textContent = taskText;
+            
+            // 任务元数据
+            const taskMeta = document.createElement('div');
+            taskMeta.className = 'task-meta';
+            
+            // 添加优先级标签
+            const priorityTag = document.createElement('span');
+            priorityTag.className = `task-tag ${priority}`;
+            priorityTag.textContent = `${priority} priority`;
+            taskMeta.appendChild(priorityTag);
+            
+            // 添加创建日期
+            const dateSpan = document.createElement('span');
+            dateSpan.textContent = new Date().toLocaleDateString();
+            taskMeta.appendChild(dateSpan);
+            
+            // 添加进度条
+            const progress = document.createElement('div');
+            progress.className = 'task-progress';
+            const progressBar = document.createElement('div');
+            progressBar.className = 'task-progress-bar';
+            progressBar.style.width = '0%';
+            progress.appendChild(progressBar);
+            
+            // 组装任务内容
+            taskContent.appendChild(taskTitle);
+            taskContent.appendChild(taskMeta);
+            taskContent.appendChild(progress);
+            
+            // 创建操作按钮容器
+            const actions = document.createElement('div');
+            actions.className = 'task-actions';
+            
+            // 编辑按钮
+            const editButton = document.createElement('button');
+            editButton.className = 'edit';
+            editButton.innerHTML = '<i class="fas fa-edit"></i>';
+            editButton.setAttribute('data-tooltip', '编辑');
+            editButton.onclick = (e) => {
+                e.stopPropagation();
+                openTaskEdit(li, taskText, priority);
+            };
+            
             // 移动按钮
             const moveButton = document.createElement('button');
-            moveButton.textContent = '移动';
-            moveButton.onclick = () => showMoveOptions(li);
-
-            // 将按钮添加到任务项中
-            const buttonContainer = document.createElement('div');
-            buttonContainer.className = 'task-actions';
-            buttonContainer.appendChild(deleteButton);
-            buttonContainer.appendChild(moveButton);
-
-            li.appendChild(buttonContainer); // 将按钮容器添加到任务项中
+            moveButton.className = 'move';
+            moveButton.innerHTML = '<i class="fas fa-arrows-alt"></i>';
+            moveButton.setAttribute('data-tooltip', '移动');
+            moveButton.onclick = (e) => {
+                e.stopPropagation();
+                showMoveOptions(li);
+            };
+            
+            // 更新进度按钮
+            const progressButton = document.createElement('button');
+            progressButton.className = 'progress';
+            progressButton.innerHTML = '<i class="fas fa-tasks"></i>';
+            progressButton.setAttribute('data-tooltip', '更新进度');
+            progressButton.onclick = (e) => {
+                e.stopPropagation();
+                const currentProgress = parseInt(progressBar.style.width) || 0;
+                const newProgress = Math.min(100, currentProgress + 20);
+                progressBar.style.width = `${newProgress}%`;
+                if (newProgress === 100) {
+                    moveTask(li, document.getElementById('completed-list'));
+                }
+            };
+            
+            // 删除按钮
+            const deleteButton = document.createElement('button');
+            deleteButton.className = 'delete';
+            deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
+            deleteButton.setAttribute('data-tooltip', '删除');
+            deleteButton.onclick = (e) => {
+                e.stopPropagation();
+                deleteTask(li);
+            };
+            
+            actions.appendChild(editButton);
+            actions.appendChild(moveButton);
+            actions.appendChild(progressButton);
+            actions.appendChild(deleteButton);
+            
+            // 组装任务项
+            li.appendChild(taskContent);
+            li.appendChild(actions);
+            
+            // 添加拖拽事件
+            li.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', taskText);
+                li.classList.add('dragging');
+            });
+            
+            li.addEventListener('dragend', () => {
+                li.classList.remove('dragging');
+            });
+            
             return li;
         }
 
@@ -816,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', populateDeletePdfDropdown);
             menu.style.padding = '5px';
             menu.style.zIndex = '1000';
 
-            // 添加“移动到”选项
+            // 添加"移动到"选项
             allLists.forEach((list) => {
                 if (list !== currentList) {
                     const option = document.createElement('div');
@@ -858,7 +1249,117 @@ document.addEventListener('DOMContentLoaded', populateDeletePdfDropdown);
             targetList.appendChild(taskItem); // 将任务项移动到目标列表
             menu.remove();
         }
+
+        // 初始化拖拽功能
+        document.querySelectorAll('.task-list').forEach(list => {
+            list.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                const draggingItem = document.querySelector('.dragging');
+                if (draggingItem) {
+                    const afterElement = getDragAfterElement(list, e.clientY);
+                    if (afterElement) {
+                        list.insertBefore(draggingItem, afterElement);
+                    } else {
+                        list.appendChild(draggingItem);
+                    }
+                }
+            });
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        let currentEditingTask = null;
+
+        function openTaskEdit(taskItem, taskText, priority) {
+            currentEditingTask = taskItem;
+            const modal = document.getElementById('task-edit-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            const input = document.getElementById('edit-task-input');
+            const prioritySelect = document.getElementById('edit-task-priority');
+            
+            input.value = taskText;
+            prioritySelect.value = priority;
+            
+            modal.classList.add('show');
+            backdrop.classList.add('show');
+        }
+
+        function closeTaskEdit() {
+            const modal = document.getElementById('task-edit-modal');
+            const backdrop = document.getElementById('modal-backdrop');
+            
+            modal.classList.remove('show');
+            backdrop.classList.remove('show');
+            currentEditingTask = null;
+        }
+
+        function saveTaskEdit() {
+            if (!currentEditingTask) return;
+            
+            const newText = document.getElementById('edit-task-input').value.trim();
+            const newPriority = document.getElementById('edit-task-priority').value;
+            
+            if (newText) {
+                const taskTitle = currentEditingTask.querySelector('.task-title');
+                const priorityTag = currentEditingTask.querySelector('.task-tag');
+                
+                taskTitle.textContent = newText;
+                priorityTag.className = `task-tag ${newPriority}`;
+                priorityTag.textContent = `${newPriority} priority`;
+            }
+            
+            closeTaskEdit();
+        }
+
+        // 初始化事件监听
+        document.addEventListener('DOMContentLoaded', () => {
+            // 点击背景关闭模态框
+            document.getElementById('modal-backdrop').addEventListener('click', closeTaskEdit);
+            
+            // 按下回车添加任务
+            document.getElementById('new-task-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+        });
     </script>
+    <!-- 编辑模态框 -->
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="task-edit-modal" id="task-edit-modal">
+        <h3><i class="fas fa-edit"></i> 编辑任务</h3>
+        <div class="form-row" style="margin-bottom: 15px;">
+            <input type="text" id="edit-task-input" placeholder="任务名称">
+        </div>
+        <div class="form-row" style="margin-bottom: 15px;">
+            <select id="edit-task-priority">
+                <option value="high">🔴 高优先级</option>
+                <option value="medium">🟡 中优先级</option>
+                <option value="low">🔵 低优先级</option>
+            </select>
+        </div>
+        <div class="button-group">
+            <button class="save" onclick="saveTaskEdit()" data-tooltip="保存修改">
+                <i class="fas fa-check"></i>
+            </button>
+            <button class="cancel" onclick="closeTaskEdit()" data-tooltip="取消编辑">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+
     {% include 'embed.html' %}
 </body>
 </html>
