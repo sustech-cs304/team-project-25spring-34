@@ -12,36 +12,33 @@
         * use the framework but modify CSS components and change the layout to fit our UI design.
         */
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
             margin: 0;
             padding: 0;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            background: #1e1e2f;
+            color: #f0f0f5;
+            transition: background 0.4s ease;
         }
 
         header {
-            background-color: #4c70af;
+            background: linear-gradient(to right, #3a3f5c, #5f70a2);
             color: white;
-            padding: 3px;
+            padding: 12px 20px;
             text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         nav {
-            background-color: #f58e07;
+            background: #2a2b3c;
             color: white;
-            padding: 10px;
+            padding: 12px 24px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-
-        nav ul {
-            list-style-type: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            align-items: center;
+            border-bottom: 1px solid #444;
         }
 
         nav ul {
@@ -53,12 +50,18 @@
         }
 
         nav ul li {
-            margin-right: 10px;
+            margin-right: 16px;
         }
 
         nav ul li a {
-            color: white;
+            color: #f0f0f5;
             text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            color: #ffd98e;
         }
 
         .container {
@@ -70,43 +73,48 @@
 
         .pdf-section {
             flex: 4;
-            background-color: #f4f4f4;
-            padding: 10px;
+            background-color: #292a3b;
+            padding: 16px;
             display: flex;
             flex-direction: column;
+            animation: fadeIn 0.6s ease;
         }
 
         .controls {
             margin-bottom: 15px;
-            padding: 10px;
-            background: #fff;
-            border-radius: 4px;
+            padding: 12px;
+            background: #1c1d2c;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.2);
+            color: #ddd;
         }
 
         #pdf-viewer {
             flex: 1;
-            border: 1px solid #ccc;
-            background: white;
+            border: 2px solid #555;
+            background: #181828;
+            border-radius: 8px;
         }
 
         .notes-section {
             flex: 2;
-            background-color: #e2e2e2;
-            height: 100%;
-            padding: 10px;
-            border-left: 2px solid #ccc;
+            background-color: #232435;
+            padding: 16px;
+            border-left: 1px solid #444;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* 🔧 添加这个，防止溢出 */
+            color: #f0f0f5;
+            overflow: hidden;
         }
 
         .code-section {
             flex: 3;
-            background-color: #d4d4d4;
-            padding: 10px;
+            background-color: #1e1e2f;
+            padding: 16px;
+            border-left: 1px solid #444;
             display: flex;
             flex-direction: column;
-            border-left: 2px solid #ccc;
+            color: #e0e0f0;
         }
 
         .bookmark-list {
@@ -114,59 +122,63 @@
             height: 50px;
             overflow-x: auto;
             overflow-y: hidden;
-            border: 2px solid #ccc;
-            padding: 10px 100px;
+            border: 2px solid #555;
+            padding: 10px 20px;
             box-sizing: border-box;
+            background: #2a2b3e;
+            border-radius: 6px;
         }
 
         .bookmark-list h4 {
             text-align: center;
             margin: 0 0 10px 0;
-            width: 100%; /* 强制占满可用宽度 */
-            display: block; /* 确保块级特性生效 */
+            color: #ffdd9a;
         }
 
         .notes-section table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 10px;
+            color: #ddd;
         }
 
         .notes-section th,
         .notes-section td {
-            border: 1px solid #999;
+            border: 1px solid #666;
             padding: 8px;
-            text-align: left;
-            background-color: #fff;
+            background-color: #2e2f3e;
         }
 
         .notes-section th {
-            background-color: #eee;
+            background-color: #3a3b50;
+            color: #ffd98e;
         }
-
 
         #bookmarks {
             list-style: none;
             padding: 0;
             margin: 10px 0;
             max-height: 200px;
-            overflow-x: auto; /* 改为允许横向滚动 */
-            display: flex; /* 使列表项横向排列 */
-            flex-wrap: nowrap; /* 禁止换行 */
+            overflow-x: auto;
+            display: flex;
+            flex-wrap: nowrap;
         }
 
         #bookmarks li {
             cursor: pointer;
-            padding: 8px;
-            background: #fff;
-            margin-right: 10px; /* 右边距使每个书签之间有间隔 */
-            border-radius: 4px;
-            transition: background 0.3s;
-            white-space: nowrap; /* 确保文字不换行 */
+            padding: 8px 12px;
+            background: #393b5c;
+            margin-right: 10px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            color: #fff;
+            font-weight: 500;
         }
 
         #bookmarks li:hover {
-            background-color: #f0f0f0;
+            background-color: #50537c;
+            transform: scale(1.05);
         }
 
         #overlay {
@@ -174,36 +186,149 @@
             top: 0;
             left: 0;
             z-index: 10;
-            pointer-events: all; /* 确保 overlay 能接收鼠标事件 */
+            pointer-events: all;
         }
 
         #note-editor {
             flex: 1;
             overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 8px;
-            background: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            background: #1d1e2d;
+            color: #fff;
             width: 100%;
             resize: none;
+            border-radius: 6px;
             box-sizing: border-box;
         }
 
         #preview {
             flex: 2;
             overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 8px;
-            background: #fff;
+            border: 1px solid #444;
+            padding: 10px;
+            background: #202133;
+            border-radius: 6px;
+            color: #000;
         }
-
 
         .code-input textarea {
             width: 100%;
             height: 75%;
             resize: none;
-            padding: 8px;
-            border: 1px solid #ccc;
+            padding: 10px;
+            border: 1px solid #444;
+            background: #181828;
+            color: #f0f0f5;
+            border-radius: 6px;
         }
+
+        /* 动画定义 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+
+
+
+        /* 通用按钮样式美化 */
+        button,
+        .btn-revise,
+        .btn-save,
+        input[type="button"],
+        input[type="submit"] {
+            background: linear-gradient(145deg, #35385a, #2a2d45);
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover,
+        .btn-revise:hover,
+        .btn-save:hover,
+        input[type="button"]:hover,
+        input[type="submit"]:hover {
+            background: linear-gradient(145deg, #4e5279, #3c4060);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+        }
+
+        /* 按钮点击波纹动画 */
+        button::after,
+        .btn-revise::after,
+        .btn-save::after {
+            content: "";
+            position: absolute;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: scale(0);
+            opacity: 0;
+            pointer-events: none;
+            animation: none;
+        }
+
+        button:active::after,
+        .btn-revise:active::after,
+        .btn-save:active::after {
+            width: 120px;
+            height: 120px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            from {
+                transform: translate(-50%, -50%) scale(0);
+                opacity: 0.5;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(3);
+                opacity: 0;
+            }
+        }
+
+        /* 禁用按钮样式保持一致 */
+        button:disabled,
+        .btn-revise:disabled,
+        .btn-save:disabled {
+            background: #444 !important;
+            color: #aaa !important;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+
+        /* 美化滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
     </style>
     <!-- CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
