@@ -83,7 +83,7 @@ def save_annotations(request, group_id):
         return JsonResponse({'success': True, 'created': True})
 
 @csrf_exempt
-def get_annotations(request, group_id):
+def get_annotations(request, group_id, data_course):
     """
     AI-generated-content
     tool: GitHub Copilot
