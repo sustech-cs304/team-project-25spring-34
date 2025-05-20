@@ -1,7 +1,7 @@
 from django.db import models
 
 class Annotation(models.Model):
-    group_id = models.IntegerField()
+    group_id = models.CharField(max_length=100)  # 改成 CharField，支持字符串
     pdf_url = models.TextField()
     data = models.JSONField()
 
