@@ -1,49 +1,73 @@
 from django.test import TestCase, Client
-from django.urls import reverse
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+import json
 
-from lesson.models import ChatRoom, ChatMessage
-
-class LessonViewTests(TestCase):
+class BookmarkTestCase(TestCase):
     def setUp(self):
         self.client = Client()
-        self.user = get_user_model().objects.create_user(username='testuser', password='testpass')
-        self.client.login(username='testuser', password='testpass')
-        self.data_course = 'testcourse'
+        self.user = User.objects.create_user(username='testuser', password='12345678')
+        self.client.login(username='testuser', password='12345678')
 
-    def test_lesson_page_renders(self):
-        url = reverse('lesson:index', args=[self.data_course])
-        response = self.client.get(url)
+        self.course = "test_course"
+        self.pdf_name = "test.pdf"
+
+        self.bookmark_url = f"/login/IDE/{self.course}/self-learn/add_bookmark/"
+        self.get_url = f"/login/IDE/{self.course}/self-learn/get_bookmarks/?pdf_name={self.pdf_name}"
+        self.delete_url = f"/login/IDE/{self.course}/self-learn/delete_bookmark/"
+
+    def test_add_and_get_bookmark(self):
+        # 添加书签
+        payload = {
+            "pdf_name": self.pdf_name,
+            "description": "测试书签",
+            "category": "重点",
+            "page": 1,
+            "codeText": "print('hi')"
+        }
+        response = self.client.post(self.bookmark_url, json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'lesson', response.content.lower())
+        self.assertJSONEqual(response.content, {"success": True})
 
-    def test_hello_view(self):
-        url = reverse('lesson:hello', args=[self.data_course])
-        response = self.client.get(url)
+        # 获取书签
+        response = self.client.get(self.get_url)
         self.assertEqual(response.status_code, 200)
-        self.assertIn(b'hello', response.content.lower())
 
-class ChatRoomModelTests(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username='roomuser', password='testpass')
-        self.room = ChatRoom.objects.create(name='room1', creator=self.user)
+        data = json.loads(response.content)
+        self.assertTrue(any(item["description"] == "测试书签" for item in data))
 
-    def test_chatroom_creation(self):
-        self.assertEqual(self.room.name, 'room1')
-        self.assertEqual(self.room.creator, self.user)
+    def test_delete_bookmark(self):
+        # 单独添加一次，避免重复写入
+        payload = {
+            "pdf_name": self.pdf_name,
+            "description": "测试书签",
+            "category": "重点",
+            "page": 1,
+            "codeText": "print('hi')"
+        }
+        self.client.post(self.bookmark_url, json.dumps(payload), content_type="application/json")
 
-    def test_add_member(self):
-        self.room.members.add(self.user)
-        self.assertIn(self.user, self.room.members.all())
+        # 删除索引为 0 的书签
+        payload = {
+            "pdf_name": self.pdf_name,
+            "index": 0
+        }
+        response = self.client.post(self.delete_url, json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"success": True})
 
-class ChatMessageModelTests(TestCase):
-    def setUp(self):
-        self.user = get_user_model().objects.create_user(username='msguser', password='testpass')
-        self.room = ChatRoom.objects.create(name='room2', creator=self.user)
-        self.message = ChatMessage.objects.create(room=self.room, user=self.user, content='hello')
+        # 验证是否清空
+        response = self.client.get(self.get_url)
+        data = json.loads(response.content)
+        self.assertEqual(len(data), 0)
 
-    def test_message_content(self):
-        self.assertEqual(self.message.content, 'hello')
-        self.assertEqual(self.message.room, self.room)
-        self.assertEqual(self.message.user, self.user)
-# ...可根据 models.py 继续补充其它模型和视图测试...
+
+    def test_add_invalid_bookmark(self):
+        # 缺少必要字段
+        payload = {
+            "pdf_name": "",
+            "description": "",
+            "category": "其他",
+            "page": 0
+        }
+        response = self.client.post(self.bookmark_url, json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 400)

@@ -69,15 +69,15 @@ def index(request, data_course):
     # 渲染主页面，并将代码传递到模板
     return render(request, 'self-learn.html', {'code': code, 'data_course': data_course})
 
-def get_bookmarks_file(data_course):
-    """获取当前课程的专属书签文件路径"""
-    course_dir = os.path.join(UPLOAD_DIR, 'bookmarks', data_course)
+def get_bookmarks_file(data_course, username):
+    """获取当前课程和用户的专属书签文件路径"""
+    course_dir = os.path.join(UPLOAD_DIR, 'bookmarks', data_course, username)
     os.makedirs(course_dir, exist_ok=True)
     return os.path.join(course_dir, 'bookmarks.json')
 
-def ensure_bookmarks_file(data_course):
+def ensure_bookmarks_file(data_course, username):
     """确保书签文件存在"""
-    bookmarks_file = get_bookmarks_file(data_course)
+    bookmarks_file = get_bookmarks_file(data_course, username)
     if not os.path.exists(bookmarks_file):
         with open(bookmarks_file, 'w') as f:
             json.dump({}, f)
@@ -450,9 +450,10 @@ def get_pdf_list(request, data_course):
 #      */
 @csrf_exempt
 def get_bookmarks(request, data_course):
-    """获取指定 PDF 的书签"""
+    """获取指定 PDF 的书签（按用户区分）"""
     pdf_name = request.GET.get('pdf_name')
-    bookmarks_file = ensure_bookmarks_file(data_course)
+    username = request.user.username
+    bookmarks_file = ensure_bookmarks_file(data_course, username)
 
     with open(bookmarks_file, 'r') as f:
         bookmarks = json.load(f)
@@ -467,18 +468,19 @@ def get_bookmarks(request, data_course):
 
 @csrf_exempt
 def add_bookmark(request, data_course):
-    """添加书签"""
+    """添加书签（按用户区分）"""
     data = json.loads(request.body)
     pdf_name = data.get('pdf_name')
     description = data.get('description', '').strip()
     category = data.get('category', '').strip()
     page = data.get('page')
     codeText = data.get('codeText')
+    username = request.user.username
 
     if not (pdf_name and description and category and isinstance(page, int) and page > 0):
         return JsonResponse({'error': '缺少必要参数或参数无效'}, status=400)
 
-    bookmarks_file = ensure_bookmarks_file(data_course)
+    bookmarks_file = ensure_bookmarks_file(data_course, username)
     with open(bookmarks_file, 'r') as f:
         bookmarks = json.load(f)
 
@@ -500,12 +502,13 @@ def add_bookmark(request, data_course):
 
 @csrf_exempt
 def delete_bookmark(request, data_course):
-    """删除书签"""
+    """删除书签（按用户区分）"""
     data = json.loads(request.body)
     pdf_name = data.get('pdf_name')
     index = data.get('index')
+    username = request.user.username
 
-    bookmarks_file = ensure_bookmarks_file(data_course)
+    bookmarks_file = ensure_bookmarks_file(data_course, username)
     with open(bookmarks_file, 'r') as f:
         bookmarks = json.load(f)
 

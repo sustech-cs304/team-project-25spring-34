@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import sys
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -91,24 +92,32 @@ ASGI_APPLICATION = 'IDEframework.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'maplebase1',
-        'USER': 'maplezhuu',
-        'PASSWORD': 'cZAHUmMrpJtR1KlN',
-        'HOST': 'mysql3.sqlpub.com',
-        'PORT': '3308',
-        'POOL_OPTIONS': {
-            'POOL_SIZE': 20,        
-            'MAX_OVERFLOW': 25,      
-            'RECYCLE': 1800,     
-            'PRE_PING': True,     
-            'ECHO': False,      
-            'TIMEOUT': 3,  
+if 'test' in sys.argv:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': ':memory:',  # 或 'test_db.sqlite3'
         }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': 'maplebase1',
+            'USER': 'maplezhuu',
+            'PASSWORD': 'cZAHUmMrpJtR1KlN',
+            'HOST': 'mysql3.sqlpub.com',
+            'PORT': '3308',
+            'POOL_OPTIONS': {
+                'POOL_SIZE': 20,
+                'MAX_OVERFLOW': 25,
+                'RECYCLE': 1800,
+                'PRE_PING': True,
+                'ECHO': False,
+                'TIMEOUT': 3,
+            }
+        }
+    }
 
 CHANNEL_LAYERS = {  # 通信
     "default": {
