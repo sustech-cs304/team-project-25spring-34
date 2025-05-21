@@ -15,17 +15,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.shortcuts import redirect
-from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from login import views as login_views
 from register import views as register_views
 from IDE import views as IDE_views
-from lesson import views as lesson_views
 from group_id import views as group_id_views
 from group_learn import views as group_learn_views
-from button_lock import views as button_lock_views
 
 urlpatterns = [
     path('', lambda request: redirect('login/')),
@@ -40,9 +37,6 @@ urlpatterns = [
             path('group-<str:group_id>/', include([
                 path('', include('group_id.urls')),
                 path('group-learn/', group_learn_views.index),
-                path('group-learn/revise_button/', button_lock_views.revise_button, name='revise_button'),
-                path('group-learn/save_button/', button_lock_views.save_button, name='save_button'),
-                path('group-learn/get_button_state/', button_lock_views.get_button_state, name='get_button_state'),
                 path('group-learn/save_annotations/', group_learn_views.save_annotations, name='save_annotations'),
                 path('group-learn/get_annotations/', group_learn_views.get_annotations, name='get_annotations'),
                 path('group-learn/', include('group_learn.urls')),

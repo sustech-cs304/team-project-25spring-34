@@ -1,6 +1,7 @@
 from django.test import TestCase, Client, TransactionTestCase
 from django.contrib.auth.models import User
 from django.urls import reverse
+from button_lock.models import State
 from .models import Annotation
 from lesson.models import ChatRoom
 from IDE.models import Course
@@ -170,3 +171,42 @@ class GroupLearnTests(TransactionTestCase):
     def tearDownClass(cls):
         """在测试类结束后运行"""
         super().tearDownClass()
+
+    def test_get_button_state(self):
+        self.client.login(username='tester', password='testpass')
+        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/get_button_state/'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn('is_locked', data)
+        self.assertIn('last_user', data)
+        self.assertIn('code', data)
+
+    def test_revise_button(self):
+        self.client.login(username='tester', password='testpass')
+        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/revise_button/'
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['username'], 'tester')
+
+        state = State.objects.get(room_id=self.chat_room.id)
+        self.assertTrue(state.is_locked)
+        self.assertEqual(state.last_user, 'tester')
+
+    def test_save_button(self):
+        self.client.login(username='tester', password='testpass')
+        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/save_button/'
+        code = 'print("Updated code")'
+        response = self.client.post(
+            url,
+            data=json.dumps({'code': code}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['code'], code)
+
+        state = State.objects.get(room_id=self.chat_room.id)
+        self.assertFalse(state.is_locked)
+        self.assertEqual(state.code, code)
