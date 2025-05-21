@@ -701,15 +701,13 @@ ${data.stderr}`;
 
         // WebSocket功能
         const chatSocket = new WebSocket(
-            'ws://' + window.location.host + '/ws/group_learn/' + group_id + '/'
+            'ws://' + window.location.host + '/ws/group_learn/' + '{{ data_course }}/' + group_id + '/'
         );
 
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             const chatLog = document.querySelector('#chat-log');
-            const [user, message] = data.message.split(' : ');
-            console.log("打印：" + user);
-            chatLog.value += `${user}: ${message}\n`;
+            chatLog.value += `${data.message}\n`;  //${data.username}:
             chatLog.scrollTop = chatLog.scrollHeight;  // 滚动到底部
 
             // 如果有新消息且聊天框是关闭的，闪烁按钮提醒
@@ -824,7 +822,7 @@ ${data.stderr}`;
     overlay.addEventListener('mousedown', async e => {
         const lock = await getEditLockStatus();
     if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
-        alert('请先点击“修改”按钮获取编辑权限后再进行标注！');
+        alert('请先点击"修改"按钮获取编辑权限后再进行标注！');
         return;
     }
         if (tool.value === 'eraser') {
@@ -907,7 +905,7 @@ async function getEditLockStatus() {
 async function saveAnnotations() {
     const lock = await getEditLockStatus();
     if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
-        alert('请先点击“修改”按钮获取编辑权限后再保存标注！');
+        alert('请先点击"修改"按钮获取编辑权限后再保存标注！');
         return;
     }
 
