@@ -10,5 +10,7 @@ media folder: media
 
 note:
 python manage.py makemigrations
+
 python manage.py migrate
+
 (可选:rm db.sqlite3  python manage.py migrate)
