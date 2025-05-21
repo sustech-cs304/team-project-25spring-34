@@ -68,6 +68,7 @@
             display: flex;
             flex: 1;
             overflow: hidden;
+            overflow-y: auto; 
             height: 100%;
         }
 
@@ -445,11 +446,7 @@
             </div>
         </div>
 
-        <div class="bookmark-bar">
-            <input type="number" id="page-number" placeholder="页码" min="1" style="width:80px;margin-right:10px;">
-            <input type="text" id="bookmark-desc" placeholder="书签描述" style="margin-right:10px;">
-            <button onclick="createBookmark()">添加书签</button>
-        </div>
+     
     </div>
 
     <div class="notes-section" id="note-container">
