@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <style>
-    /** 
-    * AI-generated-content 
-    * tool: DeepSeek 
-    * version: latest 
-    * usage: I use the prompt "如何写一个注册界面html", and
-    * use the framework but modify CSS components and change the layout to fit our UI design.
-    */ 
         body {
             margin: 0;
             padding: 0;
@@ -114,6 +107,13 @@
         .requirements li {
             margin-bottom: 0.25rem;
         }
+
+        .errorlist {
+            margin: 0;
+            padding-left: 1rem;
+            color: red;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -121,18 +121,42 @@
         <h1>Register</h1>
         <form method="post" action="{% url 'register' %}">
             {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
             <div class="form-group">
                 <label for="{{ form.username.id_for_label }}">Username:</label>
                 {{ form.username }}
+                {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 <div class="requirements">
                     <ul>
                         <li>150 characters or fewer. Letters, digits and @/./+/-/_ only.</li>
                     </ul>
                 </div>
             </div>
+
             <div class="form-group">
                 <label for="{{ form.password1.id_for_label }}">Password:</label>
                 {{ form.password1 }}
+                {% if form.password1.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password1.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 <div class="requirements">
                     <ul>
                         <li>Your password must contain at least 8 characters.</li>
@@ -140,15 +164,24 @@
                     </ul>
                 </div>
             </div>
+
             <div class="form-group">
                 <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
                 {{ form.password2 }}
+                {% if form.password2.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 <div class="requirements">
                     <ul>
                         <li>Enter the same password as before, for verification.</li>
                     </ul>
                 </div>
             </div>
+
             <button type="submit">Register</button>
         </form>
         <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
