@@ -5,13 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
-    /** 
-    * AI-generated-content 
-    * tool: DeepSeek 
-    * version: latest 
-    * usage: I use the prompt "如何写一个登录界面html", and
-    * use the framework but modify CSS components and change the layout to fit our UI design.
-    */ 
         body {
             margin: 0;
             padding: 0;
@@ -111,11 +104,24 @@
         .login-container a:hover {
             text-decoration: underline;
         }
+
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h1>Login</h1>
+
+        {% if form.errors %}
+            <div class="error-message">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
             <div class="form-group">
