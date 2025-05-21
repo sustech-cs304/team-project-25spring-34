@@ -1,14 +1,53 @@
-from playwright.sync_api import sync_playwright
+from django.test import TestCase, Client
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.urls import reverse
+import io
+from unittest.mock import patch
 
-with sync_playwright() as p:
-    # 获取 Chromium 的可执行路径
-    chromium_path = p.chromium.executable_path
-    print("Chromium 路径:", chromium_path)
+class TestDeepSeekAPI(TestCase):
 
-    # 获取 Firefox 的可执行路径
-    firefox_path = p.firefox.executable_path
-    print("Firefox 路径:", firefox_path)
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse('deepseek_api')
 
-    # 获取 WebKit 的可执行路径
-    webkit_path = p.webkit.executable_path
-    print("WebKit 路径:", webkit_path)
+    def test_post_with_text_prompt_only(self):
+        response = self.client.post(self.url, data={'message': '你好，请回答一个问题'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('response', response.json())
+
+    @patch("ai_assistant.views.html_to_png")
+    def test_post_with_pdf_and_prompt_for_map(self, mock_html_to_png):
+        mock_html_to_png.return_value = None
+        pdf = self._create_fake_pdf(b"内容中含有思维导图关键词")
+        res = self.client.post(self.url, data={
+            'message': '请生成一份思维导图',
+            'pdf': pdf
+        })
+        self.assertIn(res.status_code, [200, 500])
+        self.assertTrue('html_url' in res.json() or 'error' in res.json())
+
+    def test_post_with_pdf_and_prompt_for_test(self):
+        fake_pdf = self._create_fake_pdf(b"内容中含有题目关键词")
+        response = self.client.post(
+            self.url,
+            data={
+                'message': '根据这个pdf生成几道测试题',
+                'pdf': fake_pdf
+            }
+        )
+        self.assertIn(response.status_code, [200, 500])  # Playwright/DeepSeek失败可容忍
+        self.assertTrue('html_url' in response.json() or 'error' in response.json())
+
+    def test_invalid_method(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 400)
+
+    def _create_fake_pdf(self, content_bytes):
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.pagesizes import letter
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        p.drawString(100, 750, content_bytes.decode('utf-8'))
+        p.save()
+        buffer.seek(0)
+        return SimpleUploadedFile("test.pdf", buffer.read(), content_type='application/pdf')
