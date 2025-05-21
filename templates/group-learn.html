@@ -98,14 +98,6 @@
             box-shadow: 0 0 12px rgba(0,0,0,0.2);
         }
 
-        .code-output {
-            flex: 1;
-            background-color: #232435;
-            padding: 16px;
-            border-radius: 8px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.2);
-        }
-
         /* 动画定义 */
         @keyframes fadeIn {
             from {
@@ -340,16 +332,104 @@
 
         /* 输出区域样式 */
         .output {
-            background-color: #1e1e2f;
-            border: 1px solid #444;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 10px;
-            color: #f0f0f5;
-            font-family: monospace;
-            white-space: pre-wrap;
-            overflow-y: auto;
-            max-height: 200px;
+            min-height: 300px;  /* 设置最小高度 */
+            max-height: 800px;  /* 可选的最大高度限制 */
+            flex: 1;
+            background-color: #1e1f2b; /* 深色背景 */
+            padding: 18px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            border: 1px solid #3a3b4c; /* 添加细边框增强层次感 */
+            font-family: 'SF Mono', 'Roboto Mono', monospace; /* 等宽字体更适合终端 */
+            color: #e0e0e8; /* 柔和的浅色文字 */
+            overflow-y: auto; /* 允许垂直滚动 */
+            position: relative;
+            
+            /* 现代化渐变边框效果 */
+            &::before {
+                content: '';
+                position: absolute;
+                inset: -1px;
+                border-radius: 11px;
+                background: linear-gradient(135deg, 
+                            rgba(100, 108, 255, 0.3) 0%, 
+                            rgba(255, 109, 253, 0.1) 100%);
+                z-index: -1;
+                pointer-events: none;
+            }
+            
+            /* 滚动条样式 */
+            &::-webkit-scrollbar {
+                width: 8px;
+            }
+            
+            &::-webkit-scrollbar-track {
+                background: #2a2b3a;
+                border-radius: 4px;
+            }
+            
+            &::-webkit-scrollbar-thumb {
+                background: #4a4b5c;
+                border-radius: 4px;
+                transition: background 0.2s;
+            }
+            
+            &::-webkit-scrollbar-thumb:hover {
+                background: #5a5b6c;
+            }
+            
+            /* 终端内容样式 */
+            .terminal-line {
+                margin-bottom: 8px;
+                line-height: 1.5;
+                position: relative;
+                padding-left: 24px;
+                
+                /* 终端提示符样式 */
+                &::before {
+                    content: '>';
+                    position: absolute;
+                    left: 8px;
+                    color: #646cff;
+                    font-weight: bold;
+                }
+            }
+            
+            /* 错误消息样式 */
+            .error {
+                color: #ff6e76;
+            }
+            
+            /* 成功消息样式 */
+            .success {
+                color: #6eff8e;
+            }
+            
+            /* 警告消息样式 */
+            .warning {
+                color: #ffcc66;
+            }
+            
+            /* 信息消息样式 */
+            .info {
+                color: #66b3ff;
+            }
+            
+            /* 终端闪烁光标效果 */
+            .cursor {
+                display: inline-block;
+                width: 8px;
+                height: 16px;
+                background: #646cff;
+                animation: blink 1s infinite;
+                vertical-align: middle;
+                margin-left: 4px;
+            }
+            
+            @keyframes blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0; }
+            }
         }
 
         /* 模态框样式 */
@@ -580,21 +660,14 @@
                 </select>
                 <div id="editor"></div>
                 
-                <h3>截屏功能</h3>
+                <h3>工具栏</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <button onclick="selectArea()">选择区域</button>
-                    <button onclick="PPImage()">读取区域</button>
+                    <button onclick="selectArea()" style="margin-top: 10px;">选择区域</button>
+                    <button onclick="PPImage()" style="margin-top: 10px;">读取区域</button>
+                    <button onclick="runCode()" style="margin-top: 10px;">运行代码</button>
                 </div>
-                
-                <button onclick="runCode()" style="margin-top: 10px;">运行代码</button>
-                <div class="output" id="output"></div>
-            </div>
             
-            <div class="code-output">
-                <h3>终端输出</h3>
-                <div style="height: 100%; background-color: #1e1e2f; border-radius: 8px; padding: 10px;">
-                    <!-- 终端内容将在这里显示 -->
-                </div>
+                <div class="output" id="output"></div>
             </div>
         </div>
     </div>
@@ -1086,7 +1159,7 @@ async function saveAnnotations() {
         document.addEventListener('DOMContentLoaded', () => {
             updateCurrentPdf();
             // 每3秒检查一次当前PDF是否有更新
-            pdfInterval = setInterval(updateCurrentPdf, 100);
+            pdfInterval = setInterval(updateCurrentPdf, 3000);
         });
 
         // 清理定时器
