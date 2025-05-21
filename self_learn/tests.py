@@ -7,9 +7,23 @@ from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.conf import settings
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 
-# 可选：输出 tesseract 版本（用于调试）
-# print("Tesseract version:", pytesseract.get_tesseract_version())
+def test_upload_and_delete_pdf(self):
+    pdf_content = b'%PDF-1.4 test content'
+    fake_pdf = SimpleUploadedFile("sample.pdf", pdf_content, content_type="application/pdf")
+
+    # 上传
+    response = self.client.post(f"/login/IDE/{self.course}/self-learn/upload_pdf/", {"pdf": fake_pdf})
+    self.assertEqual(response.status_code, 200)
+    self.assertIn("PDF 上传成功", response.content.decode())
+
+    # 删除
+    response = self.client.post(f"/login/IDE/{self.course}/self-learn/delete_pdf/", json.dumps({
+        "pdf_name": "sample.pdf"
+    }), content_type="application/json")
+    self.assertEqual(response.status_code, 200)
+
 
 
 class BookmarkTestCase(TestCase):
