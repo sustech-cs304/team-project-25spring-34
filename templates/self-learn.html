@@ -679,16 +679,49 @@
     }
 
     function saveAnnotations() {
-        localStorage.setItem(storageKey, JSON.stringify(annotations));
-        alert('标注已保存 ✅');
+        fetch(`/login/IDE/{{ data_course }}/self-learn/save_annotations/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                pdf_name: pdfName,
+                annotations: annotations
+            }),
+            credentials: "include"
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.success) {
+                alert('标注已保存 ✅');
+            } else {
+                alert('保存失败: ' + (data.error || '未知错误'));
+            }
+        });
     }
 
+    // 加载标注
+    function loadAnnotations() {
+        fetch(`/login/IDE/{{ data_course }}/self-learn/get_annotations/?pdf_name=${pdfName}`, {
+            credentials: "include"
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data && Object.keys(data).length > 0) {
+                annotations = data;
+            } else {
+                annotations = {};
+            }
+            renderPage(currentPage);
+        });
+    }
+
+    // PDF加载后自动加载标注
     pdfjsLib.getDocument(pdfUrl).promise.then(pdf => {
         pdfDoc = pdf;
         document.getElementById('page-count').textContent = pdf.numPages;
-        const saved = localStorage.getItem(storageKey);
-        if (saved) annotations = JSON.parse(saved);
-        renderPage(currentPage);
+        loadAnnotations(); // 替换原本的本地localStorage加载
     });
 </script>
 

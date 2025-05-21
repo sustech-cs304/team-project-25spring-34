@@ -7,7 +7,8 @@ from django.http import HttpResponse
 from .views import (index, select_area, preprocess_image,
                     upload_pdf, view_bookmarks, run_code,
                     get_pdf_list, get_bookmarks, add_bookmark,delete_pdf,
-                    delete_bookmark, intelligent_preprocess_image)
+                    delete_bookmark, intelligent_preprocess_image,
+                    save_annotations, get_annotations)  # 新增
 
 
 urlpatterns = [
@@ -18,8 +19,9 @@ urlpatterns = [
     path("pdf/viewer/", view_bookmarks, name="viewer"),
     path('run/', run_code, name='run_code'), # 执行代码的接口
     path('upload_pdf/', upload_pdf, name='upload_pdf'),
-    path('delete_pdf/', delete_pdf, name='delete_pdf')
-
+    path('delete_pdf/', delete_pdf, name='delete_pdf'),
+    path('save_annotations/', save_annotations, name='save_annotations'),  # 新增
+    path('get_annotations/', get_annotations, name='get_annotations'),    # 新增
 ]
 
 urlpatterns += [

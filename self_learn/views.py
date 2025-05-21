@@ -530,3 +530,48 @@ def save_bookmarks(bookmarks, data_course):
     print(f"保存书签到文件: {BOOKMARKS_FILE}")  # 调试日志
     with open(BOOKMARKS_FILE, 'w') as f:
         json.dump(bookmarks, f)
+
+def get_annotation_path(username, pdf_name):
+    """返回当前用户和pdf的标注文件路径"""
+    base_dir = os.path.join(settings.MEDIA_ROOT, 'annotations', username)
+    os.makedirs(base_dir, exist_ok=True)
+    return os.path.join(base_dir, f"{pdf_name}.json")
+
+@csrf_exempt
+def save_annotations(request, data_course):
+    """
+    保存PDF标注，按用户名+pdf文件名区分
+    POST参数: pdf_name, annotations
+    """
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            pdf_name = data.get("pdf_name")
+            annotations = data.get("annotations")
+            username = request.user.username
+            if not pdf_name or annotations is None:
+                return JsonResponse({"error": "缺少参数"}, status=400)
+            path = get_annotation_path(username, pdf_name)
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(annotations, f)
+            return JsonResponse({"success": True})
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "无效请求"}, status=400)
+
+@csrf_exempt
+def get_annotations(request, data_course):
+    """
+    加载PDF标注，按用户名+pdf文件名区分
+    GET参数: pdf_name
+    """
+    pdf_name = request.GET.get("pdf_name")
+    username = request.user.username
+    if not pdf_name:
+        return JsonResponse({"error": "缺少参数"}, status=400)
+    path = get_annotation_path(username, pdf_name)
+    if not os.path.exists(path):
+        return JsonResponse({})
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return JsonResponse(data)
