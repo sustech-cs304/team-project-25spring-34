@@ -7,3 +7,8 @@ Current htmls: IDE.html, lesson.html, self-learn.html, group-id.html, group-lear
 utils: 跨app的通用方法
 
 media folder: media
+
+note:
+python manage.py makemigrations
+python manage.py migrate
+(可选:rm db.sqlite3  python manage.py migrate)
