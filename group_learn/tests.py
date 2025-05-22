@@ -21,7 +21,10 @@ class GroupLearnTests(TransactionTestCase):
             username='testuser',
             password='testpass123'
         )
-        
+        self.user = User.objects.create_user(
+            username='tester',
+            password='testpass'
+        )
         # 创建测试课程
         self.course = Course.objects.create(
             name='Test Course',
@@ -174,7 +177,7 @@ class GroupLearnTests(TransactionTestCase):
 
     def test_get_button_state(self):
         self.client.login(username='tester', password='testpass')
-        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/get_button_state/'
+        url = f'/login/IDE/{self.course.slug}/group-{self.chat_room.name}/group-learn/get_button_state/'
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -184,7 +187,7 @@ class GroupLearnTests(TransactionTestCase):
 
     def test_revise_button(self):
         self.client.login(username='tester', password='testpass')
-        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/revise_button/'
+        url = f'/login/IDE/{self.course.slug}/group-{self.chat_room.name}/group-learn/revise_button/'
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -196,7 +199,7 @@ class GroupLearnTests(TransactionTestCase):
 
     def test_save_button(self):
         self.client.login(username='tester', password='testpass')
-        url = f'/login/IDE/{self.course.slug}/group-{self.annotation.group_id}/group-learn/save_button/'
+        url = f'/login/IDE/{self.course.slug}/group-{self.chat_room.name}/group-learn/save_button/'
         code = 'print("Updated code")'
         response = self.client.post(
             url,
