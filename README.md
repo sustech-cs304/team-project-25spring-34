@@ -1,16 +1,110 @@
-Django project name: IDEframework
+# IDEframework - 在线编程学习平台
 
-Current apps: IDE, group_id, group_learn, lesson, lock_button, login, register, self_learn, ai_assistant
+## 项目简介
+IDEframework 是一个基于 Django 开发的在线编程学习平台，旨在为用户提供便捷的编程学习和实践环境。该平台集成了在线 IDE、课程学习、小组协作等功能，让编程学习变得更加高效和有趣。
 
-Current htmls: IDE.html, lesson.html, self-learn.html, group-id.html, group-learn.html, login.html, register.html, embed.html
+## 主要功能
+1. **在线 IDE**
+   - 支持多种编程语言的在线编辑和运行
+   - 实时代码编译和错误提示
+   - 代码自动补全功能(基于ai接口)
 
-utils: 跨app的通用方法
+2. **课程学习**
+   - 个人学习模块：自主学习和练习
+   - 小组学习模块：团队协作和讨论
+   - 课程进度追踪
 
-media folder: media
+3. **用户系统**
+   - 用户注册和登录
+   - 个人信息管理
+   - 学习记录查看
 
-note:
-python manage.py makemigrations
+4. **AI 助手**
+   - 智能代码提示
+   - 编程问题解答
+   - 学习建议
 
-python manage.py migrate
+## 快速开始
 
-(可选:rm db.sqlite3  python manage.py migrate)
+### 环境要求
+- Python 3.8+
+- Node.js 14+
+- 现代浏览器（Chrome、Firefox、Safari 等）
+
+### 安装步骤
+1. 克隆项目
+```bash
+git clone [项目地址]
+cd team-project-25spring-34
+```
+
+2. 创建并激活虚拟环境
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/Mac
+source .venv/bin/activate
+```
+
+3. 安装依赖
+```bash
+pip install -r requirements.txt
+npm install
+```
+
+4. 运行项目
+```bash
+python manage.py runserver
+```
+
+5. 访问网站
+打开浏览器，访问 http://localhost:8000
+
+## 使用指南
+
+### 注册和登录
+1. 访问登录页面
+2. 点击"注册"创建新账号
+3. 填写必要信息并完成注册
+4. 使用注册的账号登录系统
+
+### 使用在线 IDE
+1. 登录后进入 IDE 页面
+2. 选择编程语言
+3. 在编辑器中编写代码
+4. 点击运行按钮执行代码
+5. 查看输出结果
+
+### 参与课程学习
+1. 在课程列表中选择感兴趣的课程
+2. 进入课程详情页
+3. 按照课程进度学习
+4. 完成练习和作业
+5. 查看学习进度
+
+### 小组协作
+1. 创建或加入学习小组
+2. 参与小组讨论
+3. 协作完成项目
+4. 分享学习心得
+
+## 常见问题
+1. **Q: 如何重置密码？**
+   A: 在登录页面点击"忘记密码"，按照提示操作。
+
+2. **Q: 代码运行出错怎么办？**
+   A: 检查代码语法，查看错误提示，或使用 AI 助手获取帮助。
+
+3. **Q: 如何创建学习小组？**
+   A: 在小组学习页面点击"创建小组"，填写相关信息即可。
+
+## 技术支持
+如遇到问题，请通过以下方式获取帮助：
+- 查看帮助文档
+- 联系技术支持团队
+- 在社区论坛提问
+
+## 版本信息
+当前版本：1.0.0
+最后更新：2024-03-21
