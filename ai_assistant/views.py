@@ -155,7 +155,7 @@ async def html_to_png(html_path: str, output_png_path: str):
 
 
 # ai end
-def deepseek_api(request):
+def deepseek_api(request, data_course):
     global Mind_map
     global Test
     if request.method == 'POST':
