@@ -28,84 +28,8 @@ team-project-25spring-34/
 
 ## API 文档
 
-### 用户认证 API
 
-#### 注册
-- 端点：`/register/`
-- 方法：POST
-- 参数：
-  ```json
-  {
-    "username": "string",
-    "email": "string",
-    "password": "string",
-    "confirm_password": "string"
-  }
-  ```
-- 响应：
-  ```json
-  {
-    "status": "success",
-    "message": "注册成功"
-  }
-  ```
 
-#### 登录
-- 端点：`/login/`
-- 方法：POST
-- 参数：
-  ```json
-  {
-    "username": "string",
-    "password": "string"
-  }
-  ```
-- 响应：
-  ```json
-  {
-    "status": "success",
-    "token": "string"
-  }
-  ```
-
-### IDE API
-
-#### 代码执行
-- 端点：`/ide/execute/`
-- 方法：POST
-- 参数：
-  ```json
-  {
-    "code": "string",
-    "language": "string"
-  }
-  ```
-- 响应：
-  ```json
-  {
-    "output": "string",
-    "error": "string"
-  }
-  ```
-
-### 课程 API
-
-#### 获取课程列表
-- 端点：`/lesson/list/`
-- 方法：GET
-- 响应：
-  ```json
-  {
-    "courses": [
-      {
-        "id": "integer",
-        "title": "string",
-        "description": "string",
-        "duration": "string"
-      }
-    ]
-  }
-  ```
 ### AI Assistant API 文档
 
 #### 1. 聊天 / 思维导图 / 出题接口
@@ -201,6 +125,368 @@ await html_to_png("/path/to/file.html", "/path/to/file.png")
 - **说明**：
   返回 embed.html 页面，用于嵌入式展示 AI 聊天界面。可通过 <iframe> 在其他页面中集成该功能模块。
   
+### 按钮锁定功能 API 文档
+
+#### 1. 获取按钮状态
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/lock_button/get_state/`
+- **方法**：GET
+- **说明**：  
+  获取当前按钮的锁定状态及最后操作用户。
+
+##### 响应格式
+```json
+{
+  "is_locked": true,
+  "last_user": "user123",
+  "username": "user456",
+  "code": "print('Hello World')"
+}
+```
+
+---
+
+#### 2. 锁定按钮
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/lock_button/revise/`
+- **方法**：POST
+- **说明**：  
+  锁定按钮并记录当前用户。
+
+##### 响应格式
+```json
+{
+  "username": "user123"
+}
+```
+
+---
+
+#### 3. 保存按钮状态
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/lock_button/save/`
+- **方法**：POST
+- **说明**：  
+  保存按钮状态并更新代码内容。
+
+##### 请求参数
+```json
+{
+  "code": "print('Hello World')"
+}
+```
+
+##### 响应格式
+```json
+{
+  "username": "user123",
+  "code": "print('Hello World')"
+}
+```
+
+---
+
+### 自主学习功能 API 文档
+
+#### 1. 上传 PDF
+
+- **端点**：`/login/IDE/<data_course>/self-learn/upload_pdf/`
+- **方法**：POST
+- **说明**：  
+  上传 PDF 文件并根据课程和用户名分类存储。
+
+##### 响应格式
+```json
+{
+  "message": "PDF 上传成功！"
+}
+```
+
+---
+
+#### 2. 删除 PDF
+
+- **端点**：`/login/IDE/<data_course>/self-learn/delete_pdf/`
+- **方法**：POST
+- **说明**：  
+  删除指定的 PDF 文件。
+
+##### 请求参数
+```json
+{
+  "pdf_name": "example.pdf"
+}
+```
+
+##### 响应格式
+```json
+{
+  "status": "success"
+}
+```
+
+---
+
+#### 3. 获取 PDF 列表
+
+- **端点**：`/login/IDE/<data_course>/self-learn/get_pdf_list/`
+- **方法**：GET
+- **说明**：  
+  获取当前课程和用户名下的 PDF 文件列表。
+
+##### 响应格式
+```json
+{
+  "pdfs": ["example1.pdf", "example2.pdf"]
+}
+```
+
+---
+
+#### 4. 运行代码
+
+- **端点**：`/login/IDE/<data_course>/self-learn/run_code/`
+- **方法**：POST
+- **说明**：  
+  提交代码并返回运行结果。
+
+##### 请求参数
+```json
+{
+  "code": "print('Hello World')"
+}
+```
+
+##### 响应格式
+```json
+{
+  "stdout": "Hello World\n",
+  "stderr": ""
+}
+```
+
+---
+
+### 小组管理功能 API 文档
+
+#### 1. 获取小组成员
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/group_id/get_members/`
+- **方法**：GET
+- **说明**：  
+  获取当前小组的成员列表。
+
+##### 响应格式
+```json
+{
+  "status": "success",
+  "members": [
+    {
+      "username": "user1",
+      "is_leader": true
+    },
+    {
+      "username": "user2",
+      "is_leader": false
+    }
+  ]
+}
+```
+
+---
+
+#### 2. 离开小组
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/group_id/leave_room/`
+- **方法**：POST
+- **说明**：  
+  当前用户离开小组。
+
+##### 响应格式
+```json
+{
+  "status": "success",
+  "message": "已成功离开房间"
+}
+```
+
+---
+
+### 小组学习功能 API 文档
+
+#### 1. 保存标注
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/group-learn/save_annotations/`
+- **方法**：POST
+- **说明**：  
+  保存 PDF 文件的标注信息。
+
+##### 请求参数
+```json
+{
+  "pdf_url": "string",
+  "annotations": "object"
+}
+```
+
+##### 响应格式
+```json
+{
+  "success": true,
+  "created": true
+}
+```
+
+---
+
+#### 2. 获取标注
+
+- **端点**：`/login/IDE/<data_course>/group-<group_id>/group-learn/get_annotations/`
+- **方法**：GET
+- **说明**：  
+  获取指定 PDF 文件的标注信息。
+
+##### 请求参数
+```json
+{
+  "pdf_url": "string"
+}
+```
+
+##### 响应格式
+```json
+{
+  "success": true,
+  "annotations": "object"
+}
+```
+
+---
+
+### 课程管理功能 API 文档
+
+#### 1. 创建课程
+
+- **端点**：`/login/IDE/<data_course>/lesson/create_room/`
+- **方法**：POST
+- **说明**：  
+  创建一个新的课程房间。
+
+##### 请求参数
+```json
+{
+  "room_name": "string"
+}
+```
+
+##### 响应格式
+```json
+{
+  "status": "success",
+  "room_id": "string",
+  "course": "string",
+  "message": "房间创建成功"
+}
+```
+
+---
+
+#### 2. 获取课程房间列表
+
+- **端点**：`/login/IDE/<data_course>/lesson/get_room_list/`
+- **方法**：GET
+- **说明**：  
+  获取当前课程下的所有房间列表。
+
+##### 响应格式
+```json
+{
+  "status": "success",
+  "rooms": [
+    {
+      "name": "room1",
+      "is_creator": true,
+      "is_member": true,
+      "created_at": "2024-03-21 10:00"
+    }
+  ]
+}
+```
+
+
+
+
+
+### 登录功能 API 文档
+
+#### 1. 用户登录
+
+- **端点**：`/login/`
+- **方法**：POST
+- **说明**：  
+  用户通过提交登录表单完成登录。
+
+##### 请求参数
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+##### 响应格式
+✅ 成功响应
+```json
+{
+  "status": "success",
+  "message": "登录成功"
+}
+```
+
+❌ 错误响应
+```json
+{
+  "status": "error",
+  "message": "用户名或密码错误"
+}
+```
+
+---
+
+### 注册功能 API 文档
+
+#### 1. 用户注册
+
+- **端点**：`/register/`
+- **方法**：POST
+- **说明**：  
+  用户通过提交注册表单完成注册。
+
+##### 请求参数
+```json
+{
+  "username": "string",
+  "password1": "string",
+  "password2": "string"
+}
+```
+
+##### 响应格式
+✅ 成功响应
+```json
+{
+  "status": "success",
+  "message": "注册成功"
+}
+```
+
+❌ 错误响应
+```json
+{
+  "status": "error",
+  "message": "注册失败，用户名已存在"
+}
+```
 
 ## 开发指南
 
