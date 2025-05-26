@@ -37,10 +37,11 @@ RUN mkdir -p /root && \
 EXPOSE 8000
 
 # ---------- 启动命令 ----------
-CMD conda run -n myenv bash -c "\
-    pip install tools frontend && \
-    Xvfb :99 -screen 0 1024x768x16 -ac & \
-    exec python manage.py runserver 0.0.0.0:8000"
+# CMD conda run -n myenv bash -c "\
+#     pip install tools frontend && \
+#     Xvfb :99 -screen 0 1024x768x16 -ac & \
+#     exec python manage.py runserver 0.0.0.0:8000"
+
 
 # CMD ["bash", "-c", \
 #      "source /opt/conda/etc/profile.d/conda.sh && conda activate myenv && Xvfb :99 -screen 0 1024x768x16 -ac & exec python manage.py runserver 0.0.0.0:8000"]
