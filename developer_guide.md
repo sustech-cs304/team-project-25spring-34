@@ -106,6 +106,101 @@ team-project-25spring-34/
     ]
   }
   ```
+### AI Assistant API 文档
+
+#### 1. 聊天 / 思维导图 / 出题接口
+
+- **端点**：`/login/IDE/<data_course>/deepseek-chat/api/`
+- **方法**：POST
+- **说明**：  
+  根据用户提供的 `message` 和可选的 PDF 文件，调用 DeepSeek API 实现三类功能：
+  - 生成思维导图（Mermaid）
+  - 生成测试题页面（HTML 试卷）
+  - 普通文本问答
+
+---
+
+##### 请求参数（`multipart/form-data`）
+
+| 参数名  | 类型   | 必填 | 说明                      |
+|--------|--------|------|---------------------------|
+| message | string | ✅   | 用户问题或指令 prompt      |
+| pdf     | file   | ❌   | 可选上传的 PDF 文件内容     |
+
+示例：
+POST /login/IDE/cs310/deepseek-chat/api/
+Content-Type: multipart/form-data
+
+message: 请根据内容生成思维导图
+pdf: <上传 PDF 文件>
+
+---
+##### 系统处理流程
+
+1. 如有上传 PDF，则提取 PDF 文本内容；
+2. 自动识别 prompt 中关键词，分类为：
+   - 导图模式：含“思维导图”等关键词；
+   - 测试模式：含“出题”、“小测”等关键词；
+   - 否则为普通问答模式；
+3. 调用 DeepSeek API 构造结果；
+4. 若生成 HTML 内容：
+   - 保存 HTML 文件；
+   - 若是导图，调用 `html_to_png()` 截图生成 PNG；
+5. 返回响应。
+
+---
+
+##### 响应格式
+
+✅ 普通问答模式
+```json
+{
+  "response": "AI 返回的文本回答"
+}
+```
+✅ 思维导图模式
+```json
+{
+  "response": "<a href='/media/mind_maps/mind_html_xxxx.html' target='_blank'>查看思维导图</a>",
+  "html_url": "/media/mind_maps/mind_html_xxxx.html",
+  "png_url": "/media/mind_pics/mind_png_xxxx.png"
+}
+```
+✅ 测试题生成模式
+```json
+{
+  "response": "<a href='/media/test/test_html_xxxx.html' target='_blank'>查看测试题目</a>",
+  "html_url": "/media/test/test_html_xxxx.html"
+}
+```
+❌ 错误响应示例
+```json
+{
+  "error": "读取 PDF 失败: 文件格式错误"
+}
+```
+
+#### 2. HTML 转 PNG 工具
+
+- **函数名**：`html_to_png(html_path: str, output_png_path: str)`
+
+- **说明**：  
+  该异步函数使用 Playwright 和 Chromium 打开 HTML 文件，等待 `.mermaid svg` 元素渲染完成后，智能识别边界并裁剪保存为 PNG 图像。
+
+- **调用示例**：
+
+```python
+await html_to_png("/path/to/file.html", "/path/to/file.png")
+```
+
+#### 3. 前端嵌入页面
+- **端点**：/login/IDE/<data_course>/deepseek-chat/embed_chat/
+
+- **方法**：GET
+
+- **说明**：
+  返回 embed.html 页面，用于嵌入式展示 AI 聊天界面。可通过 <iframe> 在其他页面中集成该功能模块。
+  
 
 ## 开发指南
 
