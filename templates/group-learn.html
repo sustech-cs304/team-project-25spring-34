@@ -868,16 +868,16 @@ ${data.stderr}`;
             page.render(renderContext);
 
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-               if (annotations[num]) {
-                for (const path of annotations[num]) {
-                    // 恢复为绝对像素点再绘制
-                    const absPath = {
-                        ...path,
-                        points: toAbsolute(path.points)
-                    };
-                    drawPath(absPath);
-                }
+           if (annotations[num]) {
+            for (const path of annotations[num]) {
+                // 恢复为绝对像素点再绘制
+                const absPath = {
+                    ...path,
+                    points: toAbsolute(path.points)
+                };
+                drawPath(absPath);
             }
+        }
 
             document.getElementById('page-num').textContent = num;
             document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
