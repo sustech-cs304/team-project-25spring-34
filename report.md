@@ -1,6 +1,6 @@
 # IDEframework - 在线编程学习平台
 
-## Project Complexity
+## 1. Project Complexity
 
 ### Lines of Code
 
@@ -37,7 +37,7 @@
 
 268
 
-## User Manual
+## 2.1 User Manual
 
 ### 项目简介
 IDEframework 是一个基于 Django 开发的在线编程学习平台，旨在为用户提供便捷的编程学习和实践环境。该平台集成了在线 IDE、课程学习、小组协作等功能，让编程学习变得更加高效和有趣。
@@ -144,7 +144,7 @@ python manage.py runserver
 - 联系技术支持团队
 - 在社区论坛提问
 
-## Developer Manual
+## 2.2 Developer Manual
 
 ### 项目架构
 
@@ -726,7 +726,7 @@ python manage.py test --pattern="integration_*.py"
   - 基本功能实现
 
 
-## Tests Manual
+## 3. Tests Manual
 
 ### 实现方法
 我们使用了 Django 自带的测试框架来实现项目的自动化测试。  
@@ -817,3 +817,25 @@ python manage.py test --pattern="integration_*.py"
 
    ```bash
    docker-compose up --build
+   ```
+2. 启动容器
+   ```bash
+   docker run -dit --name my_django_test -p 8000:8000 team-project-25spring-34-web tail -f /dev/null
+   ```
+3. 进入容器安装依赖
+   ```bash
+   docker exec -it my_django_test bash
+   pip install tools frontend
+   ```
+4. 启动 Django 服务（注意关闭科学上网以保证 Xvfb 可用）
+   ```bash
+   Xvfb :99 -screen 0 1024x768x16 -ac & python manage.py runserver 0.0.0.0:8000
+   ```
+5. 浏览器访问终端输出的网址即可进入系统
+   
+### 🧾 Scripts and Files Used
+   - Dockerfile
+   - docker-compose.yml
+
+### ✅ Proof of Successful Build
+截图终端中的 Successfully built 输出或 docker images 结果：
