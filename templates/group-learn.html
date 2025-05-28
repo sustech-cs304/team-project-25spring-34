@@ -709,12 +709,14 @@
         
         // 动态切换语言
         document.getElementById('language-select').addEventListener('change', (e) => {
-          const language = e.target.value;
-          editor.setOption('mode', language === 'python' ? 'python' : 'text/x-java');
+          lan1 = e.target.value;
+          editor.setOption('mode', lan1 === 'python' ? 'python' : 'text/x-java');
         });
     </script>
     
     <script>
+        let lan1 = "python"
+
         function runCode() {
             /*
             * AI-generated-content
@@ -735,7 +737,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
                 },
-                body: `code=${encodeURIComponent(code)}`
+                body: `code=${encodeURIComponent(code)}&language=${encodeURIComponent(lan1)}`
             })
             .then(response => response.json())
             .then(data => {
