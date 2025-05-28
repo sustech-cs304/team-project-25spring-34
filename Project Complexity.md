@@ -25,15 +25,12 @@
 
 ### Cyclomatic complexity
 
-![image-20250525201151340](C:\Users\zhuli\AppData\Roaming\Typora\typora-user-images\image-20250525201151340.png)
+![image-20250525201151340](c1.png)
 
-![image-20250525201247161](C:\Users\zhuli\AppData\Roaming\Typora\typora-user-images\image-20250525201247161.png)
+![image-20250525201247161](c2.png)
 
-![image-20250525201317282](C:\Users\zhuli\AppData\Roaming\Typora\typora-user-images\image-20250525201317282.png)
+![image-20250525201317282](c3.png)
 
-![image-20250525201406197](C:\Users\zhuli\AppData\Roaming\Typora\typora-user-images\image-20250525201406197.png)
-
-![image-20250525201426730](C:\Users\zhuli\AppData\Roaming\Typora\typora-user-images\image-20250525201426730.png)
 
 
 
