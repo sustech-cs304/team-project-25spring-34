@@ -1296,7 +1296,14 @@ async function saveAnnotations() {
     checkButtonState();
     // 每5秒检查一次状态
     setInterval(checkButtonState, 5000);
-    setInterval(loadAnnotations, 300);
+    setInterval(async () => {
+    // 获取锁状态
+    const lock = await getEditLockStatus();
+    // 只有“没有被你自己锁定”时才刷新（即不是你在编辑）
+    if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
+        loadAnnotations();
+    }
+}, 1000);
 
     // 修改按钮点击事件
     reviseBtn.addEventListener('click', function() {
