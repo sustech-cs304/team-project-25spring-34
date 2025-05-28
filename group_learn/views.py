@@ -56,7 +56,7 @@ def index(request, group_id, data_course):
         return render(request, "group-learn.html", {"group_id": 0})
 
 @csrf_exempt
-def save_annotations(request, group_id):
+def save_annotations(request, data_course, group_id):
     """
     AI-generated-content
     tool: GitHub Copilot
