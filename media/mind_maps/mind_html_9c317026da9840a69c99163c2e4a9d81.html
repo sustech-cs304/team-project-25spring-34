@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>知识测试题</title>
+    <style>
+        body {font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;}
+        .question {margin-bottom: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px;}
+        .score {color: green; font-weight: bold; font-size: 1.2em;}
+        .explanation {color: #666; display: none;}
+        .correct {background-color: #e6ffe6;}
+        .wrong {background-color: #ffe6e6;}
+        button {padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;}
+        button:hover {background-color: #45a049;}
+        h2 {color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px;}
+        h3 {color: #3498db;}
+    </style>
+</head>
+<body>
+    <h2>知识测试题</h2>
+
+    <!-- Fill in the Blanks -->
+    <div class="question">
+        <h3>填空题</h3>
+        <p>1. HTML的全称是：<input type="text" size="25" id="blank1">（超文本标记语言）</p>
+        <p>2. CSS中用于改变文本颜色的属性是：<input type="text" size="15" id="blank2">（color）</p>
+        <p>3. JavaScript中声明变量的关键字是：<input type="text" size="15" id="blank3">（let/var/const）</p>
+    </div>
+
+    <!-- Multiple Choice -->
+    <div class="question">
+        <h3>选择题</h3>
+        <div>
+            <p>1. 以下哪个标签用于创建有序列表？</p>
+            <input type="radio" name="q1" value="A" id="q1A"> A. &lt;ul&gt;<br>
+            <input type="radio" name="q1" value="B" id="q1B"> B. &lt;ol&gt;<br>
+            <input type="radio" name="q1" value="C" id="q1C"> C. &lt;li&gt;<br>
+            <input type="radio" name="q1" value="D" id="q1D"> D. &lt;dl&gt;
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <p>2. 以下哪个CSS属性用于设置元素的外边距？</p>
+            <input type="radio" name="q2" value="A" id="q2A"> A. padding<br>
+            <input type="radio" name="q2" value="B" id="q2B"> B. margin<br>
+            <input type="radio" name="q2" value="C" id="q2C"> C. border<br>
+            <input type="radio" name="q2" value="D" id="q2D"> D. spacing
+        </div>
+        
+        <div style="margin-top: 15px;">
+            <p>3. JavaScript中哪个方法用于向控制台输出信息？</p>
+            <input type="radio" name="q3" value="A" id="q3A"> A. print()<br>
+            <input type="radio" name="q3" value="B" id="q3B"> B. log()<br>
+            <input type="radio" name="q3" value="C" id="q3C"> C. console.log()<br>
+            <input type="radio" name="q3" value="D" id="q3D"> D. write()
+        </div>
+    </div>
+
+    <button onclick="checkAnswers()">提交答案</button>
+    <div id="score" style="margin-top: 20px;"></div>
+
+    <!-- Answers and Explanations -->
+    <div id="answers" style="display:none; margin-top: 30px;">
+        <h3>答案解析</h3>
+        <div class="question">
+            <p><strong>填空题</strong></p>
+            <p>1. 答案：超文本标记语言<br>
+               解析：HTML是HyperText Markup Language的缩写，用于创建网页结构。</p>
+            <p>2. 答案：color<br>
+               解析：CSS中color属性用于设置文本颜色。</p>
+            <p>3. 答案：let/var/const<br>
+               解析：JavaScript中可以使用let、var或const来声明变量。</p>
+        </div>
+        
+        <div class="question">
+            <p><strong>选择题</strong></p>
+            <p>1. 答案：B. &lt;ol&gt;<br>
+               解析：&lt;ol&gt;表示有序列表(ordered list)，&lt;ul&gt;是无序列表，&lt;li&gt;是列表项。</p>
+            <p>2. 答案：B. margin<br>
+               解析：margin属性用于设置元素的外边距，padding是内边距。</p>
+            <p>3. 答案：C. console.log()<br>
+               解析：console.log()是JavaScript中用于向控制台输出信息的方法。</p>
+        </div>
+    </div>
+
+    <script>
+        function checkAnswers() {
+            let score = 0;
+            const totalQuestions = 6; // 3填空 + 3选择
+            
+            // 检查填空题
+            const blank1 = document.getElementById("blank1").value.trim().toLowerCase();
+            const blank2 = document.getElementById("blank2").value.trim().toLowerCase();
+            const blank3 = document.getElementById("blank3").value.trim().toLowerCase();
+            
+            if (blank1.includes("超文本标记语言") || blank1.includes("hypertext markup language")) score++;
+            if (blank2 === "color") score++;
+            if (blank3 === "let" || blank3 === "var" || blank3 === "const") score++;
+            
+            // 检查选择题
+            if (document.getElementById("q1B").checked) score++;
+            if (document.getElementById("q2B").checked) score++;
+            if (document.getElementById("q3C").checked) score++;
+            
+            // 显示结果
+            document.getElementById('score').innerHTML = `得分: <span class="score">${score}</span>/${totalQuestions}`;
+            document.getElementById('answers').style.display = 'block';
+            
+            // 标记正确和错误的答案
+            markAnswers();
+        }
+        
+        function markAnswers() {
+            // 标记填空题
+            const blank1 = document.getElementById("blank1");
+            const blank2 = document.getElementById("blank2");
+            const blank3 = document.getElementById("blank3");
+            
+            if (blank1.value.trim().toLowerCase().includes("超文本标记语言") || blank1.value.trim().toLowerCase().includes("hypertext markup language")) {
+                blank1.parentElement.classList.add("correct");
+            } else {
+                blank1.parentElement.classList.add("wrong");
+            }
+            
+            if (blank2.value.trim().toLowerCase() === "color") {
+                blank2.parentElement.classList.add("correct");
+            } else {
+                blank2.parentElement.classList.add("wrong");
+            }
+            
+            if (blank3.value.trim().toLowerCase() === "let" || blank3.value.trim().toLowerCase() === "var" || blank3.value.trim().toLowerCase() === "const") {
+                blank3.parentElement.classList.add("correct");
+            } else {
+                blank3.parentElement.classList.add("wrong");
+            }
+            
+            // 标记选择题
+            if (document.getElementById("q1B").checked) {
+                document.getElementById("q1B").parentElement.classList.add("correct");
+            } else {
+                const selected = document.querySelector('input[name="q1"]:checked');
+                if (selected) selected.parentElement.classList.add("wrong");
+            }
+            
+            if (document.getElementById("q2B").checked) {
+                document.getElementById("q2B").parentElement.classList.add("correct");
+            } else {
+                const selected = document.querySelector('input[name="q2"]:checked');
+                if (selected) selected.parentElement.classList.add("wrong");
+            }
+            
+            if (document.getElementById("q3C").checked) {
+                document.getElementById("q3C").parentElement.classList.add("correct");
+            } else {
+                const selected = document.querySelector('input[name="q3"]:checked');
+                if (selected) selected.parentElement.classList.add("wrong");
+            }
+        }
+    </script>
+</body>
+</html>

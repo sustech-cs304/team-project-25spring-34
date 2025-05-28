@@ -1,22 +1,25 @@
 public class Main {
     public static void main(String[] args) {
-        char studentGrade = 'B'; // 示例值，可以根据需要修改
-        
-        switch (studentGrade) {
-            case 'A':
-                System.out.println("90 - 100");
-                break;
-            case 'B':
-                System.out.println("80 - 89");
-                break;
-            case 'C':
-                System.out.println("70 - 79");
-                break;
-            case 'D':
-                System.out.println("60 - 69");
-                break;
-            default:
-                System.out.println("score < 60");
+        Main main = new Main();
+        System.out.println(main.getWeight(5));
+        System.out.println(main.getWeight(15));
+        System.out.println(main.getWeight(25));
+        System.out.println(main.getWeight(35));
+    }
+
+    String getWeight(int i) {
+        if (i == 0) {
+            return "no weight";
         }
+        if (i <= 10) {
+            return "light";
+        }
+        if (i <= 20) {
+            return "medium";
+        }
+        if (i <= 30) {
+            return "heavy";
+        }
+        return "very heavy";
     }
 }

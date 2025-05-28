@@ -374,36 +374,36 @@
         <!-- 删除 PDF 上传相关功能 -->
     </ul>
 </nav>
-{#<nav>#}
-{#    <ul>#}
-{#        <li><a href="/login/IDE/lesson">返回课程</a></li>#}
-{#        <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">#}
-{#            <h4>书签导航</h4>#}
-{#            <select id="pdf-selector" style="margin-left: 10px;">#}
-{#                <option value="">选择 PDF</option>#}
-{#            </select>#}
-{#            <button id="view-bookmarks-btn" style="margin-left: 10px;">查看书签</button>#}
-{#            <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>#}
-{#            <button id="delete-bookmark-btn" style="margin-left: 10px;">删除书签</button>#}
-{#            <!-- 新增书签下拉框 -->#}
-{#            <select id="bookmark-dropdown" style="margin-left: 10px; display: none;">#}
-{#                <option value="">选择书签</option>#}
-{#            </select>#}
-{#        </div>#}
-{##}
-{#        <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">#}
-{#            <h4>上传PDF</h4>#}
-{#            <form id="pdf-upload-form" method="POST" enctype="multipart/form-data"#}
-{#                  action="/login/IDE/{{ data_course }}/self-learn/upload_pdf/">#}
-{#                {% csrf_token %}#}
-{#                <input type="file" name="pdf" accept=".pdf" required>#}
-{#                <button type="submit">上传PDF</button>#}
-{#            </form>#}
-{#        </div>#}
-{##}
-{##}
-{#    </ul>#}
-{#</nav>#}
+<!--{#<nav>#}-->
+<!--{#    <ul>#}-->
+<!--{#        <li><a href="/login/IDE/lesson">返回课程</a></li>#}-->
+<!--{#        <div class="bookmark-navigation" style="display: flex; align-items: center; margin-left: 20px;">#}-->
+<!--{#            <h4>书签导航</h4>#}-->
+<!--{#            <select id="pdf-selector" style="margin-left: 10px;">#}-->
+<!--{#                <option value="">选择 PDF</option>#}-->
+<!--{#            </select>#}-->
+<!--{#            <button id="view-bookmarks-btn" style="margin-left: 10px;">查看书签</button>#}-->
+<!--{#            <button id="add-bookmark-btn" style="margin-left: 10px;">创建书签</button>#}-->
+<!--{#            <button id="delete-bookmark-btn" style="margin-left: 10px;">删除书签</button>#}-->
+<!--{#            &lt;!&ndash; 新增书签下拉框 &ndash;&gt;#}-->
+<!--{#            <select id="bookmark-dropdown" style="margin-left: 10px; display: none;">#}-->
+<!--{#                <option value="">选择书签</option>#}-->
+<!--{#            </select>#}-->
+<!--{#        </div>#}-->
+<!--{##}-->
+<!--{#        <div class="pdf-upload-btn" style="display: flex; align-items: center; margin-left: 20px;">#}-->
+<!--{#            <h4>上传PDF</h4>#}-->
+<!--{#            <form id="pdf-upload-form" method="POST" enctype="multipart/form-data"#}-->
+<!--{#                  action="/login/IDE/{{ data_course }}/self-learn/upload_pdf/">#}-->
+<!--{#                {% csrf_token %}#}-->
+<!--{#                <input type="file" name="pdf" accept=".pdf" required>#}-->
+<!--{#                <button type="submit">上传PDF</button>#}-->
+<!--{#            </form>#}-->
+<!--{#        </div>#}-->
+<!--{##}-->
+<!--{##}-->
+<!--{#    </ul>#}-->
+<!--{#</nav>#}-->
 
 <div class="container">
     <div class="pdf-section">
@@ -816,7 +816,7 @@
         }
 
         isSelect = true;
-        {#const canvas = document.getElementById("pdf-viewer")#}
+        // {#const canvas = document.getElementById("pdf-viewer")#}
         const rect = overlay.getBoundingClientRect();
         // const dataURL = canvas.toDataURL("image/png")
         const onMouseDown = (e) => {
@@ -988,11 +988,14 @@
 
         // 动态切换语言
         document.getElementById('language-select').addEventListener('change', (e) => {
-          const language = e.target.value;
-          editor.setOption('mode', language === 'python' ? 'python' : 'text/x-java');
+          lan = e.target.value;
+          console.log("language=",lan)
+          editor.setOption('mode', lan === 'python' ? 'python' : 'text/x-java');
         });
 </script>
 <script>
+
+        let lan = "python"
 
         function runCode() {
             /*
@@ -1014,7 +1017,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
                 },
-                body: `code=${encodeURIComponent(code)}`
+                body: `code=${encodeURIComponent(code)}&language=${encodeURIComponent(lan)}`
             })
             .then(response => response.json())
             .then(data => {

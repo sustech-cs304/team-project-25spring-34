@@ -97,7 +97,7 @@ def extract_class_name(java_code, data_course):
     match = re.search(r'public\s+class\s+([A-Za-z_$][A-Za-z\d_$]*)', java_code)
     if match:
         return match.group(1)
-    return None
+    return "test"
 
 def lesson(request, data_course):
     return render(request, 'lesson.html')
@@ -117,11 +117,14 @@ def run_code(request, data_course):
     """
     if request.method == 'POST':
         code = request.POST.get('code', '')
+        language = request.POST.get('language', '')
         if not code:
             return JsonResponse({'error': 'No code provided'}, status=400)
 
-        _, file_type = auto_format_code_improved(code)
-        print("code type:", file_type)
+        print("code type:", language)
+        file_type = "j"
+        if language == "python":
+            file_type = "p"
 
         if file_type == "j":
             file_path = r"media\screenshot\output_java.txt"
@@ -176,6 +179,7 @@ def run_code(request, data_course):
                     text=True,
                     timeout=5
                 )
+                print("result:", result)
                 return JsonResponse({
                     'stdout': result.stdout,
                     'stderr': result.stderr,
