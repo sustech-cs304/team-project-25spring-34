@@ -868,8 +868,15 @@ ${data.stderr}`;
             page.render(renderContext);
 
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-            if (annotations[num]) {
-                for (const path of annotations[num]) drawPath(path);
+               if (annotations[num]) {
+                for (const path of annotations[num]) {
+                    // 恢复为绝对像素点再绘制
+                    const absPath = {
+                        ...path,
+                        points: toAbsolute(path.points)
+                    };
+                    drawPath(absPath);
+                }
             }
 
             document.getElementById('page-num').textContent = num;
@@ -877,6 +884,14 @@ ${data.stderr}`;
         });
     }
 
+    function toAbsolute(points) {
+            return points.map(pt => ({
+                x: pt.x * overlay.width,
+                y: pt.y * overlay.height,
+            }));
+        }
+
+    
     function drawPath(path) {
         overlayCtx.strokeStyle = path.color;
         overlayCtx.lineWidth = path.size * scale;
@@ -976,6 +991,27 @@ async function getEditLockStatus() {
     };
 }
 
+
+
+function toRelative(points) {
+    return points.map(pt => ({
+        x: pt.x / overlay.width,
+        y: pt.y / overlay.height,
+    }));
+}
+    
+function prepareAnnotationsForSave() {
+    const relativeAnnotations = {};
+    for (const [page, paths] of Object.entries(annotations)) {
+        relativeAnnotations[page] = paths.map(path => ({
+            ...path,
+            points: toRelative(path.points),
+        }));
+    }
+    return relativeAnnotations;
+}
+
+    
 // 修改：保存标注前加锁判断
 async function saveAnnotations() {
     const lock = await getEditLockStatus();
@@ -983,7 +1019,7 @@ async function saveAnnotations() {
         alert('请先点击"修改"按钮获取编辑权限后再保存标注！');
         return;
     }
-
+    const relativeAnnotations = prepareAnnotationsForSave();
     const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
         method: 'POST',
         headers: {
@@ -992,7 +1028,7 @@ async function saveAnnotations() {
         },
         body: JSON.stringify({
             pdf_url: pdfUrl,
-            annotations: annotations
+            annotations: relativeAnnotations
         })
     });
 
