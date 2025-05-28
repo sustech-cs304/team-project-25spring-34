@@ -877,28 +877,6 @@
 
     const csrftoken = getCookie('csrftoken');
 
-    // 监听整个页面的点击
-    /*document.addEventListener('click', async function (e) {
-        const coords = {x: e.clientX, y: e.clientY};
-        console.log('捕获到点击坐标：', coords);
-
-        try {
-            const resp = await fetch('/login/IDE/lesson/self-learn/mouse_event/', {
-                method: 'POST',
-                credentials: 'include',             // 带上 Cookie
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrftoken
-                },
-                body: JSON.stringify(coords)
-            });
-            const data = await resp.json();
-            console.log('服务器返回：', data);
-        } catch (err) {
-            console.error('发送坐标失败：', err);
-        }
-    });*/
-
     function PPImage() {
         try{
             fetch('/login/IDE/{{ data_course }}/self-learn/preprocess_image/', {
@@ -1078,7 +1056,6 @@ ${data.stderr}`;
                         editor.setValue(codeText)
                         //document.getElementById('code').value = codeText
                     }
-
                 }
             });
     });
