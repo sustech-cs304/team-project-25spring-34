@@ -663,7 +663,7 @@
                 <h3>工具栏</h3>
                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                     <button onclick="selectArea()" style="margin-top: 10px;">选择区域</button>
-                    <button onclick="PPImage()" style="margin-top: 10px;">读取区域</button>
+                    <button onclick="intelligent_PPImage()" style="margin-top: 10px;">智能读取</button>
                     <button onclick="runCode()" style="margin-top: 10px;">运行代码</button>
                 </div>
             
@@ -709,12 +709,14 @@
         
         // 动态切换语言
         document.getElementById('language-select').addEventListener('change', (e) => {
-          const language = e.target.value;
-          editor.setOption('mode', language === 'python' ? 'python' : 'text/x-java');
+          lan1 = e.target.value;
+          editor.setOption('mode', lan1 === 'python' ? 'python' : 'text/x-java');
         });
     </script>
     
     <script>
+        let lan1 = "python"
+
         function runCode() {
             /*
             * AI-generated-content
@@ -735,7 +737,7 @@
                     'Content-Type': 'application/x-www-form-urlencoded',
                     'X-CSRFToken': '{{ csrf_token }}'  // CSRF token
                 },
-                body: `code=${encodeURIComponent(code)}`
+                body: `code=${encodeURIComponent(code)}&language=${encodeURIComponent(lan1)}`
             })
             .then(response => response.json())
             .then(data => {
@@ -866,33 +868,14 @@ ${data.stderr}`;
             page.render(renderContext);
 
             overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
-           if (annotations[num]) {
-            for (const path of annotations[num]) {
-                // 恢复为绝对像素点再绘制
-                const absPath = {
-                    ...path,
-                    points: toAbsolute(path.points)
-                };
-                drawPath(absPath);
+            if (annotations[num]) {
+                for (const path of annotations[num]) drawPath(path);
             }
-        }
 
             document.getElementById('page-num').textContent = num;
             document.getElementById('zoom-level').textContent = Math.round(scale * 100) + '%';
         });
     }
-
-
-
-
-    function toAbsolute(points) {
-        return points.map(pt => ({
-            x: pt.x * overlay.width,
-            y: pt.y * overlay.height,
-        }));
-    }
-    
-
 
     function drawPath(path) {
         overlayCtx.strokeStyle = path.color;
@@ -993,27 +976,6 @@ async function getEditLockStatus() {
     };
 }
 
-
-function toRelative(points) {
-    return points.map(pt => ({
-        x: pt.x / overlay.width,
-        y: pt.y / overlay.height,
-    }));
-}
-function prepareAnnotationsForSave() {
-    const relativeAnnotations = {};
-    for (const [page, paths] of Object.entries(annotations)) {
-        relativeAnnotations[page] = paths.map(path => ({
-            ...path,
-            points: toRelative(path.points),
-        }));
-    }
-    return relativeAnnotations;
-}
-
-
-
-
 // 修改：保存标注前加锁判断
 async function saveAnnotations() {
     const lock = await getEditLockStatus();
@@ -1021,9 +983,6 @@ async function saveAnnotations() {
         alert('请先点击"修改"按钮获取编辑权限后再保存标注！');
         return;
     }
-
-    const relativeAnnotations = prepareAnnotationsForSave();
-
 
     const response = await fetch(`/login/IDE/${data_course}/group-${groupId}/group-learn/save_annotations/`, { // 添加 groupId 到路径
         method: 'POST',
@@ -1033,7 +992,7 @@ async function saveAnnotations() {
         },
         body: JSON.stringify({
             pdf_url: pdfUrl,
-            annotations: relativeAnnotations
+            annotations: annotations
         })
     });
 
@@ -1125,7 +1084,7 @@ async function saveAnnotations() {
         const groupId = "{{ group_id }}";
         const data_course = "{{ data_course }}";
 
-        {% if is_creator %}
+        // {% if is_creator %}
         selectPdfBtn.addEventListener('click', async () => {
             try {
                 // 获取房间 PDF 列表
@@ -1192,7 +1151,7 @@ async function saveAnnotations() {
                 alert('获取 PDF 列表失败');
             }
         });
-        {% endif %}
+        // {% endif %}
 
         closeModalBtn.addEventListener('click', () => {
             pdfModal.style.display = 'none';
@@ -1337,17 +1296,7 @@ async function saveAnnotations() {
     checkButtonState();
     // 每5秒检查一次状态
     setInterval(checkButtonState, 5000);
-    setInterval(async () => {
-        // 获取锁状态
-        const lock = await getEditLockStatus();
-        // 只有“没有被你自己锁定”时才刷新（即不是你在编辑）
-        if (!lock.isLocked || lock.currentUser !== lock.lastUser) {
-            loadAnnotations();
-        }
-    }, 1000);
-
-
-
+    setInterval(loadAnnotations, 300);
 
     // 修改按钮点击事件
     reviseBtn.addEventListener('click', function() {
@@ -1435,32 +1384,71 @@ async function saveAnnotations() {
             return;
         }
 
-        try {
-            isSelect = true;
-            const response = await fetch('/login/IDE/{{ data_course }}/self-learn/select_area/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
+        isSelect = true;
+        // {#const canvas = document.getElementById("pdf-viewer")#}
+        const rect = overlay.getBoundingClientRect();
+        // const dataURL = canvas.toDataURL("image/png")
+        const onMouseDown = (e) => {
+            console.log("onMouseDown is running, e.clientX={{ e.clientX }},e.clientY={{ e.clientY }},rect.left={{ rect.left }},rect.top={{ rect.top }}")
+            console.log("canvas.width={{ canvas.width }}, canvas.height={{ canvas.height }}, rect.width={{ rect.width }}, rect.height={{ rect.height }}")
+            startX = (e.clientX - rect.left) * canvas.width / rect.width;
+            startY = (e.clientY - rect.top) * canvas.height / rect.height;
+        };
+
+        const onMouseUp = async (e) => {
+            endX = (e.clientX - rect.left) * canvas.width / rect.width;
+            endY = (e.clientY - rect.top) * canvas.height / rect.height;
+            console.log("选区坐标:", startX, startY, endX, endY);
+
+            try {
+                const dataURL = canvas.toDataURL("image/png");
+                const blob = await (await fetch(dataURL)).blob();
+                const formData = new FormData();
+                formData.append("screenshot", blob, "screenshot.png");
+                formData.append("start_x", Math.round(startX));
+                formData.append("start_y", Math.round(startY));
+                formData.append("end_x", Math.round(endX));
+                formData.append("end_y", Math.round(endY));
+
+                const resp = await fetch('/login/IDE/{{ data_course }}/self-learn/select_area/', {
+                    method: "POST",
+                    headers: {
+                        "X-CSRFToken": getCookie('csrftoken')  // ✅ 加上这行
+                    },
+                    body: formData,
+                    credentials: "include"
+                });
+
+                if (resp.status === 403) {
+                    throw new Error("403 Forbidden - CSRF token 可能缺失或无效");
                 }
-            });
 
-            const data = await response.json();
-            if (data.error) throw new Error(data.error);
+                const result = await resp.json();
+                if (result.success) {
+                    alert("✅ 选区成功，保存路径：" + result.path);
+                } else {
+                    alert("❌ 失败：" + result.error);
+                }
+            } catch (err) {
+                console.error("上传失败：", err);
+                alert("上传失败：" + err.message);
+            } finally {
+                overlay.removeEventListener("mousedown", onMouseDown);
+                overlay.removeEventListener("mouseup", onMouseUp);
+                isSelect = false;
+            }
+        };
 
-            console.log("选区坐标:", data);
-            alert(`已选择区域: (${data.start_x}, ${data.start_y}) 到 (${data.end_x}, ${data.end_y})`);
-        } catch (error) {
-            console.error("选区操作失败:", error);
-            alert("操作失败: " + error.message);
-        } finally {
-            isSelect = false;
-        }
+        overlay.addEventListener("mousedown", onMouseDown);
+        overlay.addEventListener("mouseup", onMouseUp);
+        alert("请在 canvas 上点击并拖动以选择区域");
     }
 
-    function PPImage() {
+    const csrftoken = getCookie('csrftoken');
+
+    function intelligent_PPImage() {
         try{
-            fetch('/login/IDE/{{ data_course }}/self-learn/preprocess_image/', {
+            fetch('/login/IDE/{{ data_course }}/self-learn/intelligent_preprocess_image/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
