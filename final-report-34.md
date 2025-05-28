@@ -839,3 +839,6 @@ python manage.py test --pattern="integration_*.py"
 
 ### ✅ Proof of Successful Build
 截图终端中的 Successfully built 输出或 docker images 结果：
+![成功构建1](11.png)
+![成功构建2](22.png)
+![成功构建3](33.png)
