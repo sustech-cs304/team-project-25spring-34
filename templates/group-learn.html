@@ -1296,6 +1296,7 @@ async function saveAnnotations() {
     checkButtonState();
     // 每5秒检查一次状态
     setInterval(checkButtonState, 5000);
+    setInterval(loadAnnotations, 300);
 
     // 修改按钮点击事件
     reviseBtn.addEventListener('click', function() {
