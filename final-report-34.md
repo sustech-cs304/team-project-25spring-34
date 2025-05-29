@@ -149,7 +149,7 @@ python manage.py runserver
 #### 技术栈
 - 后端：Django 4.2
 - 前端：HTML, CSS, JavaScript
-- 数据库：SQLite（开发）/ PostgreSQL（生产）
+- 数据库：SQLite（开发）/ MySQL（生产）
 - 其他：WebSocket（用于实时通信）
 
 #### 项目结构
